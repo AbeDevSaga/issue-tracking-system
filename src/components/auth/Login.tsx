@@ -7,6 +7,7 @@ import Label from "../form/Label";
 import Checkbox from "../form/input/Checkbox";
 import Input from "../form/input/InputField";
 import Button from "../ui/button/Button";
+import { useTranslation } from "react-i18next";
 
 interface FormData {
   email: string;
@@ -21,13 +22,13 @@ export default function Login() {
     password: "",
   });
   const [loading, setLoading] = useState<boolean>(false);
-
+  const { t } = useTranslation();
   const { login, error, clearError, user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -44,23 +45,22 @@ export default function Login() {
       console.log("Attempting login with:", formData);
       const result = await login(formData);
       console.log("Login result:", result);
-      
+
       // Check if tokens are stored in localStorage
-      const storedToken = localStorage.getItem('authToken');
-      const storedUser = localStorage.getItem('user');
+      const storedToken = localStorage.getItem("authToken");
+      const storedUser = localStorage.getItem("user");
       console.log("Stored token:", storedToken ? "YES" : "NO");
       console.log("Stored user:", storedUser ? "YES" : "NO");
-      
+
       // Check auth state after login
       console.log("Auth state after login - user:", user);
       console.log("Auth state after login - isAuthenticated:", isAuthenticated);
-      
+
       // Wait a bit for state to update, then navigate
       setTimeout(() => {
         console.log("Navigating to dashboard...");
         navigate("/dashboard");
       }, 100);
-      
     } catch (error) {
       console.error("Login error:", error);
     } finally {
@@ -72,18 +72,31 @@ export default function Login() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
         {/* Header Section with bg.jpg */}
-        <div 
-          className="p-6 pb-4"
-        
-        >
+        <div className="p-6 pb-4">
           <div className="flex items-center space-x-4">
             {/* Left Orange Molecule Design */}
             <div className="w-16 h-16">
-              <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M50 0L75 14.43L75 42.86L50 57.29L25 42.86L25 14.43L50 0Z" fill="#FF9A00" />
-                <path d="M50 57.29L75 71.72L75 100L50 114.43L25 100L25 71.72L50 57.29Z" fill="#FF9A00" />
-                <path d="M75 14.43L100 28.86L100 57.29L75 71.72L50 57.29L50 28.86L75 14.43Z" fill="#FF9A00" />
-                <path d="M25 14.43L0 28.86L0 57.29L25 71.72L50 57.29L50 28.86L25 14.43Z" fill="#FF9A00" />
+              <svg
+                viewBox="0 0 100 100"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M50 0L75 14.43L75 42.86L50 57.29L25 42.86L25 14.43L50 0Z"
+                  fill="#FF9A00"
+                />
+                <path
+                  d="M50 57.29L75 71.72L75 100L50 114.43L25 100L25 71.72L50 57.29Z"
+                  fill="#FF9A00"
+                />
+                <path
+                  d="M75 14.43L100 28.86L100 57.29L75 71.72L50 57.29L50 28.86L75 14.43Z"
+                  fill="#FF9A00"
+                />
+                <path
+                  d="M25 14.43L0 28.86L0 57.29L25 71.72L50 57.29L50 28.86L25 14.43Z"
+                  fill="#FF9A00"
+                />
                 <circle cx="50" cy="28.86" r="3" fill="#FF9A00" />
                 <circle cx="50" cy="71.72" r="3" fill="#FF9A00" />
                 <circle cx="75" cy="42.86" r="3" fill="#FF9A00" />
@@ -95,14 +108,14 @@ export default function Login() {
 
             {/* Center Logo and Text */}
             <div className="text-center">
-              <img 
-                src="/logo.jpeg" 
-                alt="Ethiopian Artificial Intelligence Institute" 
+              <img
+                src="/logo.jpeg"
+                alt="Ethiopian Artificial Intelligence Institute"
                 className="h-12 mx-auto mb-1"
               />
-            
+
               <p className="text-[10px] text-orange-500 uppercase tracking-wide">
-                ETHIOPIAN ARTIFICIAL INTELLIGENCE INSTITUTE
+                {t("login.title")}
               </p>
             </div>
           </div>
@@ -119,8 +132,11 @@ export default function Login() {
         <div className="p-6 pt-4 space-y-4">
           {/* Email Input */}
           <div>
-            <Label htmlFor="email" className="block text-xs font-medium text-blue-800 mb-1">
-              Email or Phone number
+            <Label
+              htmlFor="email"
+              className="block text-xs font-medium text-blue-800 mb-1"
+            >
+              {t("login.email_phone_number")}
             </Label>
             <Input
               id="email"
@@ -137,8 +153,11 @@ export default function Login() {
 
           {/* Password Input */}
           <div>
-            <Label htmlFor="password" className="block text-xs font-medium text-blue-800 mb-1">
-              Password
+            <Label
+              htmlFor="password"
+              className="block text-xs font-medium text-blue-800 mb-1"
+            >
+              {t("login.password")}
             </Label>
             <div className="relative">
               <Input
@@ -177,11 +196,14 @@ export default function Login() {
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
               <Label htmlFor="remember-me" className="ml-2 text-gray-900">
-                Remember Me
+                {t("login.remember_me")}
               </Label>
             </div>
-            <a href="/forgot-password" className="text-red-500 hover:text-red-700 underline">
-              Forgot Password?
+            <a
+              href="/forgot-password"
+              className="text-red-500 hover:text-red-700 underline"
+            >
+              {t("login.forgot_password")}
             </a>
           </div>
 
@@ -194,16 +216,15 @@ export default function Login() {
 
           {/* Submit Button */}
           <div>
-        <Button
-  type="submit"
-  disabled={loading}
-  className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white 
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white 
              bg-[#0C4A6E] hover:bg-[#083b56] focus:outline-none focus:ring-2 focus:ring-offset-2 
              focus:ring-[#0C4A6E] disabled:opacity-50 disabled:cursor-not-allowed"
->
-  {loading ? "Signing in..." : "Login"}
-</Button>
-
+            >
+              {loading ? t("login.Signing_in") : t("login.login")}
+            </Button>
           </div>
         </div>
       </div>

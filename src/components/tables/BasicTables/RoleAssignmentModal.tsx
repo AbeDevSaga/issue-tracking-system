@@ -3,6 +3,7 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
 import Button from "../../ui/button/Button";
 import { CityAdmin, Role } from "./CityAdminListTable";
+import { useTranslation } from "react-i18next";
 
 interface RoleAssignmentModalProps {
   isOpen: boolean;
@@ -44,6 +45,7 @@ export default function RoleAssignmentModal({
 
   // Safely get permissions array
   const permissions = selectedRole?.permissions || [];
+  const { t } = useTranslation();
 
   if (!isOpen) return null;
 

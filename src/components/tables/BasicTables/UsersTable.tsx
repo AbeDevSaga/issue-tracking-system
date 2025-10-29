@@ -1,7 +1,6 @@
 // UsersTable.tsx
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { useMemo, useState } from "react";
-
 import Badge from "../../ui/badge/Badge";
 import {
   Table,

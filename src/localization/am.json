@@ -1,0 +1,27 @@
+{
+  "common": {
+    "submit": "አስገባ",
+    "loading": "በመጫን ላይ...",
+    "error": "አንድ ስህተት አጋጥሟል። እባክዎን ደግመው ይሞክሩ።",
+    "selected":"የተመረጡ",
+    "Cancel":"ሰርዝ"
+  },
+  "login": {
+    "title": "የኢትዮጵያ አርቲፊሻል ኢንተለጀንስ ኢንስቲትዩት",
+    "email_phone_number": "ኢሜይል ወይም ስልክ ቁጥር",
+    "password": "የሚስጥር ቁጥር",
+    "remember_me": "አስታውሰኝ",
+    "forgot_password": "የሚስጥር ቁጥር ረሳሁ",
+    "Signing_in":"በመግባት ላይ...",
+    "login":"ግባ"
+  },
+  "permission":{
+    "manage_permissions":"ፈቃዶችን አስተዳደር",
+    "permission":"ፈቃድ",
+    "current_role_permissions":"የአሁኑ ሚና ፈቃዶች፡",
+    "no_permission_available":"ምንም ፈቃድ የለም"
+  },
+  "role":{
+    "role":"ሚና"
+  }
+}

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import api from "../../../services/api";
 import Button from "../../ui/button/Button";
 import { Role } from "./RoleListTable";
+import { useTranslation } from "react-i18next";
 
 interface PermissionModalProps {
   isOpen: boolean;
@@ -38,6 +39,7 @@ export default function PermissionModal({
   const [availablePermissions, setAvailablePermissions] = useState<ApiPermission[]>([]);
   const [permissionsLoading, setPermissionsLoading] = useState(false);
   const [groupedPermissions, setGroupedPermissions] = useState<GroupedPermissions>({});
+  const { t } = useTranslation();
 
   // Get role ID safely - handle both role_id and id properties
   const getRoleId = () => {
@@ -186,10 +188,10 @@ export default function PermissionModal({
         <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
           <div>
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
-              Manage Permissions
+             {t("permission.manage_permissions")}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Role: {getRoleName()} (ID: {getRoleId()})
+              {t("role.role")}: {getRoleName()} (ID: {getRoleId()})
             </p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
@@ -201,7 +203,7 @@ export default function PermissionModal({
         <div className="px-5 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              Selected: {selectedPermissions.size} of {availablePermissions.length} permissions
+              {t("common.selected")}: {selectedPermissions.size} of {availablePermissions.length} {t("permission.permission")}
             </span>
             <button
               onClick={handleSelectAll}
@@ -223,7 +225,7 @@ export default function PermissionModal({
             </div>
           ) : availablePermissions.length === 0 ? (
             <div className="col-span-3 flex items-center justify-center py-8">
-              <p className="text-gray-500 dark:text-gray-400">No permissions available</p>
+              <p className="text-gray-500 dark:text-gray-400">{t("permission.no_permission_available")}</p>
             </div>
           ) : (
             Object.entries(groupedPermissions).map(([module, groups]) => {
@@ -241,7 +243,7 @@ export default function PermissionModal({
                     <div>
                       <h3 className="font-medium text-gray-800 dark:text-white text-sm">{module}</h3>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {moduleSelectedCount} of {modulePermissions.length} selected
+                        {moduleSelectedCount} of {modulePermissions.length}   {t("common.selected")}
                       </p>
                     </div>
                     <input
@@ -308,7 +310,7 @@ export default function PermissionModal({
         {/* Footer */}
         <div className="flex justify-between items-center p-5 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 space-x-3">
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            <strong>Current role permissions:</strong> {role.permissions?.length || 0}
+            <strong>{t("permission.current_role_permissions")}</strong> {role.permissions?.length || 0}
           </div>
           <div className="flex gap-3">
             <Button 
@@ -318,7 +320,7 @@ export default function PermissionModal({
               className="px-6 py-2 text-sm h-10" 
               disabled={loading}
             >
-              Cancel
+            {t("common.cancel")}
             </Button>
             <Button 
               type="button" 
