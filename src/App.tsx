@@ -12,7 +12,7 @@ import Login from "./components/auth/Login";
 import Roles from "./pages/Tables/Roles";
 import Users from "./pages/Tables/Users";
 import ProtectedRoute from "./ProtectedRoute";
-
+import "./localization";
 const AuthLoader = () => {
   return (
     <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">

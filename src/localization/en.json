@@ -1,0 +1,30 @@
+{
+  "common": {
+    "submit": "Submit",
+    "loading": "Loading...",
+    "error": "An error has occurred. Please try again.",
+    "selected":"Selected",
+    "Cancel":"Cancel"
+
+
+  },
+  "login": {
+    "title": "ETHIOPIAN ARTIFICIAL INTELLIGENCE INSTITUTE",
+    "email_phone_number": "Email or Phone number",
+    "password": "Password",
+    "remember_me": "Remember Me",
+    "forgot_password": "Forgot Password",
+    "Signing_in":"Signing in...",
+    "login":"Login"
+  },
+   "permission":{
+    "manage_permissions":"Manage Permissions",
+    "permission":"Permission",
+    "current_role_permissions":"Current role permissions:",
+    "no_permission_available":"No permissions available"
+
+  },
+   "role":{
+    "role":"Role"
+  }
+}
