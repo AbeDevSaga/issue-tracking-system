@@ -1,279 +1,317 @@
-// UsersTable.tsx
-import { PencilIcon, TrashIcon } from '@heroicons/react/24/solid';
 import { useMemo, useState } from "react";
-import Badge from "../../ui/badge/Badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "../../ui/table";
+import { PencilIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/solid';
 
-// Mock data based on your DB schema
-interface User {
-  user_id: string;
-  username: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  phone_number: string | null;
-  is_active: boolean;
-  is_email_verified: boolean;
-  created_at: string;
-  last_login: string | null;
-  roles: string[];
-  office?: string; // Optional — if linked to Office table
-}
-
-const mockUsers: User[] = [
-  {
-    user_id: "66a1b2c3d4e5f67890123456",
-    username: "dr.sarah",
-    email: "sarah.kim@Sheggar.app",
-    first_name: "Sarah",
-    last_name: "Kim",
-    phone_number: "+14155552671",
-    is_active: true,
-    is_email_verified: true,
-    created_at: "2024-01-15T10:30:00Z",
-    last_login: "2024-05-22T08:45:12Z",
-    roles: ["Doctor"],
-    office: "New York Clinic",
-  },
-
-
+const mockUsersInitial = [
+  { user_id: "u1", full_name: "Jemal Adem", organization: "MoTL", email: "jemal.adem@aii.gov.et", phone: "0910171711", role: "Super Admin" },
+  { user_id: "u2", full_name: "Marta Eshetu", organization: "ICS", email: "marta.e@ics.org", phone: "0910987261", role: "Division XX Head" },
+  { user_id: "u3", full_name: "Biniam Fikru", organization: "AA CITY LAB", email: "biniam.fikru@aacity.lab", phone: "0910123411", role: "User" },
+  { user_id: "u4", full_name: "Abeba Haile", organization: "OTA", email: "abeba.haile@ota.org", phone: "0910456700", role: "Division Head" },
+  { user_id: "u5", full_name: "Yared Gashaw", organization: "MoTL", email: "yared.gashaw@aii.gov.et", phone: "0910679512", role: "User" },
+  { user_id: "u6", full_name: "Hanna Belay", organization: "ICS", email: "hanna.b@ics.org", phone: "0910888877", role: "Super Admin" },
+  { user_id: "u7", full_name: "Getahun Tadesse", organization: "AA CITY LAB", email: "getahun.t@aacity.lab", phone: "0910112233", role: "Division XX Head" },
+  { user_id: "u8", full_name: "Selam Dawit", organization: "OTA", email: "selam.d@ota.org", phone: "0910223344", role: "Division Head" },
+  { user_id: "u9", full_name: "Kassahun Worku", organization: "MoTL", email: "kassahun.w@aii.gov.et", phone: "0910334455", role: "User" },
+  { user_id: "u10", full_name: "Aster Mengistu", organization: "ICS", email: "aster.m@ics.org", phone: "0910445566", role: "Super Admin" },
+  { user_id: "u11", full_name: "Elias Fisseha", organization: "AA CITY LAB", email: "elias.f@aacity.lab", phone: "0910556677", role: "Division XX Head" },
+  { user_id: "u12", full_name: "Rahel Desta", organization: "OTA", email: "rahel.d@ota.org", phone: "0910667788", role: "Division Head" },
+  { user_id: "u13", full_name: "Tilahun Habte", organization: "MoTL", email: "tilahun.h@aii.gov.et", phone: "0910778899", role: "User" },
+  { user_id: "u14", full_name: "Sofia Tesfaye", organization: "ICS", email: "sofia.t@ics.org", phone: "0910889900", role: "Super Admin" },
+  { user_id: "u15", full_name: "Dawit Mulugeta", organization: "AA CITY LAB", email: "dawit.m@aacity.lab", phone: "0910111999", role: "Division XX Head" }
 ];
 
-// Format date for display
-const formatDate = (dateStr: string | null): string => {
-  if (!dateStr) return "—";
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
+const organizations = ['MoTL', 'ICS', 'AA CITY LAB', 'OTA'];
+const roles = ['Super Admin', 'Division XX Head', 'Division Head', 'User'];
 
-// Get primary role
-const getPrimaryRole = (roles: string[]): string => {
-  return roles[0] || "User";
-};
+function UserFormModal({ open, onClose, onSave, initial, mode }) {
+  const [form, setForm] = useState(
+    initial || { full_name: '', email: '', organization: '', system: '', role: '', phone: '' }
+  );
+  const [error, setError] = useState('');
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setForm(f => ({ ...f, [name]: value }));
+  }
+  function handleSubmit(e) {
+    e.preventDefault();
+    const isEmail = form.email.includes('@');
+    const isPhone = /^\d+$/.test(form.phone);
+    if (!form.full_name.trim() || !form.organization || !isEmail || !isPhone || !form.role) {
+      setError("All fields are required. Email must have '@'. Phone numbers must be digits only.");
+      return;
+    }
+    setError('');
+    onSave(form);
+    onClose();
+  }
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-30 flex items-center justify-center">
+      <form onSubmit={handleSubmit} className="bg-white rounded-xl p-8 w-full max-w-xl shadow-xl">
+        <div className="flex justify-between items-center mb-2">
+          <div>
+            <span className="text-blue-800 font-semibold text-lg">{mode === "add" ? "Add User" : "Edit User"}</span>
+            <p className="text-xs text-gray-600 mt-1">Fill the user Information carefully</p>
+          </div>
+          <button type="button" onClick={onClose} className="text-gray-500 hover:text-blue-900 text-xl p-2">&times;</button>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold mb-1">Full Name</label>
+            <input name="full_name" value={form.full_name} onChange={handleChange} placeholder="enter full name"
+             className="w-full border rounded px-3 py-2 focus:ring" />
+          </div>
+          <div>
+            <label className="block text-xs font-bold mb-1">Email</label>
+            <input name="email" value={form.email} onChange={handleChange} placeholder="example.domain@gmail.com"
+              className="w-full border rounded px-3 py-2 focus:ring" />
+          </div>
+          <div>
+            <label className="block text-xs font-bold mb-1">Select organization</label>
+            <select name="organization" value={form.organization} onChange={handleChange} className="w-full border rounded px-3 py-2">
+              <option value="">select your organization</option>
+              {organizations.map(org => <option key={org}>{org}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-bold mb-1">Select Role</label>
+            <select name="role" value={form.role} onChange={handleChange} className="w-full border rounded px-3 py-2">
+              <option value="">Role Name</option>
+              {roles.map(role => <option key={role}>{role}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-bold mb-1">Phone Number</label>
+            <input type="tel" name="phone" value={form.phone} onChange={handleChange}
+              placeholder="Phone numbers only" className="w-full border rounded px-3 py-2 focus:ring" />
+          </div>
+          {error && <div className="text-xs text-red-600 mt-1">{error}</div>}
+        </div>
+        <div className="flex justify-between gap-3 mt-7">
+          <button type="button" className="px-6 py-2 border rounded text-blue-900 hover:bg-gray-50"
+           onClick={onClose}>Cancel</button>
+          <button type="submit" className="px-8 py-2 bg-blue-900 text-white rounded hover:bg-blue-700"
+          >Save</button>
+        </div>
+      </form>
+    </div>
+  );
+}
 
 export default function UsersTable() {
+  const [users, setUsers] = useState(mockUsersInitial);
+  const [deletedUsers, setDeletedUsers] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState("add");
+  const [editingUser, setEditingUser] = useState(null);
+
+  // Trash modal state
+  const [trashOpen, setTrashOpen] = useState(false);
+
   const [searchTerm, setSearchTerm] = useState("");
-  const [entriesPerPage, setEntriesPerPage] = useState(5);
+  const [organizationFilter, setOrganizationFilter] = useState('');
+  const [roleFilter, setRoleFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Filter users by search term
-  const filteredUsers = useMemo(() => {
-    return mockUsers.filter(
-      (user) =>
-        user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.username.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm]);
+  // Filtering
+  const filteredUsers = useMemo(() =>
+    users.filter(u =>
+      (!searchTerm ||
+        u.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.email.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (!organizationFilter || u.organization === organizationFilter) &&
+      (!roleFilter || u.role === roleFilter)
+    ),
+    [users, searchTerm, organizationFilter, roleFilter]
+  );
+  const pageSize = 10;
+  const paginatedUsers = filteredUsers.slice((currentPage-1)*pageSize, currentPage*pageSize);
+  const totalPages = Math.ceil(filteredUsers.length / pageSize);
 
-  // Paginate users
-  const startIndex = (currentPage - 1) * entriesPerPage;
-  const paginatedUsers = filteredUsers.slice(startIndex, startIndex + entriesPerPage);
-  const totalPages = Math.ceil(filteredUsers.length / entriesPerPage);
-
-  // Handle delete
-  const handleDelete = (userId: string) => {
-    if (confirm("Are you sure you want to delete this user?")) {
-      console.log("Deleting user:", userId);
-      // In real app: call API to delete user
+  // Actions
+  function handleAddUser() {
+    setModalMode("add");
+    setEditingUser(null);
+    setModalOpen(true);
+  }
+  function handleEditUser(user) {
+    setModalMode("edit");
+    setEditingUser(user);
+    setModalOpen(true);
+  }
+  function handleDeleteUser(user) {
+    if (window.confirm("Delete this user?")) {
+      setDeletedUsers([...deletedUsers, user]);
+      setUsers(users.filter(u => u.user_id !== user.user_id));
     }
-  };
+  }
+  function handleModalSave(form) {
+    if (modalMode === "add") {
+      setUsers([
+        ...users,
+        { ...form, user_id: "u" + (users.length + deletedUsers.length + 1) }
+      ]);
+    } else if (modalMode === "edit" && editingUser) {
+      setUsers(users.map(u => u.user_id === editingUser.user_id ? { ...u, ...form } : u));
+    }
+  }
+  function handleRestoreUser(user) {
+    setUsers([...users, user]);
+    setDeletedUsers(deletedUsers.filter(u => u.user_id !== user.user_id));
+  }
 
-  // Handle edit
-  const handleEdit = (userId: string) => {
-    console.log("Editing user:", userId);
-    // Open modal or navigate to edit page
-  };
-
-  // Handle registration modal open
-  const openRegistrationModal = () => {
-    setIsModalOpen(true);
-  };
-
-  // Close modal
-  const closeRegistrationModal = () => {
-    setIsModalOpen(false);
-  };
-
+  // UI
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-      {/* Header Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 gap-4 border-b border-gray-100 dark:border-gray-800">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-gray-500 text-sm">Show</span>
-            <select
-              value={entriesPerPage}
-              onChange={(e) => {
-                setEntriesPerPage(Number(e.target.value));
-                setCurrentPage(1);
-              }}
-              className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={25}>25</option>
-              <option value={50}>50</option>
-            </select>
-            <span className="text-gray-500 text-sm">entries</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4 w-full sm:w-auto">
-          <div className="relative flex-1 max-w-md">
-           
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-            />
-          </div>
-
-          <button
-            onClick={openRegistrationModal}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+    <div className="rounded-xl border border-gray-200 bg-white p-6">
+      <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <input
+            type="text"
+            placeholder="Search ..."
+            value={searchTerm}
+            onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+            className="border px-3 py-2 rounded"
+            style={{ minWidth: 150 }}
+          />
+          <select
+            value={organizationFilter}
+            onChange={e => { setOrganizationFilter(e.target.value); setCurrentPage(1); }}
+            className="border px-3 py-2 rounded"
           >
-            Add User
+            <option value="">Organization</option>
+            {organizations.map(org => <option key={org}>{org}</option>)}
+          </select>
+          <select
+            value={roleFilter}
+            onChange={e => { setRoleFilter(e.target.value); setCurrentPage(1); }}
+            className="border px-3 py-2 rounded"
+          >
+            <option value="">Role</option>
+            {roles.map(role => <option key={role}>{role}</option>)}
+          </select>
+        </div>
+        <div className="flex gap-2">
+          <button
+            className="px-4 py-2 bg-red-50 text-red-700 rounded border border-red-400 hover:bg-red-100 flex items-center"
+            onClick={() => setTrashOpen(true)}
+          >
+            <TrashIcon className="w-5 h-5 mr-1" /> Trash
           </button>
+          <button
+            className="bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-700"
+            onClick={handleAddUser}
+          >Add User</button>
         </div>
       </div>
 
       {/* Table */}
-      <div className="max-w-full overflow-x-auto">
-        <Table>
-          <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
-            <TableRow>
-              <TableCell
-                isHeader
-                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                User
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Position
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Office
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Status
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Action
-              </TableCell>
-            </TableRow>
-          </TableHeader>
-
-          <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {paginatedUsers.map((user) => (
-              <TableRow key={user.user_id}>
-                <TableCell className="px-5 py-4 sm:px-6 text-start">
-                  <div>
-                    <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                      {user.first_name} {user.last_name}
-                    </span>
-                    <span className="block text-gray-500 text-theme-xs dark:text-gray-400">
-                      {user.email}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {getPrimaryRole(user.roles)}
-                </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {user.office || "—"}
-                </TableCell>
-                <TableCell className="px-4 py-3">
-                  <Badge
-                    size="sm"
-                    color={user.is_active ? "success" : "error"}
-                  >
-                    {user.is_active ? "Active" : "Inactive"}
-                  </Badge>
-                </TableCell>
-                <TableCell className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleEdit(user.user_id)}
-                      className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                    >
-                      <PencilIcon className="size-5" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(user.user_id)}
-                      className="text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
-                    >
-                      <TrashIcon className="size-5" />
-                    </button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
+      <table className="w-full border rounded text-sm">
+        <thead>
+          <tr className="bg-blue-900 text-white">
+            <th className="px-4 py-3 text-left font-medium">Full Name</th>
+            <th className="px-4 py-3 text-left font-medium">Organization</th>
+            <th className="px-4 py-3 text-left font-medium">Email</th>
+            <th className="px-4 py-3 text-left font-medium">Phone No.</th>
+            <th className="px-4 py-3 text-left font-medium">Role</th>
+            <th className="px-4 py-3 text-left font-medium">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {paginatedUsers.map((u) => (
+            <tr key={u.user_id} className="border-b">
+              <td className="px-4 py-2">{u.full_name}</td>
+              <td className="px-4 py-2">{u.organization}</td>
+              <td className="px-4 py-2">{u.email}</td>
+              <td className="px-4 py-2">{u.phone}</td>
+              <td className="px-4 py-2">{u.role}</td>
+              <td className="px-4 py-2 flex gap-2">
+                <button className="text-green-600 hover:text-green-800" onClick={() => handleEditUser(u)}>
+                  <PencilIcon className="w-5 h-5" />
+                </button>
+                <button className="text-red-600 hover:text-red-800" onClick={() => handleDeleteUser(u)}>
+                  <TrashIcon className="w-5 h-5" />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
       {/* Pagination */}
-      <div className="flex items-center justify-between p-4 border-t border-gray-100 dark:border-gray-800">
-        <div className="text-gray-500 text-sm">
-          Showing {startIndex + 1} to {Math.min(startIndex + entriesPerPage, filteredUsers.length)} of {filteredUsers.length} entries
+      <div className="flex justify-between items-center mt-4">
+        <div>
+          <span className="text-gray-500 text-xs">
+            Page {currentPage} of {totalPages}
+          </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex gap-1">
           <button
-            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            className="px-2 rounded bg-gray-100"
             disabled={currentPage === 1}
-            className={`px-3 py-1 rounded ${currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
-          >
-            Previous
-          </button>
-          {[...Array(totalPages)].map((_, i) => (
+            onClick={() => setCurrentPage(currentPage-1)}
+          >Back</button>
+          {[...Array(totalPages)].map((_, idx) => (
             <button
-              key={i + 1}
-              onClick={() => setCurrentPage(i + 1)}
-              className={`px-3 py-1 rounded ${
-                currentPage === i + 1
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              {i + 1}
-            </button>
+              key={idx+1}
+              className={`px-3 py-1 rounded ${currentPage === idx+1 ? "bg-blue-900 text-white" : "bg-gray-100"}`}
+              onClick={() => setCurrentPage(idx+1)}
+            >{idx+1}</button>
           ))}
           <button
-            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            className="px-2 rounded bg-gray-100"
             disabled={currentPage === totalPages}
-            className={`px-3 py-1 rounded ${currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
-          >
-            Next
-          </button>
+            onClick={() => setCurrentPage(currentPage+1)}
+          >Next</button>
         </div>
       </div>
+
+      {/* Add/Edit Modal */}
+      <UserFormModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSave={handleModalSave}
+        initial={editingUser}
+        mode={modalMode}
+      />
+
+      {/* Trash Modal */}
+      {trashOpen &&
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-30 flex items-center justify-center">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+            <h2 className="text-lg font-bold mb-2 text-red-700">Trashed Users</h2>
+            {deletedUsers.length === 0 ? (
+              <div className="text-gray-400 text-sm py-6 text-center">No deleted users</div>
+            ) : (
+              <table className="w-full text-sm mb-4">
+                <thead>
+                  <tr>
+                    <th className="py-2 text-left">Name</th>
+                    <th className="py-2 text-left">Email</th>
+                    <th className="py-2">Restore</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {deletedUsers.map(u => (
+                    <tr key={u.user_id}>
+                      <td className="py-1">{u.full_name}</td>
+                      <td className="py-1">{u.email}</td>
+                      <td>
+                        <button className="px-2 py-1 bg-green-600 text-white rounded text-xs" onClick={() => handleRestoreUser(u)}>
+                          Restore
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            <div className="flex justify-end gap-2">
+              <button className="px-4 py-2 rounded bg-gray-200" onClick={() => setTrashOpen(false)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   );
 }
