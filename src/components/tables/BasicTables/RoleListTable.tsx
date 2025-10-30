@@ -1,559 +1,412 @@
-// src/components/roles/RoleListTable.tsx
-import {
-  EllipsisHorizontalIcon,
-  PlusIcon,
-} from "@heroicons/react/24/outline";
-import {
-  createColumnHelper,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import { useEffect, useMemo, useState } from "react";
-import api from "../../../services/api";
-import Badge from "../../ui/badge/Badge";
-import Button from "../../ui/button/Button";
-import { Dropdown } from "../../ui/dropdown/Dropdown";
-import { DropdownItem } from "../../ui/dropdown/DropdownItem";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "../../ui/table";
-import PermissionModal from "./PermissionModal";
-import RoleModal from "./RoleModal";
+import { useMemo, useState, useEffect } from "react";
+import { PencilIcon, TrashIcon, EyeIcon, PlusIcon } from "@heroicons/react/24/solid";
 
-export interface Role {
-  id: string;
-  role_name: string;
-  description: string;
-  permissions: Permission[];
-  userCount?: number;
-}
+const ROLE_OPTIONS = [
+  "Super Admin",
+  "Division XX Head",
+  "Division Head",
+  "Registry Officer",
+  "Analyst",
+  "Claims Officer",
+  "Support",
+  "User",
+  "Read Only",
+  "Auditor"
+];
+const PERMISSIONS = [
+  "Case Verification",
+  "Report Organization",
+  "Case Investigation",
+  "Analysis",
+  "Decision Making",
+  "Case Review",
+  "Final Decision",
+  "Letter Preparation"
+];
 
-export interface Permission {
-  permissionId: string;
-  permissionName: string;
-  description: string;
-}
+// 20 unique roles with combinations for realistic pagination.
+const initialRoles = Array.from({ length: 20 }, (_, i) => ({
+  id: `ONR-${(i + 1).toString().padStart(4, "0")}`,
+  roleName: ROLE_OPTIONS[i % ROLE_OPTIONS.length],
+  description: ROLE_OPTIONS[i % ROLE_OPTIONS.length] + " - default description",
+  permissions: PERMISSIONS.filter((_, idx) => (i + idx) % 2 === 0),
+}));
 
-const columnHelper = createColumnHelper<Role>();
-
-interface RoleListTableProps {
-  onRefresh: () => void;
-  canCreate: boolean;
-  canUpdate: boolean;
-  canDelete: boolean;
-}
-
-export default function RoleListTable({ onRefresh, canCreate, canUpdate, canDelete }: RoleListTableProps) {
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
-  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
-  const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
-  const [editingRole, setEditingRole] = useState<Role | null>(null);
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
-  const [globalFilter, setGlobalFilter] = useState("");
-
-  // Fetch roles
+function RoleModal({ open, onClose, onSave, initial, mode }) {
+  const [form, setForm] = useState(
+    initial
+      ? { ...initial }
+      : { roleName: "", description: "", permissions: [] }
+  );
   useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        console.log("Fetching roles...");
-        const token = localStorage.getItem('authToken');
-        console.log("Auth token:", token ? "Present" : "Missing");
-        
-        // Debug: Check what's in localStorage
-        console.log("LocalStorage authToken:", token);
-        console.log("LocalStorage user:", localStorage.getItem('user'));
-        
-        // Use the correct API endpoint - check your api.ts baseURL
-        const res = await api.get("/roles"); // This should call /api/roles
-        console.log("Roles API response:", res.data);
-        
-        if (res.data.success) {
-          const rolesData = res.data.data.roles || res.data.data || [];
-          console.log("Roles data:", rolesData);
-          
-          // Transform the data to match your frontend interface
-          const transformedRoles = rolesData.map((role: any) => ({
-            id: role.role_id || role.id,
-            role_name: role.role_name,
-            description: role.role_description || role.description,
-            permissions: role.permissions || [],
-            userCount: role.userCount || 0
-          }));
-          
-          setRoles(transformedRoles);
-        } else {
-          console.error("Failed to fetch roles:", res.data.message);
-        }
-      } catch (err: any) {
-        console.error("Failed to fetch roles", err);
-        console.error("Error details:", {
-          status: err.response?.status,
-          data: err.response?.data,
-          message: err.message
-        });
-        
-        if (err.response?.status === 401) {
-          console.error("Authentication failed - token may be invalid");
-          // Clear invalid token
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('user');
-          // You might want to redirect to login here or show a message
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchRoles();
-  }, [onRefresh]);
+    if (open && initial && mode === "edit") setForm({ ...initial });
+    if (open && mode === "add") setForm({ roleName: "", description: "", permissions: [] });
+  }, [open, initial, mode]);
+  const [error, setError] = useState('');
 
-  // Rest of your component remains the same...
-  const toggleDropdown = (id: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    setOpenDropdownId(openDropdownId === id ? null : id);
-  };
-
-  const closeDropdown = () => setOpenDropdownId(null);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = () => {
-      closeDropdown();
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, []);
-
-  const handleDelete = async (id: string) => {
-    const role = roles.find(r => r.id === id);
-    if (role?.userCount && role.userCount > 0) {
-      alert(`Cannot delete role "${role.role_name}" because it is assigned to ${role.userCount} user(s).`);
+  function handleChange(e) {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  }
+  function handlePermissionToggle(permission) {
+    setForm(f => ({
+      ...f,
+      permissions: f.permissions.includes(permission)
+        ? f.permissions.filter(p => p !== permission)
+        : [...f.permissions, permission]
+    }));
+  }
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (!form.roleName) {
+      setError("Select a role name.");
       return;
     }
-
-    if (!confirm("Are you sure you want to delete this role? This action cannot be undone.")) return;
-    
-    try {
-      await api.delete(`/roles/${id}`);
-      onRefresh();
-      alert("Role deleted successfully!");
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || "Failed to delete role";
-      alert(errorMessage);
-    }
-    closeDropdown();
-  };
-
-  const handleEdit = (role: Role) => {
-    setEditingRole(role);
-    setIsRoleModalOpen(true);
-    closeDropdown();
-  };
-
-  const handleManagePermissions = (role: Role) => {
-    setSelectedRole(role);
-    setIsPermissionModalOpen(true);
-    closeDropdown();
-  };
-
-  const handleAdd = () => {
-    setEditingRole(null);
-    setIsRoleModalOpen(true);
-  };
-
-  const closeRoleModal = () => {
-    setIsRoleModalOpen(false);
-    setEditingRole(null);
-  };
-
-  const closePermissionModal = () => {
-    setIsPermissionModalOpen(false);
-    setSelectedRole(null);
-  };
-
-  const handleSave = () => {
-    onRefresh();
-    closeRoleModal();
-  };
-
-  const handlePermissionSave = () => {
-    onRefresh();
-    closePermissionModal();
-  };
-
-  // Define columns
-  const columns = useMemo(
-    () => [
-      columnHelper.display({
-        id: 'index',
-        header: '#',
-        cell: ({ row, table }) => {
-          const pageIndex = table.getState().pagination.pageIndex;
-          const pageSize = table.getState().pagination.pageSize;
-          return pageIndex * pageSize + row.index + 1;
-        },
-        size: 40,
-        enableSorting: false,
-      }),
-      columnHelper.accessor("role_name", {
-        header: "Role Name",
-        cell: info => (
+    setError("");
+    onSave(form);
+    onClose();
+  }
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-30 flex items-center justify-center">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white rounded-xl p-8 w-full max-w-2xl shadow-xl"
+      >
+        <div className="flex justify-between items-center mb-2">
           <div>
-            <div className="font-medium text-gray-900 dark:text-white">
-              {info.getValue()}
+            <span className="text-blue-800 font-semibold text-lg">
+              {mode === "add" ? "Add New Role" : "Edit Role"}
+            </span>
+            <p className="text-xs text-gray-600 mt-1">
+              {mode === "add"
+                ? "Fill the Role Information carefully"
+                : "Edit the Role Information carefully"}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-gray-500 hover:text-blue-900 text-xl p-2"
+          >
+            &times;
+          </button>
+        </div>
+        {mode === "edit" && (
+          <div className="mb-3">
+            <label className="block text-xs font-bold mb-1">Role ID</label>
+            <input
+              value={form.id}
+              readOnly
+              className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed text-gray-500"
+              tabIndex={-1}
+            />
+          </div>
+        )}
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold mb-1">
+              Role Name <span className="text-red-600">*</span>
+            </label>
+            <select
+              name="roleName"
+              value={form.roleName}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2 focus:ring appearance-none"
+              required
+            >
+              <option value="">Select Role Name</option>
+              {ROLE_OPTIONS.map(role => (
+                <option key={role} value={role}>{role}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-bold mb-1">Role Description</label>
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              placeholder="place role description here"
+              className="w-full border rounded px-3 py-2 focus:ring"
+              style={{ minHeight: "60px" }}
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold mb-2">Permissions</label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-y-2 gap-x-6">
+              {PERMISSIONS.map((perm, idx) => (
+                <label key={perm} className="flex items-center gap-2 text-xs font-medium cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.permissions.includes(perm)}
+                    onChange={() => handlePermissionToggle(perm)}
+                    className="accent-blue-800 w-4 h-4"
+                  />
+                  {perm}
+                </label>
+              ))}
             </div>
           </div>
-        ),
-      }),
-      columnHelper.accessor("description", {
-        header: "Description",
-        cell: info => (
-          <div className="max-w-md">
-            {info.getValue() || (
-              <span className="text-gray-400 italic">No description</span>
-            )}
-          </div>
-        ),
-      }),
-      columnHelper.display({
-        id: "permissions",
-        header: "Permissions",
-        cell: ({ row }) => (
-          <div className="max-w-xs">
-            {row.original.permissions && row.original.permissions.length > 0 ? (
-              <div className="flex flex-wrap gap-1">
-                {row.original.permissions.slice(0, 3).map((permission) => (
-                  <Badge 
-                    key={permission.permissionId} 
-                    size="sm" 
-                    color="primary"
-                    className="truncate max-w-[120px]"
-                    title={permission.permissionName}
-                  >
-                    {permission.permissionName}
-                  </Badge>
-                ))}
-                {row.original.permissions.length > 3 && (
-                  <Badge size="sm" color="secondary">
-                    +{row.original.permissions.length - 3} more
-                  </Badge>
-                )}
-              </div>
-            ) : (
-              <span className="text-gray-400 text-sm">No permissions</span>
-            )}
-          </div>
-        ),
-      }),
-      columnHelper.display({
-        id: "userCount",
-        header: "Users",
-        cell: ({ row }) => (
-          <div className="text-center">
-            <Badge size="sm" color="neutral">
-              {row.original.userCount || 0}
-            </Badge>
-          </div>
-        ),
-      }),
-      columnHelper.display({
-        id: "actions",
-        header: "Action",
-        cell: ({ row }) => (
-          <div className="relative inline-block" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={(e) => toggleDropdown(row.original.id, e)}
-              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-            >
-              <EllipsisHorizontalIcon className="size-5" />
-            </button>
-            
-            {openDropdownId === row.original.id && (
-              <div className="absolute right-0 top-full z-50 mt-1">
-                <Dropdown
-                  isOpen={openDropdownId === row.original.id}
-                  onClose={closeDropdown}
-                  className="w-48 p-1 bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 rounded-lg"
-                >
-                  {canUpdate && (
-                    <>
-                      <DropdownItem
-                        onItemClick={() => handleEdit(row.original)}
-                        className="flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded px-3 py-2"
-                      >
-                        <PencilIcon className="size-4" /> Edit Role
-                      </DropdownItem>
-                      <DropdownItem
-                        onItemClick={() => handleManagePermissions(row.original)}
-                        className="flex items-center gap-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded px-3 py-2"
-                      >
-                        <ShieldCheckIcon className="size-4" /> Manage Permissions
-                      </DropdownItem>
-                    </>
-                  )}
-                  
-                  {canDelete && (
-                    <DropdownItem
-                      onItemClick={() => handleDelete(row.original.id)}
-                      className="flex items-center gap-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded px-3 py-2"
-                      disabled={row.original.userCount && row.original.userCount > 0}
-                    >
-                      <TrashIcon className="size-4" /> Delete
-                    </DropdownItem>
-                  )}
-                  
-                  {/* Show message if no actions available */}
-                  {!canUpdate && !canDelete && (
-                    <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-                      No actions available
-                    </div>
-                  )}
-                </Dropdown>
-              </div>
-            )}
-          </div>
-        ),
-      }),
-    ],
-    [openDropdownId, canUpdate, canDelete, roles]
-  );
-
-  const table = useReactTable({
-    data: roles,
-    columns,
-    state: {
-      globalFilter,
-    },
-    onGlobalFilterChange: setGlobalFilter,
-    globalFilterFn: (row, columnId, filterValue) => {
-      const value = row.getValue(columnId);
-      if (columnId === "permissions") {
-        const permissions = row.original.permissions || [];
-        return permissions.some(permission => 
-          permission.permissionName.toLowerCase().includes(filterValue.toLowerCase())
-        );
-      }
-      return String(value).toLowerCase().includes(String(filterValue).toLowerCase());
-    },
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    initialState: {
-      pagination: {
-        pageSize: 10,
-      },
-    },
-  });
-
-  if (loading) return <div className="p-6 text-center">Loading roles...</div>;
-
-  return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 gap-4 border-b border-gray-100 dark:border-gray-800">
-        <div>
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">System Roles</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Manage roles and their permissions
-          </p>
+          {error && <div className="text-xs text-red-600 mt-1">{error}</div>}
         </div>
-        {canCreate && (
-          <Button
-            onClick={handleAdd}
-            className="flex items-center gap-2 bg-[#269A99] hover:bg-[#1d7d7d] text-white"
+        <div className="flex justify-between gap-3 mt-7">
+          <button
+            type="button"
+            className="px-6 py-2 border rounded text-blue-900 hover:bg-gray-50"
+            onClick={onClose}
           >
-            <PlusIcon className="size-4" /> Create Role
-          </Button>
-        )}
-      </div>
-
-      {/* Search */}
-      <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
-        <div className="relative max-w-md">
-          <input
-            type="text"
-            value={globalFilter ?? ""}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-            placeholder="Search by role name, description, or permissions..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#269A99] focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-          />
-          <svg
-            className="absolute left-3 top-2.5 h-5 w-5 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-8 py-2 bg-blue-900 text-white rounded hover:bg-blue-700"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
+            {mode === "add" ? "Save Role" : "Save Changes"}
+          </button>
         </div>
-      </div>
-
-      {/* Table */}
-      <div className="max-w-full overflow-x-auto">
-        <Table>
-          <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
-            {table.getHeaderGroups().map(headerGroup => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map(header => (
-                  <TableCell
-                    key={header.id}
-                    isHeader
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-
-          <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map(row => (
-                <TableRow key={row.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                  {row.getVisibleCells().map(cell => (
-                    <TableCell
-                      key={cell.id}
-                      className={`px-5 py-4 ${
-                        cell.column.id === "role_name"
-                          ? "font-medium text-gray-800 dark:text-white/90"
-                          : "text-gray-600 dark:text-gray-400"
-                      }`}
-                    >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <td colSpan={columns.length} className="px-5 py-8 text-center text-gray-500">
-                  <div className="flex flex-col items-center justify-center">
-                    <ShieldCheckIcon className="h-12 w-12 text-gray-300 mb-2" />
-                    <p className="text-lg font-medium text-gray-500">No roles found</p>
-                    <p className="text-sm text-gray-400 mt-1">
-                      {canCreate 
-                        ? "Get started by creating your first role." 
-                        : "No roles available to view."
-                      }
-                    </p>
-                  </div>
-                </td>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Pagination */}
-      <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-gray-800">
-        <div className="text-sm text-gray-600 dark:text-gray-400 mb-2 sm:mb-0">
-          Showing {table.getRowModel().rows.length === 0 ? 0 : table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}{" "}
-          to{" "}
-          {Math.min(
-            (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
-            table.getFilteredRowModel().rows.length
-          )}{" "}
-          of {table.getFilteredRowModel().rows.length} results
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            className="px-3 py-1"
-          >
-            Prev
-          </Button>
-
-          <span className="text-sm text-gray-700 dark:text-gray-300">
-            Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-          </span>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            className="px-3 py-1"
-          >
-            Next
-          </Button>
-
-          <select
-            value={table.getState().pagination.pageSize}
-            onChange={(e) => {
-              table.setPageSize(Number(e.target.value));
-            }}
-            className="ml-2 text-sm border border-gray-300 rounded px-2 py-1 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-          >
-            {[5, 10, 20, 50].map(pageSize => (
-              <option key={pageSize} value={pageSize}>
-                Show {pageSize}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Modals */}
-      <RoleModal
-        isOpen={isRoleModalOpen}
-        onClose={closeRoleModal}
-        role={editingRole}
-        onSave={handleSave}
-      />
-
-      <PermissionModal
-        isOpen={isPermissionModalOpen}
-        onClose={closePermissionModal}
-        role={selectedRole}
-        onSave={handlePermissionSave}
-      />
+      </form>
     </div>
   );
 }
 
-// Icons (keep the same)
-const PencilIcon = (props: { className?: string }) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-  </svg>
-);
+export default function RoleListTable() {
+  const [roles, setRoles] = useState(initialRoles);
+  const [deletedRoles, setDeletedRoles] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState("add");
+  const [editingRoleIdx, setEditingRoleIdx] = useState(null);
 
-const TrashIcon = (props: { className?: string }) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 7.79m8.236 0h-8.236m8.236 0v-.959A2.25 2.25 0 0 0 18.16 4.5H5.84a2.25 2.25 0 0 0-2.244 2.244v.959m8.236 0h-8.236" />
-  </svg>
-);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [trashOpen, setTrashOpen] = useState(false);
 
-const ShieldCheckIcon = (props: { className?: string }) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
-  </svg>
-);
+  // Filtering
+  const filteredRoles = useMemo(
+    () => roles.filter(r =>
+      (!searchTerm ||
+        r.roleName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (r.description && r.description.toLowerCase().includes(searchTerm.toLowerCase())))
+    ),
+    [roles, searchTerm]
+  );
+  const pageSize = 15;
+  const paginatedRoles = filteredRoles.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const totalPages = Math.max(1, Math.ceil(filteredRoles.length / pageSize));
+
+  // -- CRUD ---
+  function handleAddRole() {
+    setModalMode("add");
+    setEditingRoleIdx(null);
+    setModalOpen(true);
+  }
+  function handleEditRole(idx) {
+    setModalMode("edit");
+    setEditingRoleIdx(idx);
+    setModalOpen(true);
+  }
+  function handleDeleteRole(idx) {
+    if (window.confirm("Delete this role?")) {
+      setDeletedRoles([...deletedRoles, roles[idx]]);
+      setRoles(roles.filter((_, i) => i !== idx));
+    }
+  }
+  function handleModalSave(form) {
+    if (modalMode === "add") {
+      setRoles([
+        ...roles,
+        {
+          id: `ONR-${(roles.length + deletedRoles.length + 1).toString().padStart(4, "0")}`,
+          roleName: form.roleName,
+          description: form.description,
+          permissions: form.permissions
+        },
+      ]);
+    } else if (modalMode === "edit" && editingRoleIdx !== null) {
+      setRoles(roles.map((r, i) =>
+        i === editingRoleIdx
+          ? {
+              ...r,
+              roleName: form.roleName,
+              description: form.description,
+              permissions: form.permissions,
+            }
+          : r
+      ));
+    }
+  }
+  function handleRestoreRole(role) {
+    setRoles([...roles, role]);
+    setDeletedRoles(deletedRoles.filter(r => r !== role));
+  }
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-6">
+      <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <input
+            type="text"
+            placeholder="Search roles..."
+            value={searchTerm}
+            onChange={e => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="border px-3 py-2 rounded"
+            style={{ minWidth: 150 }}
+          />
+        </div>
+        <div className="flex gap-2">
+          <button
+            className="px-4 py-2 bg-red-50 text-red-700 rounded border border-red-400 hover:bg-red-100 flex items-center"
+            onClick={() => setTrashOpen(true)}
+          >
+            <TrashIcon className="w-5 h-5 mr-1" /> Trash
+          </button>
+          <button
+            className="bg-blue-900 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-blue-700"
+            onClick={handleAddRole}
+          >
+            <PlusIcon className="w-5 h-5" /> Add New Role
+          </button>
+        </div>
+      </div>
+      {/* Table */}
+      <table className="w-full border rounded text-sm">
+        <thead>
+          <tr className="bg-blue-900 text-white">
+            <th className="px-3 py-3 text-left font-medium">Role ID</th>
+            <th className="px-3 py-3 text-left font-medium">Role Name</th>
+            <th className="px-3 py-3 text-left font-medium">Description</th>
+            <th className="px-3 py-3 text-left font-medium">Permissions</th>
+            <th className="px-3 py-3 text-left font-medium">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {paginatedRoles.map((role, idx) => (
+            <tr key={role.id} className="border-b">
+              <td className="px-3 py-2">{role.id}</td>
+              <td className="px-3 py-2">{role.roleName}</td>
+              <td className="px-3 py-2">{role.description}</td>
+              <td className="px-3 py-2">
+                {role.permissions.slice(0, 3).join(", ")}
+                {role.permissions.length > 3 && (
+                  <> +{role.permissions.length - 3} more</>
+                )}
+              </td>
+              <td className="px-3 py-2 flex gap-2">
+                <button
+                  className="text-green-600 hover:text-green-800"
+                  onClick={() => handleEditRole((currentPage - 1) * pageSize + idx)}
+                >
+                  <PencilIcon className="w-5 h-5" />
+                </button>
+                <button
+                  className="text-red-600 hover:text-red-800"
+                  onClick={() => handleDeleteRole((currentPage - 1) * pageSize + idx)}
+                >
+                  <TrashIcon className="w-5 h-5" />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {/* Pagination */}
+      <div className="flex justify-between items-center mt-4">
+        <div>
+          <span className="text-gray-500 text-xs">
+            Page {currentPage} of {totalPages}
+          </span>
+        </div>
+        <div className="flex gap-1">
+          <button
+            className="px-2 rounded bg-gray-100"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(currentPage - 1)}
+          >
+            Back
+          </button>
+          {[...Array(totalPages)].map((_, idx) => (
+            <button
+              key={idx + 1}
+              className={`px-3 py-1 rounded ${
+                currentPage === idx + 1
+                  ? "bg-blue-900 text-white"
+                  : "bg-gray-100"
+              }`}
+              onClick={() => setCurrentPage(idx + 1)}
+            >
+              {idx + 1}
+            </button>
+          ))}
+          <button
+            className="px-2 rounded bg-gray-100"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(currentPage + 1)}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+      {/* Modal */}
+      <RoleModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSave={handleModalSave}
+        initial={
+          modalMode === "edit" && editingRoleIdx !== null
+            ? roles[editingRoleIdx]
+            : null
+        }
+        mode={modalMode}
+      />
+      {/* Trash Modal */}
+      {trashOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-30 flex items-center justify-center">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+            <h2 className="text-lg font-bold mb-2 text-red-700">Trashed Roles</h2>
+            {deletedRoles.length === 0 ? (
+              <div className="text-gray-400 text-sm py-6 text-center">No deleted roles</div>
+            ) : (
+              <table className="w-full text-sm mb-4">
+                <thead>
+                  <tr>
+                    <th className="py-2 text-left">Role Name</th>
+                    <th className="py-2 text-left">Role ID</th>
+                    <th className="py-2">Restore</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {deletedRoles.map((r, i) => (
+                    <tr key={r.id + i}>
+                      <td className="py-1">{r.roleName}</td>
+                      <td className="py-1">{r.id}</td>
+                      <td>
+                        <button
+                          className="px-2 py-1 bg-green-600 text-white rounded text-xs"
+                          onClick={() => handleRestoreRole(r)}
+                        >
+                          Restore
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            <div className="flex justify-end gap-2">
+              <button
+                className="px-4 py-2 rounded bg-gray-200"
+                onClick={() => setTrashOpen(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
