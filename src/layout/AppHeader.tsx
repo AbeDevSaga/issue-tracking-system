@@ -5,13 +5,15 @@ import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
 import NotificationDropdown from "../components/header/NotificationDropdown";
 import UserDropdown from "../components/header/UserDropdown";
 import { useAuth } from "../contexts/AuthContext";
-
+import { useTranslation } from "react-i18next";
 import { useSidebar } from "../context/SidebarContext";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
   const { user } = useAuth();
   const isStudent = user?.user_type === 'student';
+  const [langOpen, setLangOpen] = useState(false);
+  const { t, i18n } = useTranslation();
 
   // get sidebar functions from context (some pages may not be wrapped, so guard)
   let isMobileOpen = false;
@@ -56,9 +58,12 @@ const AppHeader: React.FC = () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
-
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng);
+    setLangOpen(false);
+  };
   return (
-    <header className="sticky top-0 flex w-full bg-white border-gray-200 z-40 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
+<header className="sticky top-0 mx-auto mt-5 w-[95%] bg-white border-gray-200 z-40 dark:border-gray-800 dark:bg-gray-900 border-b rounded-2xl">
       <div className="flex flex-col items-center justify-between grow lg:flex-row lg:px-6">
         <div className="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
           {/* Only show sidebar toggle for non-students when sidebar functions are available */}
@@ -95,33 +100,60 @@ const AppHeader: React.FC = () => {
           </button>
 
           {/* Search Form - Hidden on mobile, visible on desktop */}
-          <div className="hidden lg:block flex-1 max-w-md ml-4">
-            <div className="relative">
-              <input
-                ref={inputRef}
-                type="text"
-                placeholder="Search... (Ctrl+K)"
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-              />
-              <svg
-                className="absolute left-3 top-2.5 h-5 w-5 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </div>
-          </div>
+        <div className="hidden lg:block flex-1 max-w-md ml-4">
+  <div className="relative">
+    <input
+      ref={inputRef}
+      type="text"
+      placeholder="Search..."
+      className="w-full pr-10 pl-4 py-2.5 border border-gray-300 rounded-lg shadow-sm shadow-blue-200 dark:shadow-blue-900 dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:outline-none"
+    />
+    <svg
+      className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-300"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+      />
+    </svg>
+  </div>
+</div>
+
         </div>
-        
+         
         <div className={`${isApplicationMenuOpen ? "flex" : "hidden"} items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}>
+         <div className="relative">
+          <button
+            onClick={() => setLangOpen(!langOpen)}
+            className="bg-white px-3 py-1 rounded-xl shadow-sm border border-gray-300 hover:bg-[#C7D4EA] transition-colors"
+          >
+            🌐 {i18n.language.toUpperCase()}
+          </button>
+
+          {langOpen && (
+            <div className="absolute right-0 mt-2 w-32 bg-white shadow-lg rounded-xl border border-gray-200 py-2 z-20">
+              <button
+                onClick={() => changeLanguage("en")}
+                className="w-full text-left px-4 py-2 hover:bg-[#C7D4EA] transition-colors"
+              >
+                 English
+              </button>
+               <button
+                onClick={() => changeLanguage("am")}
+                className="w-full text-left px-4 py-2 hover:bg-[#C7D4EA] transition-colors"
+              >
+                 አማርኛ
+              </button>    
+
+            </div>
+          )}
+        </div>
           <div className="flex items-center gap-2 2xsm:gap-3">
             <ThemeToggleButton />
             <NotificationDropdown />

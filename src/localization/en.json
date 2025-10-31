@@ -4,9 +4,12 @@
     "loading": "Loading...",
     "error": "An error has occurred. Please try again.",
     "selected":"Selected",
-    "Cancel":"Cancel"
-
-
+    "Cancel":"Cancel",
+    "viewButton":"View",
+    "id":"ID",
+    "status":"Status",
+    "description":"Description",
+    "action":"Action"
   },
   "login": {
     "title": "ETHIOPIAN ARTIFICIAL INTELLIGENCE INSTITUTE",
@@ -26,5 +29,98 @@
   },
    "role":{
     "role":"Role"
+  },
+   "basedata":{
+    "title":"Base Data",
+    "first_subtitle":"This is the central admin basedata.",
+    "subtitle":"This is the Base Data of the {{title}}",
+    "organization_management":"Organization Management",
+    "subcity_management":"SubCity Management",
+    "issue_category_management":"Issue Category Management",
+    "city_management":"City Management",
+    "priority_level_management":"Priority Level Management",
+     "zone_management":"Zone Management",
+    "region_management":"Region Management",
+    "branch_management":"Branch Management",
+    "woreda_management":"Woreda Management",
+    "organization":"Organization",
+    "project":"Project",
+    "project_management":"Project Management",
+    "woreda":"Woreda",
+    "subcity":"Subcity",
+    "city":"City",
+    "priority_level":"Priority Level",
+    "risk_level_management":"Risk Level Management",
+    "issue_category":"Issue Category",
+    "branch":"Branch"
+  },
+   "organization":{
+    "add_organization":"Add Organization",
+    "organization_name":"Organization Name",
+    "developed_system":"Developed System",
+    "issue_category":"Issue Category",
+    "modal_title":"Create a new Organization",
+    "organization_type":"Organization Type"
+  },
+   "branch":{
+    "add_branch":"Add Branch",
+    "modal_title":"Add New Branch",
+    "branch_name":"Branch Name",
+    "location":"Location",
+    "branch_type":"Branch Type"
+  },
+   "city":{
+    "add_city":"Add City",
+    "modal_title":"Add new city",
+    "city_name":"City Name"
+  },
+  "subcity":{
+   "add_subcity":"Add SubCity",
+   "modal_title":"Add new city",
+   "subcity_name":"SubCity Name",
+   "select_city":"Select SubCity"
+  },
+   "region":{
+    "add_region":"Add Region",
+    "modal_title":"Add new region",
+    "region_name":"Region Name"
+  },
+  "zone":{
+   "add_zone":"Add Zone",
+   "modal_title":"Add new zone",
+   "zone_name":"zone Name",
+   "select_region":"Select region"
+  },
+  "woreda":{
+    "add_woreda":"Add Woreda",
+     "modal_title":"Add new Woreda",
+     "woreda_name":"Woreda name",
+     "select_subcity":"Select Subcity"
+  },
+   "project":{
+    "add_project":"Add Project",
+    "modal_title":"Add new Project",
+    "select_organization":"Select Organization",
+    "project_name":"Projet name"
+  },
+    "priority_level":{
+     "add_priority_level":"Add Priority Level",
+     "modal_title":"Add new Priority Level"
+  },
+    "issue_category":{
+     "add_issue_category":"Add Issue Category",
+     "modal_title":"Add new Issue Category",
+     "issue_category":"Issue Category"
+  },
+    "issue":{
+     "issue_management":"Issue Management",
+      "myissue":"My Issue",
+      "add_issue":"Add Issue",
+      "modal_title":"Add new Issue",
+       "created_date":"Created Date",
+      "priority_level":"Priority Level",
+      "category":"Issue Category"
   }
+
+  
 }

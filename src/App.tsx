@@ -1,16 +1,33 @@
 // src/App.tsx
 import type { ReactNode } from "react";
-import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import {
+  Navigate,
+  Route,
+  BrowserRouter as Router,
+  Routes,
+} from "react-router-dom";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import AppLayout from "./layout/AppLayout";
 import Home from "./pages/Dashboard/Home";
 import NotFound from "./pages/OtherPage/NotFound";
+import Organization from"./pages/organization/organization"
+import Branch from"./pages/branch/branch"
+import Region from"./pages/region/region"
+import Zone from"./pages/zone/zone"
 
 import Login from "./components/auth/Login";
+import City from './pages/city/city'
+import SubCity from './pages/subcity/subcity'
+import Project from './pages/project/project'
+import Woreda from './pages/woreda/woreda'
+import ProjectLevel from './pages/priorityLevel/priorityLevel'
+import IssueCategory from './pages/issueCategory/issueCategory'
+import MyIssue from './pages/issue/my_issue'
 import Roles from "./pages/Tables/Roles";
 import Users from "./pages/Tables/Users";
+import BaseData from "./pages/Basedata/Basedata";
 import ProtectedRoute from "./ProtectedRoute";
 import "./localization";
 const AuthLoader = () => {
@@ -44,10 +61,10 @@ function AppContent() {
   return (
     <Router>
       <ScrollToTop />
-     
+
       <Routes>
-               <Route element={<AppLayout />}>
-                    <Route
+        <Route element={<AppLayout />}>
+          <Route
             path="/dashboard"
             element={
               <ProtectedRoute>
@@ -55,7 +72,7 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-           
+
           {/* <Route
             path="/users"
             element={
@@ -65,30 +82,33 @@ function AppContent() {
             }
           /> */}
 
+          <Route path="/users" element={<Users />} />
+          <Route path="/organization" element={<Organization />} />
+          <Route path="/branch" element={<Branch />} />
+          <Route path="/region" element={<Region />} />
+          <Route path="/zone" element={<Zone />} />
+          
+          <Route path="/city" element={<City />} />
+          <Route path="/subcity" element={<SubCity />} />
+          <Route path="/woreda" element={<Woreda />} />
+          <Route path="/project" element={<Project />} />
+          <Route path="/priority_level" element={<ProjectLevel />} />
+          <Route path="/issue_category" element={<IssueCategory />} />
+          <Route path="/my_issue" element={<MyIssue />} />
+          
 
-                    <Route
-            path="/users"
-            element={
-              
-                <Users />
-             
-            }
-          />
+          <Route path="/basedata" element={<BaseData />} />
 
-
-
-
-         <Route
+          <Route
             path="/roles"
             element={
               //<ProtectedRoute requiredPermissions={['role_read']}>
-                <Roles />
+              <Roles />
               //</ProtectedRoute>
             }
           />
+        </Route>
 
-          </Route>
-      
         <Route
           path="/"
           element={
@@ -97,7 +117,7 @@ function AppContent() {
             </PublicRoute>
           }
         />
-       
+
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

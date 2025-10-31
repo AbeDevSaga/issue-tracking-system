@@ -12,7 +12,7 @@ import {
 import { useAuth } from "./../contexts/AuthContext";
 import { PERMISSIONS } from "./../types/auth";
 import SidebarWidget from "./SidebarWidget";
-
+import Logo from "../assets/logo.png"
 
 const HomeIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -20,6 +20,41 @@ const HomeIcon = () => (
     <polyline points="9 22 9 12 15 12 15 22" />
   </svg>
 );
+const BaseDataIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <ellipse cx="12" cy="5" rx="9" ry="3" />
+    <path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5" />
+    <path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3" />
+  </svg>
+);
+const IssueIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="8" x2="12" y2="12" />
+    <line x1="12" y1="16" x2="12.01" y2="16" />
+  </svg>
+);
+
 
 const LogoIcon = ({ size = 24 }) => (
   <svg
@@ -92,13 +127,17 @@ const navItems: NavItem[] = [
     ],
   },
 
- 
-
-
-
-
-
-
+  {
+    icon: <BaseDataIcon />,
+    name: "BaseData",
+    path: "/basedata",
+  },
+  
+  {
+    icon: <IssueIcon />,
+    name: "MyIssue",
+    path: "/my_issue",
+  },
 ];
 
 const othersItems: NavItem[] = [
@@ -315,7 +354,9 @@ const othersItems: NavItem[] = [
 
   return (
     <aside
-      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 dark:border-gray-800
+      // className={`fixed mt-16 flex flex-col lg:mt-10 top-0 px-5 left-0 bg-white dark:bg-gray-900 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 dark:border-gray-800
+       className={`fixed mt-16 flex flex-col lg:mt-10 top-0 px-5 left-0 bg-white dark:bg-gray-900 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 dark:border-gray-800 rounded-r-2xl
+
         ${
           isExpanded || isMobileOpen
             ? "w-[290px]"
@@ -329,48 +370,31 @@ const othersItems: NavItem[] = [
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* 🔵  Logo */}
+
       <div
         className={`py-8 flex ${
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
         }`}
       >
         <Link to="/" className="flex items-center gap-2 group">
-          {isExpanded || isHovered || isMobileOpen ? (
-            <>
-              <LogoIcon size={24} />
-              <span className="font-bold text-xl tracking-tight text-[#269A99] dark:text-[#269A99]">
-                
-              </span>
-            </>
-          ) : (
-            <span className="font-bold text-lg text-[#269A99] dark:text-[#269A99]">
-              SE
-            </span>
-          )}
-        </Link>
+      {isExpanded || isHovered || isMobileOpen ? (
+        <>
+          <img
+            src={Logo}
+            alt="Logo"
+            // className="w-50 h-50"
+          />
+        
+        </>
+      ) : (
+        <img
+          src={Logo}
+          alt="Logo"
+          // className="w-8 h-8 object-contain  shadow-sm"
+        />
+      )}
+    </Link>
       </div>
-
-      {/* User Info - Enhanced from new design */}
-      {/* {(isExpanded || isHovered || isMobileOpen) && (
-        <div className="mb-6 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-[#269A99] rounded-full flex items-center justify-center text-white font-semibold">
-              {user?.name?.charAt(0).toUpperCase() || 'U'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                {user?.name}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                {user?.user_type}
-              </p>
-              <p className="text-xs text-gray-400 dark:text-gray-500">
-                {user?.permissions?.length} permissions
-              </p>
-            </div>
-          </div>
-        </div>
-      )} */}
 
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6">

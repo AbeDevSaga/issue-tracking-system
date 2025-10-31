@@ -4,7 +4,12 @@
     "loading": "በመጫን ላይ...",
     "error": "አንድ ስህተት አጋጥሟል። እባክዎን ደግመው ይሞክሩ።",
     "selected":"የተመረጡ",
-    "Cancel":"ሰርዝ"
+    "Cancel":"ሰርዝ",
+    "viewButton":"ይመልከቱት",
+    "id":"ቁጥር",
+    "status":"ሁኔታ",
+    "action":"ድርጊት",
+    "description":"መግለጫ"
   },
   "login": {
     "title": "የኢትዮጵያ አርቲፊሻል ኢንተለጀንስ ኢንስቲትዩት",
@@ -23,5 +28,97 @@
   },
   "role":{
     "role":"ሚና"
+  },
+  "basedata":{
+    "title":"ቤዝ ዳታ",
+    "first_subtitle":"ይህ የማዕከላዊ አስተዳዳሪው ቤዝ ዳታ ነው።",
+    "subtitle":"ይህ የ{{title}} ቤዝ ዳታ ነው",
+    "organization_management":"የድርጅት አስተዳደር",
+    "city_management":"የከተማ አስተዳደር",
+    "subcity_management":"የክፍለ ከተማ አስተዳደር",
+    "zone_management":"የዞን አስተዳደር",
+    "region_management":"የክልል አስተዳደር",
+    "project":"ፕሮጀክት",
+    "project_management":"የፕሮጀክት አስተዳደር",
+    "branch_management":"የቅርንጫፍ አስተዳደር",
+    "issue_category_management":"ጉዳይ ምድብ አስተዳደር",
+    "risk_level_management":"የአደጋ ደረጃ አስተዳደር",
+    "priority_level_management":"የቅድሚያ ደረጃ አስተዳደር",
+    "woreda_management":"የወረዳ አስተዳደር",
+    "organization":"ድርጅት",
+    "woreda":"ወረዳ",
+    "subcity":"ክፍለ ከተማ",
+    "city":"ከተማ",
+    "priority_level":"ቅድሚያ ደረጃ",
+    "issue_category":"ጉዳይ ምድብ",
+    "branch":"ቅርንጫፍ"
+  },
+  "organization":{
+    "add_organization":"አዲስ ድርጅት አክል",
+    "organization_name":"የድርጅት ስም",
+    "developed_system":"የሲስተሙ ስም",
+    "issue_category":"የጉዳይ ምድብ",
+    "modal_title":"አዲስ ድርጅት መዝግብ",
+    "organization_type":"የድርጅት አይነት"
+  },
+  "branch":{
+    "add_branch":"አዲስ ቅርንጫፍ አክል",
+    "modal_title":"አዲስ ቅርንጫፍ መዝግብ",
+    "branch_name":"የቅርንጫፍ ስም",
+    "location":"Location",
+    "branch_type":"Branch Type"
+  },
+  "city":{
+    "add_city":"አዲስ ከተማ አክል",
+    "modal_title":"አዲስ ከተማ መዝግብ",
+    "city_name":"የከተማ ስም"
+  },
+   "subcity":{
+   "add_subcity":"አዲስ ክፍለ ከተማ አክል",
+   "modal_title":"አዲስ ክፍለ ከተማ መዝግብ",
+   "subcity_name":"የክፍለ ከተማ ስም",
+   "select_city":"ከተማ ምረጥ"
+  },
+  "region":{
+    "add_region":"አዲስ ክልል አክል",
+    "modal_title":"አዲስ ክልል መዝግብ",
+    "region_name":"ክልል ስም"
+  },
+   "zone":{
+   "add_zone":"አዲስ ዞን አክል",
+   "modal_title":"አዲስ ዞን መዝግብ",
+   "zone_name":"የዞን ስም",
+   "select_region":"ክልል ምረጥ"
+  },
+  "woreda":{
+    "add_woreda":"አዲስ ወረዳ አክል",
+     "modal_title":"አዲስ ወረዳ መዝግብ",
+     "woreda_name":"የወረዳ ስም",
+     "select_subcity":"ክፍለ ከተማ ምረጥ"
+  },
+   "project":{
+    "add_project":"አዲስ ፕሮጀክት አክል",
+     "modal_title":"አዲስ ፕሮጀክት መዝግብ",
+     "project_name":"የፕሮጀክት ስም",
+     "select_organization":"ድርጅት ምረጥ"
+  },
+  "priority_level":{
+     "add_project":"አዲስ ቅድሚያ ደረጃ አክል",
+     "modal_title":"አዲስ ቅድሚያ ደረጃ መዝግብ",
+     "project_name":"የቅድሚያ ደረጃ ስም"
+  },
+   "issue_category":{
+     "add_issue_category":"አዲስ የጉዳይ ምድብ አክል",
+     "modal_title":"አዲስ የጉዳይ ምድብ መዝግብ",
+     "issue_category":"የጉዳይ ምድብ"
+  },
+  "issue":{
+      "issue_management":"ጉዳይ አስተዳደር",
+      "myissue":"የኔ ጉዳይ",
+      "add_issue":"ጉዳይ አክል",
+      "modal_title":"አዲስ የጉዳይ መዝግብ",
+      "created_date":"የተመዘገበበት ቀን",
+      "priority_level":"ቅድሚያ ደረጃ",
+      "category":"የጉዳዩ ምድብ"
   }
 }

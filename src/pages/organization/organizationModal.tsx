@@ -1,51 +1,44 @@
-import { useState } from "react";
+import React from "react";
 import Form from "../../components/form/Form";
 import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
 import Select from "../../components/form/Select";
 import Switch from "../../components/form/switch/Switch";
-import Alert from "../../components/ui/alert/Alert";
+import { useTranslation } from "react-i18next";
+
+interface Field {
+  id: string;
+  label: string;
+  type: "text" | "email" | "password" | "toggle" | "select" | "textarea" | "checkbox";
+  placeholder?: string;
+  options?: { value: string; label: string }[];
+  value?: any;
+}
 
 interface AddOrganizationProps {
   onClose: () => void;
-  fields?: Array<{
-    id: string;
-    label: string;
-    type: "text" | "email" | "password" | "toggle" | "select" | "textarea";
-    placeholder?: string;
-    options?: { value: string; label: string }[];
-  }>;
+  onSubmit?: (values: Record<string, any>) => void;
+  fields?: Field[];
 }
 
-export default function AddOrganization({ onClose, fields }: AddOrganizationProps) {
-  const [alert, setAlert] = useState<{
-    type: "success" | "error" | "warning" | "info";
-    message: string;
-    show: boolean;
-  }>({ type: "success", message: "", show: false });
+export default function AddOrganization({ onClose, onSubmit, fields }: AddOrganizationProps) {
+  const { t } = useTranslation();
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const values: Record<string, any> = {};
+
     fields?.forEach((field) => {
-      if (field.type === "toggle") {
+      if (field.type === "toggle" || field.type === "checkbox") {
         values[field.id] = (event.currentTarget.elements.namedItem(field.id) as HTMLInputElement)?.checked;
       } else {
         values[field.id] = formData.get(field.id);
       }
     });
 
-    console.log("Form submitted:", values);
-
-    // Example: Show success alert
-    setAlert({ type: "success", message: "Organization added successfully!", show: true });
-
-    // Optionally close modal after a delay
-    setTimeout(() => {
-      setAlert({ ...alert, show: false });
-      onClose();
-    }, 2000);
+    if (onSubmit) onSubmit(values);
+    onClose();
   };
 
   return (
@@ -58,24 +51,28 @@ export default function AddOrganization({ onClose, fields }: AddOrganizationProp
           ✕
         </button>
 
-        <h2 className="text-xl text-[#094C81] font-semibold mb-2">Add Organization</h2>
-        <h6 className="text-sm text-[#094C81] mb-4">Fill in the details below</h6>
-
-        {alert.show && (
-          <Alert
-            variant={alert.type}
-            title={alert.type.charAt(0).toUpperCase() + alert.type.slice(1)}
-            message={alert.message}
-            showLink={false}
-          />
-        )}
+        <h2 className="text-xl text-[#094C81] font-semibold mb-2">
+          {t("organization.add_organization")}
+        </h2>
+        <h6 className="text-sm text-[#094C81] mb-4">{t("organization.modal_title")}</h6>
 
         <Form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 gap-6">
             {fields?.map((field) => (
               <div key={field.id}>
                 {field.type === "toggle" ? (
-                  <Switch label={field.label} defaultChecked id={field.id} />
+                  <Switch label={field.label} id={field.id} defaultChecked={field.value ?? false} />
+                ) : field.type === "checkbox" ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={field.id}
+                      name={field.id}
+                      defaultChecked={field.value ?? false}
+                      className="w-5 h-5"
+                    />
+                    <Label htmlFor={field.id}>{field.label}</Label>
+                  </div>
                 ) : field.type === "select" ? (
                   <>
                     <Label htmlFor={field.id}>{field.label}</Label>
@@ -83,6 +80,7 @@ export default function AddOrganization({ onClose, fields }: AddOrganizationProp
                       id={field.id}
                       options={field.options || []}
                       placeholder={field.placeholder}
+                      defaultValue={field.value ?? ""}
                     />
                   </>
                 ) : field.type === "textarea" ? (
@@ -92,6 +90,7 @@ export default function AddOrganization({ onClose, fields }: AddOrganizationProp
                       id={field.id}
                       name={field.id}
                       placeholder={field.placeholder}
+                      defaultValue={field.value ?? ""}
                       className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </>
@@ -103,6 +102,7 @@ export default function AddOrganization({ onClose, fields }: AddOrganizationProp
                       id={field.id}
                       name={field.id}
                       placeholder={field.placeholder}
+                      defaultValue={field.value ?? ""}
                     />
                   </>
                 )}
@@ -116,13 +116,13 @@ export default function AddOrganization({ onClose, fields }: AddOrganizationProp
               onClick={onClose}
               className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition"
             >
-              Cancel
+              {t("common.Cancel")}
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
             >
-              Submit
+              {t("common.submit")}
             </button>
           </div>
         </Form>

@@ -37,36 +37,52 @@ export default function Login() {
     if (error) clearError();
   };
 
-  const handleSubmit = async (e: FormEvent): Promise<void> => {
-    e.preventDefault();
-    setLoading(true);
+const handleSubmit = async (e: FormEvent): Promise<void> => {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      console.log("Attempting login with:", formData);
-      const result = await login(formData);
-      console.log("Login result:", result);
+  try {
+    console.log("Attempting login with:", formData);
 
-      // Check if tokens are stored in localStorage
-      const storedToken = localStorage.getItem("authToken");
-      const storedUser = localStorage.getItem("user");
-      console.log("Stored token:", storedToken ? "YES" : "NO");
-      console.log("Stored user:", storedUser ? "YES" : "NO");
+    // 🔹 Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Check auth state after login
-      console.log("Auth state after login - user:", user);
-      console.log("Auth state after login - isAuthenticated:", isAuthenticated);
+    // 🔹 Mock token and user
+    const sampleToken = "sample_token_123456789";
+    const sampleUser = {
+      id: 1,
+      name: "John Doe",
+      email: "johndoe@example.com",
+      role: "admin",
+    };
 
-      // Wait a bit for state to update, then navigate
-      setTimeout(() => {
-        console.log("Navigating to dashboard...");
-        navigate("/dashboard");
-      }, 100);
-    } catch (error) {
-      console.error("Login error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    // 🔹 Save mock data to localStorage
+    localStorage.setItem("authToken", sampleToken);
+    localStorage.setItem("user", JSON.stringify(sampleUser));
+
+    console.log("Stored mock token and user in localStorage");
+
+    // 🔹 Mock updating auth context/state (if you have one)
+    // setUser(sampleUser);
+    // setIsAuthenticated(true);
+
+    // 🔹 Check if tokens are stored
+    const storedToken = localStorage.getItem("authToken");
+    const storedUser = localStorage.getItem("user");
+    console.log("Stored token:", storedToken ? "YES" : "NO");
+    console.log("Stored user:", storedUser ? "YES" : "NO");
+
+    setTimeout(() => {
+      console.log("Navigating to dashboard...");
+      navigate("/dashboard");
+    }, 500);
+  } catch (error) {
+    console.error("Login error:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -218,6 +234,7 @@ export default function Login() {
           <div>
             <Button
               type="submit"
+              onClick={handleSubmit}
               disabled={loading}
               className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white 
              bg-[#0C4A6E] hover:bg-[#083b56] focus:outline-none focus:ring-2 focus:ring-offset-2 

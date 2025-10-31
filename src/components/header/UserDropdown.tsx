@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
-
+import Avater from "../../assets/avater.jpg"
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, token, logout } = useAuth();
@@ -18,10 +18,11 @@ export default function UserDropdown() {
         onClick={toggleDropdown}
         className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
       >
-        <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <img src={user.photo || ""} alt="User" />
-        </span>
         <span className="block mr-1 font-medium text-theme-sm">{user.name}</span>
+
+        <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
+          <img src={user.photo || Avater} alt="User" />
+        </span>
       </button>
 
       <Dropdown
