@@ -7,6 +7,9 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import AppLayout from "./layout/AppLayout";
 import Home from "./pages/Dashboard/Home";
 import NotFound from "./pages/OtherPage/NotFound";
+import ReportList from "./pages/ReportList";
+
+
 
 import Login from "./components/auth/Login";
 import Roles from "./pages/Tables/Roles";
@@ -75,8 +78,17 @@ function AppContent() {
             }
           />
 
+        <Route 
+            path="/report-list"
+            element={
+                <ReportList/>
+            } 
+        />
 
-
+        <Route path="/report-list" element={<ReportList />}>
+  <Route path=":status" element={<ReportList />} />
+</Route>
+        
 
          <Route
             path="/roles"

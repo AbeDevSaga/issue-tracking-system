@@ -1,19 +1,140 @@
-// src/layout/AppHeader.tsx
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
 import NotificationDropdown from "../components/header/NotificationDropdown";
 import UserDropdown from "../components/header/UserDropdown";
 import { useAuth } from "../contexts/AuthContext";
-
 import { useSidebar } from "../context/SidebarContext";
 
-const AppHeader: React.FC = () => {
+// --- PROFILE WIDGET INLINE ---
+const ProfileIcon = () => (
+  <svg className="w-8 h-8 rounded-full ring-2 ring-blue-900" viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="12" r="12" fill="#E7ECF7"/>
+    <circle cx="12" cy="10" r="4" fill="#269A99"/>
+    <rect x="4" y="16" width="16" height="4" rx="2" fill="#269A99"/>
+  </svg>
+);
+
+function ProfileWidget({ user }) {
+  const { logout } = useAuth() || {};
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const navigate = useNavigate();
+
+  // Close on click outside
+  useEffect(() => {
+    function handle(e) {
+      if (open && ref.current && !ref.current.contains(e.target)) {
+        setOpen(false);
+      }
+    }
+    window.addEventListener("mousedown", handle);
+    return () => window.removeEventListener("mousedown", handle);
+  }, [open]);
+
+  function handleLogout() {
+    if (logout) logout();
+    navigate("/");
+  }
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        className="flex items-center gap-3 px-2 py-0 pr-4 focus:outline-none"
+        onClick={() => setOpen((v) => !v)}
+        aria-label="User Menu"
+      >
+        <ProfileIcon />
+        <div className="flex flex-col leading-tight text-left">
+          <span className="font-bold text-blue-900 text-base">{user?.name || "User Name"}</span>
+          <span className="text-xs text-gray-400">{user?.role || user?.user_type || "Center admin"}</span>
+        </div>
+      </button>
+      {open && (
+        <div className="absolute right-0 top-10 mt-1 w-56 bg-white rounded-lg shadow-xl z-50 py-2 px-4 border border-gray-200">
+          <div className="flex flex-col gap-1 mb-2">
+            <span className="font-bold text-lg text-blue-900">{user?.name || "User Name"}</span>
+            <span className="text-sm text-gray-500">{user?.email || "user@email.com"}</span>
+            <span className="text-xs text-gray-400">{user?.role || user?.user_type || "Role"}</span>
+          </div>
+          {/* Add more details as needed */}
+          <div className="border-t my-2" />
+          <button
+            className="w-full text-left px-2 py-1 rounded bg-blue-900 text-white hover:bg-blue-700"
+            onClick={handleLogout}
+          >
+            Log out
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+// --- END PROFILE WIDGET ---
+
+// --- LANGUAGE SWITCHER ---
+const LANGUAGES = [
+  { code: "en", label: "English", flag: "EN" },
+  { code: "am", label: "Amharic", flag: "አማ" }
+];
+
+function LanguageSwitcher({ lang, setLang }) {
+  const [open, setOpen] = useState(false);
+  const btnRef = useRef(null);
+
+  useEffect(() => {
+    function handle(e) {
+      if (open && btnRef.current && !btnRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    }
+    window.addEventListener("mousedown", handle);
+    return () => window.removeEventListener("mousedown", handle);
+  }, [open]);
+
+  return (
+    <div className="relative" ref={btnRef}>
+      <button
+        className="flex items-center px-3 py-2 rounded-lg border hover:bg-blue-50 text-blue-900 font-medium shadow cursor-pointer"
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="mr-1">{LANGUAGES.find(l => l.code === lang)?.flag || "EN"}</span>
+        <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute right-0 mt-2 w-36 bg-white shadow-lg rounded-lg border z-50 py-1">
+          {LANGUAGES.map(l => (
+            <button
+              className={`w-full text-left px-4 py-2 hover:bg-blue-100 ${lang === l.code ? "font-bold text-blue-800" : ""}`}
+              key={l.code}
+              onClick={() => { setLang(l.code); setOpen(false); }}
+            >
+              {l.flag} <span className="ml-1">{l.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+// --- END LANGUAGE SWITCHER ---
+
+const translations = {
+  en: {
+    search: "Search... (Ctrl+K)"
+  },
+  am: {
+    search: "ፈልግ... (Ctrl+K)"
+  }
+};
+
+const AppHeader = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
   const { user } = useAuth();
   const isStudent = user?.user_type === 'student';
 
-  // get sidebar functions from context (some pages may not be wrapped, so guard)
   let isMobileOpen = false;
   let toggleSidebar = () => {};
   let toggleMobileSidebar = () => {};
@@ -24,9 +145,7 @@ const AppHeader: React.FC = () => {
       toggleSidebar = sb.toggleSidebar ?? (() => {});
       toggleMobileSidebar = sb.toggleMobileSidebar ?? (() => {});
     }
-  } catch (e) {
-    // not wrapped in SidebarProvider — keep defaults
-  }
+  } catch (e) {}
 
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {
@@ -40,18 +159,19 @@ const AppHeader: React.FC = () => {
     setApplicationMenuOpen(!isApplicationMenuOpen);
   };
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef(null);
+
+  // --- LANGUAGE SWITCHER HOOK ---
+  const [lang, setLang] = useState("en");
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
+    const handleKeyDown = (event) => {
       if ((event.metaKey || event.ctrlKey) && event.key === "k") {
         event.preventDefault();
         inputRef.current?.focus();
       }
     };
-
     document.addEventListener("keydown", handleKeyDown);
-
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
@@ -61,24 +181,7 @@ const AppHeader: React.FC = () => {
     <header className="sticky top-0 flex w-full bg-white border-gray-200 z-40 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
       <div className="flex flex-col items-center justify-between grow lg:flex-row lg:px-6">
         <div className="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
-          {/* Only show sidebar toggle for non-students when sidebar functions are available */}
-          {!isStudent && (toggleSidebar !== undefined) && (
-            <button
-              className="items-center justify-center w-10 h-10 text-gray-500 border-gray-200 rounded-lg z-40 dark:border-gray-800 lg:flex dark:text-gray-400 lg:h-11 lg:w-11 lg:border"
-              onClick={handleToggle}
-              aria-label="Toggle Sidebar"
-            >
-              {isMobileOpen ? (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path fillRule="evenodd" clipRule="evenodd" d="M6.21967 7.28131C5.92678 6.98841 5.92678 6.51354 6.21967 6.22065C6.51256 5.92775 6.98744 5.92775 7.28033 6.22065L11.999 10.9393L16.7176 6.22078C17.0105 5.92789 17.4854 5.92788 17.7782 6.22078C18.0711 6.51367 18.0711 6.98855 17.7782 7.28144L13.0597 12L17.7782 16.7186C18.0711 17.0115 18.0711 17.4863 17.7782 17.7792C17.4854 18.0721 17.0105 18.0721 16.7176 17.7792L11.999 13.0607L7.28033 17.7794C6.98744 18.0722 6.51256 18.0722 6.21967 17.7794C5.92678 17.4865 5.92678 17.0116 6.21967 16.7187L10.9384 12L6.21967 7.28131Z" fill="currentColor" />
-                </svg>
-              ) : (
-                <svg width="16" height="12" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path fillRule="evenodd" clipRule="evenodd" d="M0.583252 1C0.583252 0.585788 0.919038 0.25 1.33325 0.25H14.6666C15.0808 0.25 15.4166 0.585786 15.4166 1C15.4166 1.41421 15.0808 1.75 14.6666 1.75L1.33325 1.75C0.919038 1.75 0.583252 1.41422 0.583252 1ZM0.583252 11C0.583252 10.5858 0.919038 10.25 1.33325 10.25L14.6666 10.25C15.0808 10.25 15.4166 10.5858 15.4166 11C15.4166 11.4142 15.0808 11.75 14.6666 11.75L1.33325 11.75C0.919038 11.75 0.583252 11.4142 0.583252 11ZM1.33325 5.25C0.919038 5.25 0.583252 5.58579 0.583252 6C0.583252 6.41421 0.919038 6.75 1.33325 6.75L7.99992 6.75C8.41413 6.75 8.74992 6.41421 8.74992 6C8.74992 5.58579 8.41413 5.25 7.99992 5.25L1.33325 5.25Z" fill="currentColor" />
-                </svg>
-              )}
-            </button>
-          )}
+          {/* HAMBURGER MENU BUTTON REMOVED! */}
 
           <Link to="/" className="lg:hidden">
             <img className="dark:hidden" src="logo" alt="Logo" />
@@ -94,13 +197,12 @@ const AppHeader: React.FC = () => {
             </svg>
           </button>
 
-          {/* Search Form - Hidden on mobile, visible on desktop */}
           <div className="hidden lg:block flex-1 max-w-md ml-4">
             <div className="relative">
               <input
                 ref={inputRef}
                 type="text"
-                placeholder="Search... (Ctrl+K)"
+                placeholder={translations[lang].search}
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white"
               />
               <svg
@@ -125,7 +227,10 @@ const AppHeader: React.FC = () => {
           <div className="flex items-center gap-2 2xsm:gap-3">
             <ThemeToggleButton />
             <NotificationDropdown />
+            <LanguageSwitcher lang={lang} setLang={setLang} />
           </div>
+          {/* ---- PROFILE WIDGET ADDED HERE ---- */}
+          <ProfileWidget user={user} />
           <UserDropdown />
         </div>
       </div>

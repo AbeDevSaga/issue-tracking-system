@@ -1,27 +1,13 @@
-import { useMemo, useState, useEffect } from "react";
-import { PencilIcon, TrashIcon, EyeIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { useMemo, useState, useEffect, useRef } from "react";
+import { PencilIcon, TrashIcon, EyeIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
 
 const ROLE_OPTIONS = [
-  "Super Admin",
-  "Division XX Head",
-  "Division Head",
-  "Registry Officer",
-  "Analyst",
-  "Claims Officer",
-  "Support",
-  "User",
-  "Read Only",
-  "Auditor"
+  "Super Admin", "Division XX Head", "Division Head", "Registry Officer", "Analyst",
+  "Claims Officer", "Support", "User", "Read Only", "Auditor"
 ];
 const PERMISSIONS = [
-  "Case Verification",
-  "Report Organization",
-  "Case Investigation",
-  "Analysis",
-  "Decision Making",
-  "Case Review",
-  "Final Decision",
-  "Letter Preparation"
+  "Case Verification", "Report Organization", "Case Investigation", "Analysis",
+  "Decision Making", "Case Review", "Final Decision", "Letter Preparation"
 ];
 
 // 20 unique roles with combinations for realistic pagination.
@@ -31,6 +17,119 @@ const initialRoles = Array.from({ length: 20 }, (_, i) => ({
   description: ROLE_OPTIONS[i % ROLE_OPTIONS.length] + " - default description",
   permissions: PERMISSIONS.filter((_, idx) => (i + idx) % 2 === 0),
 }));
+
+function AddRoleSuccessModal({ open, onCancel, onView }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 bg-[#101624cc] z-50 flex items-center justify-center">
+      <div className="bg-white rounded-xl shadow-xl p-10 px-12 min-w-[320px] w-[400px] max-w-[96vw] relative">
+        <span className="absolute left-6 top-6 text-blue-700 text-xl">✔️</span>
+        <div className="pl-8">
+          <div className="font-mono font-semibold text-blue-900 text-lg mb-2">
+            Role added successfully.
+          </div>
+          <div className="text-[.99rem] mb-6 text-gray-700">
+            The new role has been created and saved to the system.
+          </div>
+        </div>
+        <div className="flex gap-6 justify-center mt-3 w-full">
+          <button
+            className="rounded border border-blue-900 px-6 py-2 font-semibold hover:bg-gray-50"
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+          <button
+            className="rounded bg-blue-900 text-white px-7 py-2 font-semibold hover:bg-blue-800"
+            onClick={onView}
+          >
+            View
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DeleteRoleConfirmModal({ open, onCancel, onDelete }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 bg-[#101624cc] z-50 flex items-center justify-center">
+      <div
+        className="shadow-xl border-2 border-blue-300 rounded-xl bg-white px-10 py-8 min-w-[410px] w-[440px] max-w-[95vw] relative"
+        style={{ borderStyle: "dashed" }}
+      >
+        <div className="bg-[#FF5B5B] rounded-t px-3 py-1 mb-3 flex items-center text-white font-mono font-semibold text-lg tracking-wide"
+          style={{ width: "fit-content" }}
+        >
+          Confirm Delete
+        </div>
+        <div className="bg-gray-50 rounded px-3 py-2 mb-3 font-mono">
+          Are you sure you want to delete the role ? This action cannot be undone.
+        </div>
+        <div className="text-[#FF5B5B] text-sm pl-1 my-2 flex items-center">
+          <span className="mr-2">⚠️</span>
+          <span>Warning: Deleting this role will affect all users assigned to it.</span>
+        </div>
+        <div className="flex justify-between gap-3 mt-6 px-1">
+          <button
+            className="rounded border border-blue-900 px-7 py-2 font-semibold hover:bg-gray-50"
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+          <button
+            className="rounded bg-[#FF5B5B] text-white px-9 py-2 font-semibold hover:bg-red-600"
+            onClick={onDelete}
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Role Detail Modal
+function RoleDetailModal({ open, onClose, role }) {
+  if (!open || !role) return null;
+  return (
+    <div className="fixed inset-0 bg-[#101624cc] z-50 flex items-center justify-center">
+      <div className="bg-white rounded-2xl shadow-2xl w-[420px] max-w-[95vw] px-8 py-6 relative">
+        <button
+          className="absolute right-5 top-5 text-[#1956A7] hover:text-blue-900 text-lg font-bold"
+          onClick={onClose}
+          aria-label="Close"
+        >×</button>
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-2xl font-bold text-blue-800 mb-3">
+            {role.roleName ? role.roleName[0].toUpperCase() : "R"}
+          </div>
+          <div className="font-semibold text-lg mb-1">{role.roleName}</div>
+          <div className="text-sm text-gray-500 mb-2">{role.id}</div>
+          <table className="text-[15px] mt-3 mb-2">
+            <tbody>
+              <tr>
+                <td className="pr-3 font-semibold text-gray-600">Description:</td>
+                <td>{role.description}</td>
+              </tr>
+              <tr>
+                <td className="pr-3 font-semibold text-gray-600 align-top">Permissions:</td>
+                <td>
+                  <ul className="text-sm list-disc ml-4">
+                    {role.permissions.map((perm, i) => (
+                      <li key={i}>{perm}</li>
+                    ))}
+                  </ul>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function RoleModal({ open, onClose, onSave, initial, mode }) {
   const [form, setForm] = useState(
@@ -63,14 +162,13 @@ function RoleModal({ open, onClose, onSave, initial, mode }) {
     }
     setError("");
     onSave(form);
-    onClose();
   }
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-30 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 bg-[#101624cc] flex items-center justify-center">
       <form
         onSubmit={handleSubmit}
-        className="bg-white rounded-xl p-8 w-full max-w-2xl shadow-xl"
+        className="bg-white rounded-xl px-8 py-8 w-full max-w-md shadow-2xl"
       >
         <div className="flex justify-between items-center mb-2">
           <div>
@@ -181,7 +279,15 @@ export default function RoleListTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [trashOpen, setTrashOpen] = useState(false);
 
-  // Filtering
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteIdx, setDeleteIdx] = useState(null);
+  const [addSuccessOpen, setAddSuccessOpen] = useState(false);
+  const [newlyAddedRoleId, setNewlyAddedRoleId] = useState(null);
+
+  // Role Detail Modal state
+  const [viewRole, setViewRole] = useState(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+
   const filteredRoles = useMemo(
     () => roles.filter(r =>
       (!searchTerm ||
@@ -190,11 +296,10 @@ export default function RoleListTable() {
     ),
     [roles, searchTerm]
   );
-  const pageSize = 15;
+  const pageSize = 5;
   const paginatedRoles = filteredRoles.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const totalPages = Math.max(1, Math.ceil(filteredRoles.length / pageSize));
 
-  // -- CRUD ---
   function handleAddRole() {
     setModalMode("add");
     setEditingRoleIdx(null);
@@ -206,22 +311,36 @@ export default function RoleListTable() {
     setModalOpen(true);
   }
   function handleDeleteRole(idx) {
-    if (window.confirm("Delete this role?")) {
-      setDeletedRoles([...deletedRoles, roles[idx]]);
-      setRoles(roles.filter((_, i) => i !== idx));
+    setDeleteIdx(idx);
+    setDeleteConfirmOpen(true);
+  }
+  function confirmDeleteRole() {
+    if (deleteIdx !== null) {
+      setDeletedRoles([...deletedRoles, roles[deleteIdx]]);
+      setRoles(roles.filter((_, i) => i !== deleteIdx));
+      setDeleteIdx(null);
+      setDeleteConfirmOpen(false);
     }
+  }
+  function cancelDeleteRole() {
+    setDeleteIdx(null);
+    setDeleteConfirmOpen(false);
   }
   function handleModalSave(form) {
     if (modalMode === "add") {
+      const roleid = `ONR-${(roles.length + deletedRoles.length + 1).toString().padStart(4, "0")}`;
       setRoles([
         ...roles,
         {
-          id: `ONR-${(roles.length + deletedRoles.length + 1).toString().padStart(4, "0")}`,
+          id: roleid,
           roleName: form.roleName,
           description: form.description,
           permissions: form.permissions
         },
       ]);
+      setNewlyAddedRoleId(roleid);
+      setModalOpen(false);
+      setAddSuccessOpen(true);
     } else if (modalMode === "edit" && editingRoleIdx !== null) {
       setRoles(roles.map((r, i) =>
         i === editingRoleIdx
@@ -233,6 +352,7 @@ export default function RoleListTable() {
             }
           : r
       ));
+      setModalOpen(false);
     }
   }
   function handleRestoreRole(role) {
@@ -240,173 +360,218 @@ export default function RoleListTable() {
     setDeletedRoles(deletedRoles.filter(r => r !== role));
   }
 
+  function handleViewRole(role) {
+    setViewRole(role);
+    setViewModalOpen(true);
+  }
+
+  const tableRef = useRef(null);
+
+  useEffect(() => {
+    if (addSuccessOpen === false && newlyAddedRoleId && tableRef.current) {
+      const el = document.getElementById("role-" + newlyAddedRoleId);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("bg-blue-50");
+        setTimeout(() => {
+          el.classList.remove("bg-blue-50");
+        }, 2500);
+      }
+      setNewlyAddedRoleId(null);
+    }
+  }, [addSuccessOpen, newlyAddedRoleId]);
+
+  function handleAddSuccessCancel() { setAddSuccessOpen(false); }
+  function handleAddSuccessView() { setAddSuccessOpen(false); }
+
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6">
-      <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
-        <div className="flex gap-2 flex-wrap">
-          <input
-            type="text"
-            placeholder="Search roles..."
-            value={searchTerm}
-            onChange={e => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="border px-3 py-2 rounded"
-            style={{ minWidth: 150 }}
-          />
-        </div>
-        <div className="flex gap-2">
-          <button
-            className="px-4 py-2 bg-red-50 text-red-700 rounded border border-red-400 hover:bg-red-100 flex items-center"
-            onClick={() => setTrashOpen(true)}
-          >
-            <TrashIcon className="w-5 h-5 mr-1" /> Trash
-          </button>
-          <button
-            className="bg-blue-900 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-blue-700"
-            onClick={handleAddRole}
-          >
-            <PlusIcon className="w-5 h-5" /> Add New Role
-          </button>
-        </div>
-      </div>
-      {/* Table */}
-      <table className="w-full border rounded text-sm">
-        <thead>
-          <tr className="bg-blue-900 text-white">
-            <th className="px-3 py-3 text-left font-medium">Role ID</th>
-            <th className="px-3 py-3 text-left font-medium">Role Name</th>
-            <th className="px-3 py-3 text-left font-medium">Description</th>
-            <th className="px-3 py-3 text-left font-medium">Permissions</th>
-            <th className="px-3 py-3 text-left font-medium">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {paginatedRoles.map((role, idx) => (
-            <tr key={role.id} className="border-b">
-              <td className="px-3 py-2">{role.id}</td>
-              <td className="px-3 py-2">{role.roleName}</td>
-              <td className="px-3 py-2">{role.description}</td>
-              <td className="px-3 py-2">
-                {role.permissions.slice(0, 3).join(", ")}
-                {role.permissions.length > 3 && (
-                  <> +{role.permissions.length - 3} more</>
-                )}
-              </td>
-              <td className="px-3 py-2 flex gap-2">
-                <button
-                  className="text-green-600 hover:text-green-800"
-                  onClick={() => handleEditRole((currentPage - 1) * pageSize + idx)}
-                >
-                  <PencilIcon className="w-5 h-5" />
-                </button>
-                <button
-                  className="text-red-600 hover:text-red-800"
-                  onClick={() => handleDeleteRole((currentPage - 1) * pageSize + idx)}
-                >
-                  <TrashIcon className="w-5 h-5" />
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {/* Pagination */}
-      <div className="flex justify-between items-center mt-4">
-        <div>
-          <span className="text-gray-500 text-xs">
-            Page {currentPage} of {totalPages}
-          </span>
-        </div>
-        <div className="flex gap-1">
-          <button
-            className="px-2 rounded bg-gray-100"
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage(currentPage - 1)}
-          >
-            Back
-          </button>
-          {[...Array(totalPages)].map((_, idx) => (
+    <main className="flex-1 flex flex-col items-stretch py-6 px-8">
+      <div className="rounded-xl border border-blue-100 bg-white p-7" style={{ minHeight: 480 }}>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+          <div>
+            <span className="text-gray-400 text-[15px] mt-1">
+              This is the role management page
+            </span>
+          </div>
+          <div className="flex gap-3 items-center">
+            <input
+              type="text"
+              placeholder="Search roles..."
+              value={searchTerm}
+              onChange={e => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="border border-gray-300 bg-gray-50 px-4 py-2 rounded-lg shadow-sm focus:outline-none focus:border-blue-400 placeholder-gray-400 text-[15px] w-[180px]"
+            />
             <button
-              key={idx + 1}
-              className={`px-3 py-1 rounded ${
-                currentPage === idx + 1
-                  ? "bg-blue-900 text-white"
-                  : "bg-gray-100"
-              }`}
-              onClick={() => setCurrentPage(idx + 1)}
+              className="ml-1 flex items-center px-2 py-2 rounded-lg border border-blue-900 text-blue-900 font-semibold bg-white hover:bg-blue-50 shadow"
+              title="Show Trashed Roles"
+              onClick={() => setTrashOpen(true)}
             >
-              {idx + 1}
+              <TrashIcon className="w-5 h-5" />
+              <span className="ml-1 text-sm font-bold">Trash</span>
             </button>
-          ))}
-          <button
-            className="px-2 rounded bg-gray-100"
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage(currentPage + 1)}
-          >
-            Next
-          </button>
-        </div>
-      </div>
-      {/* Modal */}
-      <RoleModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSave={handleModalSave}
-        initial={
-          modalMode === "edit" && editingRoleIdx !== null
-            ? roles[editingRoleIdx]
-            : null
-        }
-        mode={modalMode}
-      />
-      {/* Trash Modal */}
-      {trashOpen && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-30 flex items-center justify-center">
-          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
-            <h2 className="text-lg font-bold mb-2 text-red-700">Trashed Roles</h2>
-            {deletedRoles.length === 0 ? (
-              <div className="text-gray-400 text-sm py-6 text-center">No deleted roles</div>
-            ) : (
-              <table className="w-full text-sm mb-4">
-                <thead>
-                  <tr>
-                    <th className="py-2 text-left">Role Name</th>
-                    <th className="py-2 text-left">Role ID</th>
-                    <th className="py-2">Restore</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {deletedRoles.map((r, i) => (
-                    <tr key={r.id + i}>
-                      <td className="py-1">{r.roleName}</td>
-                      <td className="py-1">{r.id}</td>
-                      <td>
-                        <button
-                          className="px-2 py-1 bg-green-600 text-white rounded text-xs"
-                          onClick={() => handleRestoreRole(r)}
-                        >
-                          Restore
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-            <div className="flex justify-end gap-2">
-              <button
-                className="px-4 py-2 rounded bg-gray-200"
-                onClick={() => setTrashOpen(false)}
-              >
-                Close
-              </button>
-            </div>
+            <button
+              className="bg-blue-900 text-white px-6 py-2 font-semibold rounded-lg shadow hover:bg-blue-800 flex items-center gap-2"
+              onClick={handleAddRole}
+            >
+              <PlusCircleIcon className="w-5 h-5" /> Add New Role
+            </button>
           </div>
         </div>
-      )}
-    </div>
+        {/* Table */}
+        <div className="overflow-x-auto mt-2" ref={tableRef}>
+          <table className="min-w-full text-sm border-separate border-spacing-0">
+            <thead>
+              <tr>
+                <th className="bg-blue-900 text-white font-bold text-left px-5 py-3 rounded-tl-[12px]">Role ID</th>
+                <th className="bg-blue-900 text-white font-bold text-left px-5 py-3">Role Name</th>
+                <th className="bg-blue-900 text-white font-bold text-left px-5 py-3">Description</th>
+                <th className="bg-blue-900 text-white font-bold text-left px-5 py-3">Permissions</th>
+                <th className="bg-blue-900 text-white font-bold text-center px-5 py-3 rounded-tr-[12px]">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedRoles.map((role, idx) => (
+                <tr
+                  key={role.id}
+                  id={"role-" + role.id}
+                  className={"border-b border-gray-100"}
+                  style={{ height: 34 }}
+                >
+                  <td className="bg-white px-5 py-1 align-middle text-left font-medium rounded-l-[12px]">{role.id}</td>
+                  <td className="bg-white px-5 py-1 align-middle text-left font-medium">{role.roleName}</td>
+                  <td className="bg-white px-5 py-1 align-middle text-left font-medium">{role.description}</td>
+                  <td className="bg-white px-5 py-1 align-middle text-left font-medium">
+                    {role.permissions.slice(0, 3).join(", ")}
+                    {role.permissions.length > 3 && (
+                      <span title={role.permissions.join(", ")} className="text-blue-700 cursor-pointer"> +{role.permissions.length - 3} more</span>
+                    )}
+                  </td>
+                  <td className="bg-white px-5 py-1 align-middle text-center rounded-r-[12px] flex gap-2 justify-center">
+                    <button
+                      className="text-blue-900 hover:text-blue-700"
+                      onClick={() => handleViewRole(role)}
+                      title="View"
+                    >
+                      <EyeIcon className="w-5 h-5" />
+                    </button>
+                    <button
+                      className="text-green-600 hover:text-green-800"
+                      onClick={() => handleEditRole((currentPage - 1) * pageSize + idx)}
+                      title="Edit"
+                    >
+                      <PencilIcon className="w-5 h-5" />
+                    </button>
+                    <button
+                      className="text-red-600 hover:text-red-800"
+                      onClick={() => handleDeleteRole((currentPage - 1) * pageSize + idx)}
+                      title="Delete"
+                    >
+                      <TrashIcon className="w-5 h-5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {/* Pagination */}
+        <div className="flex justify-end items-center mt-4">
+          <div className="flex gap-1">
+            <button
+              className="px-3 py-1 rounded border border-gray-200 bg-white hover:bg-gray-100"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(currentPage-1)}
+            >Back</button>
+            {[...Array(totalPages)].map((_, idx) => (
+              <button
+                key={idx+1}
+                className={`px-3 py-1 rounded font-bold ${currentPage === idx+1 ? "bg-blue-900 text-white" : "border border-gray-200 bg-white hover:bg-gray-100"}`}
+                onClick={() => setCurrentPage(idx+1)}
+              >{idx+1}</button>
+            ))}
+            <button
+              className="px-3 py-1 rounded border border-gray-200 bg-white hover:bg-gray-100"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(currentPage+1)}
+            >Next</button>
+          </div>
+        </div>
+        {/* Modal */}
+        <RoleModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onSave={handleModalSave}
+          initial={
+            modalMode === "edit" && editingRoleIdx !== null
+              ? roles[editingRoleIdx]
+              : null
+          }
+          mode={modalMode}
+        />
+        <AddRoleSuccessModal
+          open={addSuccessOpen}
+          onCancel={handleAddSuccessCancel}
+          onView={handleAddSuccessView}
+        />
+        <DeleteRoleConfirmModal
+          open={deleteConfirmOpen}
+          onCancel={cancelDeleteRole}
+          onDelete={confirmDeleteRole}
+        />
+        <RoleDetailModal
+          open={viewModalOpen}
+          role={viewRole}
+          onClose={() => setViewModalOpen(false)}
+        />
+        {/* Trash Modal */}
+        {trashOpen && (
+          <div className="fixed inset-0 z-50 bg-black bg-opacity-30 flex items-center justify-center">
+            <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+              <h2 className="text-lg font-bold mb-2 text-red-700">Trashed Roles</h2>
+              {deletedRoles.length === 0 ? (
+                <div className="text-gray-400 text-sm py-6 text-center">No deleted roles</div>
+              ) : (
+                <table className="w-full text-sm mb-4">
+                  <thead>
+                    <tr>
+                      <th className="py-2 text-left">Role Name</th>
+                      <th className="py-2 text-left">Role ID</th>
+                      <th className="py-2">Restore</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {deletedRoles.map((r, i) => (
+                      <tr key={r.id + i}>
+                        <td className="py-1">{r.roleName}</td>
+                        <td className="py-1">{r.id}</td>
+                        <td>
+                          <button
+                            className="px-2 py-1 bg-green-600 text-white rounded text-xs"
+                            onClick={() => handleRestoreRole(r)}
+                          >
+                            Restore
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+              <div className="flex justify-end gap-2">
+                <button
+                  className="px-4 py-2 rounded bg-gray-200"
+                  onClick={() => setTrashOpen(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </main>
   );
 }
-
