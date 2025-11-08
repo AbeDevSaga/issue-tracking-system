@@ -1,104 +1,106 @@
 // src/contexts/AuthContext.tsx
-import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { authAPI } from '../services/api';
-import { AuthContextType, AuthResponse, LoginCredentials, RegisterData, User } from '../types/auth';
-import { useNavigate } from 'react-router';
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { useLoginMutation, useLogoutMutation } from "../redux/services/authApi"; // ✅ RTK Query hooks
+import {
+  AuthContextType,
+  AuthResponse,
+  LoginCredentials,
+  RegisterData,
+  User,
+} from "../types/auth";
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
+// --- Hook for easy access ---
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
 
+// --- Provider Implementation ---
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  
+
+  // RTK Query hooks
+  const [loginMutation] = useLoginMutation();
+  const [logoutMutation] = useLogoutMutation();
+
+  // --- Permission & Role Helpers ---
   const hasPermission = (permission: string): boolean => {
-    if (!user || !user.permissions) return false;
-    return user.permissions.includes(permission);
+    if (!user?.roles) return false;
+    return user.roles.some((role) =>
+      role.role?.subRoles.some((sub) =>
+        sub.permissions.some((perm) => perm.action === permission)
+      )
+    );
   };
 
-  const hasAnyPermission = (permissions: string[]): boolean => {
-    if (!user || !user.permissions) return false;
-    return permissions.some(permission => user.permissions.includes(permission));
-  };
+  const hasAnyPermission = (permissions: string[]): boolean =>
+    permissions.some((p) => hasPermission(p));
 
-  const hasAllPermissions = (permissions: string[]): boolean => {
-    if (!user || !user.permissions) return false;
-    return permissions.every(permission => user.permissions.includes(permission));
-  };
+  const hasAllPermissions = (permissions: string[]): boolean =>
+    permissions.every((p) => hasPermission(p));
 
   const hasRole = (roleName: string): boolean => {
-    if (!user || !user.roles) return false;
-    return user.roles.some(role => role.name === roleName);
+    if (!user?.roles) return false;
+    return user.roles.some((r) => r.role?.name === roleName);
   };
 
+  // --- Initialize Auth from localStorage ---
   useEffect(() => {
-    const initializeAuth = (): void => {
-      try {
-        console.log("AuthProvider: Initializing auth from localStorage");
-        const storedToken = localStorage.getItem('authToken');
-        const storedUser = localStorage.getItem('user');
+    try {
+      const storedToken = localStorage.getItem("authToken");
+      const storedUser = localStorage.getItem("user");
 
-        console.log("AuthProvider: Stored token found:", !!storedToken);
-        console.log("AuthProvider: Stored user found:", !!storedUser);
-
-        if (storedToken && storedUser) {
-          setToken(storedToken);
-          setUser(JSON.parse(storedUser));
-          console.log("AuthProvider: Auth state restored from localStorage");
-        } else {
-          console.log("AuthProvider: No stored auth data found");
-        }
-      } catch (error) {
-        console.error("AuthProvider: Error initializing auth:", error);
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
-      } finally {
-        setLoading(false);
-        console.log("AuthProvider: Initialization complete, loading set to false");
+      if (storedToken && storedUser) {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+        console.log("AuthContext: Session restored from localStorage");
       }
-    };
-
-    initializeAuth();
+    } catch (err) {
+      console.error("AuthContext: Failed to restore session", err);
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("user");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
+  // --- Login ---
+  const login = async (
+    credentials: LoginCredentials
+  ): Promise<AuthResponse> => {
     try {
       setError(null);
       setLoading(true);
-      console.log("AuthContext: Starting login process");
-      // map app's LoginCredentials { user_name, password } to API expected { email, password }
-      const payload = { email: (credentials as any).email ?? credentials.user_name, password: credentials.password };
-      const response = await authAPI.login(payload);
-      console.log("AuthContext: API response received", response.data);
-      
-      const { user: userData, access_token: authToken } = response.data;
+
+      const response = await loginMutation(credentials).unwrap();
+      const { token: authToken, user: userData } = response;
 
       setUser(userData);
       setToken(authToken);
+      localStorage.setItem("authToken", authToken);
+      localStorage.setItem("user", JSON.stringify(userData));
 
-      localStorage.setItem('authToken', authToken);
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      console.log("AuthContext: User and token stored in localStorage");
-      console.log("AuthContext: user set to", userData.name);
-      console.log("AuthContext: token set to", authToken ? "YES" : "NO");
-
-      return response.data;
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Login failed';
-      console.error("AuthContext: Login error", message);
+      return response;
+    } catch (err: any) {
+      const message = err.data?.message || "Login failed";
       setError(message);
       throw new Error(message);
     } finally {
@@ -106,56 +108,40 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // --- Register (if available) ---
   const register = async (userData: RegisterData): Promise<AuthResponse> => {
+    // You can integrate registration API similarly if needed
+    throw new Error("Register not implemented yet");
+  };
+
+  // --- Logout ---
+  const logout = async (): Promise<void> => {
     try {
+      await logoutMutation().unwrap();
+    } catch {
+      console.warn("AuthContext: Logout request failed, clearing anyway");
+    } finally {
+      setUser(null);
+      setToken(null);
       setError(null);
-      const response = await authAPI.register(userData);
-      return response.data;
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Registration failed';
-      setError(message);
-      throw new Error(message);
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("user");
     }
   };
 
-  const logout = (): void => {
-    console.log("AuthContext: Logging out");
-    setUser(null);
-    setToken(null);
-    setError(null);
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    
-    console.log("AuthContext: Logout complete");
+  // --- Profile Update (if backend supports it) ---
+  const updateProfile = async (profileData: Partial<User>): Promise<User> => {
+    const updatedUser = { ...user, ...profileData } as User;
+    setUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    return updatedUser;
   };
 
-  const updateProfile = async (profileData: Partial<User>): Promise<any> => {
-    try {
-      setError(null);
-      const response = await authAPI.updateProfile(profileData);
-
-      const updatedUser = { ...user, ...profileData } as User;
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-
-      return response.data;
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Profile update failed';
-      setError(message);
-      throw new Error(message);
-    }
-  };
-
-  const changePassword = async (passwordData: { currentPassword: string; newPassword: string }): Promise<any> => {
-    try {
-      setError(null);
-      const response = await authAPI.changePassword(passwordData);
-      return response.data;
-    } catch (error: any) {
-      const message = error.response?.data?.message || 'Password change failed';
-      setError(message);
-      throw new Error(message);
-    }
+  const changePassword = async (_: {
+    currentPassword: string;
+    newPassword: string;
+  }): Promise<any> => {
+    throw new Error("Change password not implemented yet");
   };
 
   const clearError = (): void => setError(null);
@@ -177,13 +163,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     hasAllPermissions,
     hasRole,
   };
-
-  console.log("AuthProvider: Rendering with state:", { 
-    user: user?.name, 
-    isAuthenticated: !!user && !!token,
-    loading,
-    permissions: user?.permissions?.length || 0
-  });
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

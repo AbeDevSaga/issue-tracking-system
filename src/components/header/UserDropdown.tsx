@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { useAuth } from "../../contexts/AuthContext";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import Avater from "../../assets/avater.jpg"
+import Avater from "../../assets/avater.jpg";
+import { useAuth } from "../../contexts/AuthContext";
+
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, token, logout } = useAuth();
@@ -12,16 +13,21 @@ export default function UserDropdown() {
 
   if (!user) return null;
 
+  // Use first role as "user_type" display
+  const userRole = user.roles?.[0]?.role?.name || "N/A";
+
   return (
     <div className="relative">
       <button
         onClick={toggleDropdown}
         className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
       >
-        <span className="block mr-1 font-medium text-theme-sm">{user.name}</span>
+        <span className="block mr-1 font-medium text-theme-sm">
+          {user.full_name}
+        </span>
 
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <img src={user.photo || Avater} alt="User" />
+          <img src={user.profile_image || Avater} alt="User" />
         </span>
       </button>
 
@@ -32,10 +38,10 @@ export default function UserDropdown() {
       >
         <div>
           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            {user.name}
+            {user.full_name}
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            Role: {user.user_type}
+            Role: {userRole}
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400 break-all">
             Token: {token}

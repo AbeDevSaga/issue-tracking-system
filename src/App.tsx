@@ -12,34 +12,36 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import AppLayout from "./layout/AppLayout";
 import Home from "./pages/Dashboard/Home";
 import NotFound from "./pages/OtherPage/NotFound";
-import Organization from"./pages/organization/organization"
-import Branch from"./pages/branch/branch"
-import Region from"./pages/region/region"
-import Zone from"./pages/zone/zone"
+import Organization from "./pages/organization/organization";
+import Branch from "./pages/branch/branch";
+import Region from "./pages/region/region";
+import Zone from "./pages/zone/zone";
 import Login from "./components/auth/Login";
-import City from './pages/city/city'
-import SubCity from './pages/subcity/subcity'
-import Project from './pages/project/project'
-import Woreda from './pages/woreda/woreda'
-import ProjectLevel from './pages/priorityLevel/priorityLevel'
-import IssueCategory from './pages/issueCategory/issueCategory'
-import MyIssue from './pages/issue/my_issue'
+import City from "./pages/city/city";
+import SubCity from "./pages/subcity/subcity";
+import Project from "./pages/project/project";
+import Woreda from "./pages/woreda/woreda";
+import ProjectLevel from "./pages/priorityLevel/priorityLevel";
+import IssueCategory from "./pages/issueCategory/issueCategory";
+import MyIssue from "./pages/issue/my_issue";
 import Roles from "./pages/Tables/Roles";
 // import Users from "./pages/Tables/Users";
 import BaseData from "./pages/Basedata/Basedata";
-import OrgStructure from "./pages/org_structure/org_structure"
+import OrgStructure from "./pages/org_structure/org_structure";
 import ProtectedRoute from "./ProtectedRoute";
 import MyissueForm from "./pages/issue/my_issue_form";
-import QATask from "./pages/QATaskList/QATaskList"
-import QATaskDetail from "./pages/QATaskList/QATaskDetail"
+import QATask from "./pages/QATaskList/QATaskList";
+import QATaskDetail from "./pages/QATaskList/QATaskDetail";
 import TeamLeaderTask from "./pages/TeamLeaderTaskList/TeamLeaderTaskList";
 import TeamLeaderTaskDetail from "./pages/TeamLeaderTaskList/TeamLeaderTaskDetail";
-import CentralAdminTaskList from "./pages/CentralAdminTaskList/CentralAdminTaskList"
-import CentralAdminTaskDetail from "./pages/CentralAdminTaskList/CentralAdminTaskDetail"
+import CentralAdminTaskList from "./pages/CentralAdminTaskList/CentralAdminTaskList";
+import CentralAdminTaskDetail from "./pages/CentralAdminTaskList/CentralAdminTaskDetail";
 
-import DeveloperTaskList from "./pages/DeveloperTaskList/DeveloperTaskList"
+import DeveloperTaskList from "./pages/DeveloperTaskList/DeveloperTaskList";
 import "./localization";
-import Users from "./pages/Users/users"
+import Users from "./pages/Users/users";
+import { Provider } from "react-redux";
+import { store } from "./redux/store";
 const AuthLoader = () => {
   return (
     <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">
@@ -97,7 +99,7 @@ function AppContent() {
           <Route path="/branch" element={<Branch />} />
           <Route path="/region" element={<Region />} />
           <Route path="/zone" element={<Zone />} />
-          
+
           <Route path="/city" element={<City />} />
           <Route path="/subcity" element={<SubCity />} />
           <Route path="/woreda" element={<Woreda />} />
@@ -110,12 +112,17 @@ function AppContent() {
           <Route path="/qa_tasks_detail" element={<QATaskDetail />} />
           <Route path="/tl_tasks" element={<TeamLeaderTask />} />
           <Route path="/tl_tasks_detail" element={<TeamLeaderTaskDetail />} />
-          <Route path="/central_admin_task_list" element={<CentralAdminTaskList />} />
-          <Route path="/central_admin_task_detail" element={<CentralAdminTaskDetail/>} />
-          
+          <Route
+            path="/central_admin_task_list"
+            element={<CentralAdminTaskList />}
+          />
+          <Route
+            path="/central_admin_task_detail"
+            element={<CentralAdminTaskDetail />}
+          />
+
           <Route path="/developer_tasks" element={<DeveloperTaskList />} />
           <Route path="/org_structure" element={<OrgStructure />} />
-          
 
           <Route path="/basedata" element={<BaseData />} />
 
@@ -146,8 +153,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <Provider store={store}>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </Provider>
   );
 }
