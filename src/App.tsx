@@ -1,21 +1,45 @@
 // src/App.tsx
 import type { ReactNode } from "react";
-import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import {
+  Navigate,
+  Route,
+  BrowserRouter as Router,
+  Routes,
+} from "react-router-dom";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import AppLayout from "./layout/AppLayout";
 import Home from "./pages/Dashboard/Home";
 import NotFound from "./pages/OtherPage/NotFound";
-import ReportList from "./pages/ReportList";
-
-
-
+import Organization from"./pages/organization/organization"
+import Branch from"./pages/branch/branch"
+import Region from"./pages/region/region"
+import Zone from"./pages/zone/zone"
 import Login from "./components/auth/Login";
+import City from './pages/city/city'
+import SubCity from './pages/subcity/subcity'
+import Project from './pages/project/project'
+import Woreda from './pages/woreda/woreda'
+import ProjectLevel from './pages/priorityLevel/priorityLevel'
+import IssueCategory from './pages/issueCategory/issueCategory'
+import MyIssue from './pages/issue/my_issue'
 import Roles from "./pages/Tables/Roles";
-import Users from "./pages/Tables/Users";
+// import Users from "./pages/Tables/Users";
+import BaseData from "./pages/Basedata/Basedata";
+import OrgStructure from "./pages/org_structure/org_structure"
 import ProtectedRoute from "./ProtectedRoute";
+import MyissueForm from "./pages/issue/my_issue_form";
+import QATask from "./pages/QATaskList/QATaskList"
+import QATaskDetail from "./pages/QATaskList/QATaskDetail"
+import TeamLeaderTask from "./pages/TeamLeaderTaskList/TeamLeaderTaskList";
+import TeamLeaderTaskDetail from "./pages/TeamLeaderTaskList/TeamLeaderTaskDetail";
+import CentralAdminTaskList from "./pages/CentralAdminTaskList/CentralAdminTaskList"
+import CentralAdminTaskDetail from "./pages/CentralAdminTaskList/CentralAdminTaskDetail"
+
+import DeveloperTaskList from "./pages/DeveloperTaskList/DeveloperTaskList"
 import "./localization";
+import Users from "./pages/Users/users"
 const AuthLoader = () => {
   return (
     <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">
@@ -47,10 +71,10 @@ function AppContent() {
   return (
     <Router>
       <ScrollToTop />
-     
+
       <Routes>
-               <Route element={<AppLayout />}>
-                    <Route
+        <Route element={<AppLayout />}>
+          <Route
             path="/dashboard"
             element={
               <ProtectedRoute>
@@ -58,7 +82,7 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-           
+
           {/* <Route
             path="/users"
             element={
@@ -68,48 +92,52 @@ function AppContent() {
             }
           /> */}
 
+          <Route path="/users" element={<Users />} />
+          <Route path="/organization" element={<Organization />} />
+          <Route path="/branch" element={<Branch />} />
+          <Route path="/region" element={<Region />} />
+          <Route path="/zone" element={<Zone />} />
+          
+          <Route path="/city" element={<City />} />
+          <Route path="/subcity" element={<SubCity />} />
+          <Route path="/woreda" element={<Woreda />} />
+          <Route path="/project" element={<Project />} />
+          <Route path="/priority_level" element={<ProjectLevel />} />
+          <Route path="/issue_category" element={<IssueCategory />} />
+          <Route path="/my_issue" element={<MyIssue />} />
+          <Route path="/add_issue" element={<MyissueForm />} />
+          <Route path="/qa_tasks" element={<QATask />} />
+          <Route path="/qa_tasks_detail" element={<QATaskDetail />} />
+          <Route path="/tl_tasks" element={<TeamLeaderTask />} />
+          <Route path="/tl_tasks_detail" element={<TeamLeaderTaskDetail />} />
+          <Route path="/central_admin_task_list" element={<CentralAdminTaskList />} />
+          <Route path="/central_admin_task_detail" element={<CentralAdminTaskDetail/>} />
+          
+          <Route path="/developer_tasks" element={<DeveloperTaskList />} />
+          <Route path="/org_structure" element={<OrgStructure />} />
+          
 
-                    <Route
-            path="/users"
-            element={
-              
-                <Users />
-             
-            }
-          />
+          <Route path="/basedata" element={<BaseData />} />
 
-        <Route 
-            path="/report-list"
-            element={
-                <ReportList/>
-            } 
-        />
-
-        <Route path="/report-list" element={<ReportList />}>
-  <Route path=":status" element={<ReportList />} />
-</Route>
-        
-
-         <Route
+          <Route
             path="/roles"
             element={
               //<ProtectedRoute requiredPermissions={['role_read']}>
-                <Roles />
+              <Roles />
               //</ProtectedRoute>
             }
           />
+        </Route>
 
-          </Route>
-      
         <Route
-          path="/"
+          path="/login"
           element={
             <PublicRoute>
               <Login />
             </PublicRoute>
           }
         />
-       
+
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

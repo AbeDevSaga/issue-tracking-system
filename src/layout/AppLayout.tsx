@@ -1,12 +1,12 @@
 // src/layout/AppLayout.tsx
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { SidebarProvider, useSidebar } from "../context/SidebarContext";
 import { useAuth } from "../contexts/AuthContext";
 import AppHeader from "./AppHeader";
 import AppSidebar from "./AppSidebar";
 import Backdrop from "./Backdrop";
 
-// Layout for users WITH sidebar (admins, teachers)
 const LayoutWithSidebar: React.FC = () => {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
 
@@ -30,7 +30,6 @@ const LayoutWithSidebar: React.FC = () => {
   );
 };
 
-// Layout for students (NO sidebar)
 const LayoutWithoutSidebar: React.FC = () => {
   return (
     <div className="min-h-screen">
@@ -42,12 +41,18 @@ const LayoutWithoutSidebar: React.FC = () => {
   );
 };
 
-// Main layout that chooses based on user role AND route
 const LayoutContent: React.FC = () => {
   const { user, loading } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
-  // Show loading while checking auth
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      navigate("/login");
+    }
+  }, [navigate]);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -56,23 +61,18 @@ const LayoutContent: React.FC = () => {
     );
   }
 
-  // Check if user is a student
-  const isStudent = user?.user_type === 'student';
-  
-  // Define student routes that should NOT have sidebar
+  const isStudent = user?.user_type === "student";
+
   const studentRoutes = [
-    '/student-dashboard',
-    '/all-courses', 
-    '/my-courses',
-    '/student-exam',
-    '/student-resources'
+    "/student-dashboard",
+    "/all-courses",
+    "/my-courses",
+    "/student-exam",
+    "/student-resources",
   ];
-  
+
   const isStudentRoute = studentRoutes.includes(location.pathname);
 
-  // Use sidebar layout for:
-  // - Non-student users (admins, teachers)
-  // - Student users on non-student routes (shouldn't happen, but safe)
   if (!isStudent || !isStudentRoute) {
     return (
       <SidebarProvider>
@@ -81,7 +81,6 @@ const LayoutContent: React.FC = () => {
     );
   }
 
-  // Student on student routes - no sidebar
   return <LayoutWithoutSidebar />;
 };
 

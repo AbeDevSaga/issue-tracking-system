@@ -17,13 +17,11 @@ export default function NotFound() {
             ERROR 404
           </h1>
 
-          {/* Light Mode Image */}
           <img
             src="/images/error/404.svg"
             alt="Page not found"
             className="dark:hidden mx-auto"
           />
-          {/* Dark Mode Image */}
           <img
             src="/images/error/404-dark.svg"
             alt="Page not found"
@@ -35,7 +33,7 @@ export default function NotFound() {
           </p>
 
           <Link
-            to="/"
+            to="/dashboard"
             className="inline-flex items-center justify-center rounded-lg bg-[#269A99] px-5 py-3.5 text-sm font-medium text-white shadow-theme-xs hover:bg-[#1d7d7d] transition-colors"
           >
             Back to
