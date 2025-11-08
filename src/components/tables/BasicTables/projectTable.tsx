@@ -12,22 +12,43 @@ import { useTranslation } from "react-i18next";
 import AddProject from "../../../pages/project/projectModal";
 import Alert from "../../ui/alert/Alert";
 
-interface Project {
+interface TeamMember {
   id: string;
-  organization_name: string;
-  project_name: string;
+  name: string;
 }
 
-// Mock data
+interface Project {
+  id: string;
+  project_name: string;
+  backend_team: TeamMember[];
+  frontend_team: TeamMember[];
+  api_team: TeamMember[];
+  devops_team: TeamMember[];
+  mobile_team: TeamMember[];
+  qa_team: TeamMember[];
+}
+
+const mockUsers: TeamMember[] = [
+  { id: "u1", name: "Alice" },
+  { id: "u2", name: "Bob" },
+  { id: "u3", name: "Charlie" },
+  { id: "u4", name: "Dina" },
+  { id: "u5", name: "Elias" },
+];
+
 const mockProjects: Project[] = [
   {
-    id: "org001",
-    organization_name:"ICS",
-    project_name: "Addis Ababa",
+    id: "proj001",
+    project_name: "Addis Ababa Revamp",
+    backend_team: [mockUsers[0], mockUsers[1]],
+    frontend_team: [mockUsers[2]],
+    api_team: [mockUsers[1], mockUsers[3]],
+    devops_team: [mockUsers[4]], 
+    mobile_team: [mockUsers[0], mockUsers[4]],
+    qa_team: [mockUsers[2]],
   },
 ];
 
-// Component
 export default function ProjectTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [entriesPerPage, setEntriesPerPage] = useState(5);
@@ -41,8 +62,7 @@ export default function ProjectTable() {
 
   const filteredProjects = useMemo(() => {
   return mockProjects.filter((project) =>
-    project.project_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    project.organization_name.toLowerCase().includes(searchTerm.toLowerCase())
+    project.project_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 }, [searchTerm]);
 
@@ -166,12 +186,6 @@ const handleFormSubmit = (values: Record<string, any>) => {
                 >
                   {t("project.project_name")}
                 </TableCell>
-                 <TableCell
-                  isHeader
-                  className="px-5 py-3 font-semibold text-white text-start"
-                >
-                  {t("organization.organization_name")}
-                </TableCell>
                 <TableCell
                   isHeader
                   className="px-5 py-3 font-semibold text-white text-start last:rounded-tr-xl"
@@ -190,11 +204,6 @@ const handleFormSubmit = (values: Record<string, any>) => {
                    <TableCell className="px-5 py-4 text-start">
                     <span className="font-medium text-[#1E516A]">
                       {project.project_name}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-5 py-4 text-start">
-                    <span className="font-medium text-[#1E516A]">
-                      {project.organization_name}
                     </span>
                   </TableCell>
                 
@@ -272,36 +281,81 @@ const handleFormSubmit = (values: Record<string, any>) => {
         </div>
       </div>
 
-    {isModalOpen && (
+   {isModalOpen && (
   <AddProject
     onClose={closeModal}
     onSubmit={handleFormSubmit}
     fields={[
-       {
-        id: "organization_name",
-        label: t("project.select_organization"),
-        type: "select",
-        options: [
-          { value: "MOFA", label: "MOFA" },
-          { value: "MESOB", label: "MESOB" },
-        ],
-        placeholder: "Select a project",
-        value: editData?.organization_name || "",
-      },
       {
         id: "project_name",
         label: t("project.project_name"),
         type: "text",
-        placeholder: "Enter Project name",
+        placeholder: "Enter project title",
         value: editData?.project_name || "",
       },
-      
-     
+      {
+        id: "backend_team",
+        label: "Backend",
+        type: "select",
+        multiple: true,
+        options: mockUsers.map((user) => ({
+          value: user.id,
+          label: user.name,
+        })),
+      },
+      {
+        id: "frontend_team",
+        label: "Frontend",
+        type: "select",
+        multiple: true,
+        options: mockUsers.map((user) => ({
+          value: user.id,
+          label: user.name,
+        })),
+      },
+      {
+        id: "api_team",
+        label: "API Integrator",
+        type: "select",
+        multiple: true,
+        options: mockUsers.map((user) => ({
+          value: user.id,
+          label: user.name,
+        })),
+      },
+      {
+        id: "devops_team",
+        label: "DevOps",
+        type: "select",
+        multiple: true,
+        options: mockUsers.map((user) => ({
+          value: user.id,
+          label: user.name,
+        })),
+      },
+      {
+        id: "mobile_team",
+        label: "Mobile App",
+        type: "select",
+        multiple: true,
+        options: mockUsers.map((user) => ({
+          value: user.id,
+          label: user.name,
+        })),
+      },
+      {
+        id: "qa_team",
+        label: "Quality Assurance",
+        type: "select",
+        multiple: true,
+        options: mockUsers.map((user) => ({
+          value: user.id,
+          label: user.name,
+        })),
+      },
     ]}
   />
 )}
-
-
     </>
   );
 }

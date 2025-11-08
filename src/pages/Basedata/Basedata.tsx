@@ -16,43 +16,18 @@ export default function Basedata() {
       route: "/organization",
     },
        {
+      title: t("basedata.org_structure_management"),
+      description: t("basedata.subtitle", { title: t("basedata.org_structure") }),
+      icon: <FaBuilding size={24} />,
+      route: "/org_structure",
+    },
+       {
       title: t("basedata.branch_management"),
       description: t("basedata.subtitle", { title: t("basedata.branch") }),
       icon: <FaBuilding size={24} />,
       route: "/branch",
     },
-         {
-      title: t("basedata.city_management"),
-      description: t("basedata.subtitle", { title: t("basedata.city") }),
-      icon: <FaCity size={24} />,
-      route: "/city",
-    },
-     {
-      
-      title: t("basedata.subcity_management"),
-      description: t("basedata.subtitle", { title: t("basedata.subcity") }),
-      icon: <FaCity size={24} />,
-      route: "/subcity",
-    },
-        {
-      title: t("basedata.region_management"),
-      description: t("basedata.subtitle", { title: t("basedata.city") }),
-      icon: <FaCity size={24} />,
-      route: "/region",
-    },    {
-      title: t("basedata.zone_management"),
-      description: t("basedata.subtitle", { title: t("basedata.city") }),
-      icon: <FaCity size={24} />,
-      route: "/zone",
-    },
-   
-   
-    {
-      title: t("basedata.woreda_management"),
-      description: t("basedata.subtitle", { title: t("basedata.woreda") }),
-      icon: <FaMapMarkerAlt size={24} />,
-      route: "/woreda",
-    },
+       
       {
       title: t("basedata.project_management"),
       description: t("basedata.subtitle", { title: t("basedata.project") }),

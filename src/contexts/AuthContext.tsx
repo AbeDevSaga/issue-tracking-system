@@ -2,7 +2,7 @@
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { authAPI } from '../services/api';
 import { AuthContextType, AuthResponse, LoginCredentials, RegisterData, User } from '../types/auth';
-
+import { useNavigate } from 'react-router';
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
@@ -22,32 +22,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Check if user has specific permission
+  
   const hasPermission = (permission: string): boolean => {
     if (!user || !user.permissions) return false;
     return user.permissions.includes(permission);
   };
 
-  // Check if user has any of the specified permissions
   const hasAnyPermission = (permissions: string[]): boolean => {
     if (!user || !user.permissions) return false;
     return permissions.some(permission => user.permissions.includes(permission));
   };
 
-  // Check if user has all specified permissions
   const hasAllPermissions = (permissions: string[]): boolean => {
     if (!user || !user.permissions) return false;
     return permissions.every(permission => user.permissions.includes(permission));
   };
 
-  // Check if user has specific role
   const hasRole = (roleName: string): boolean => {
     if (!user || !user.roles) return false;
     return user.roles.some(role => role.name === roleName);
   };
 
-  // Initialize auth state from localStorage
   useEffect(() => {
     const initializeAuth = (): void => {
       try {
@@ -130,6 +125,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setError(null);
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
+    
     console.log("AuthContext: Logout complete");
   };
 

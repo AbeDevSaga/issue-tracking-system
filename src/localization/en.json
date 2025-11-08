@@ -52,7 +52,17 @@
     "priority_level":"Priority Level",
     "risk_level_management":"Risk Level Management",
     "issue_category":"Issue Category",
-    "branch":"Branch"
+    "branch":"Branch",
+    "response_time":"Response Time",
+    "days":"Day/Days",
+    "org_structure":"Organization Structure",
+    "org_structure_management":"Organization Structure Management",
+    "color_code":"Color Code",
+    "user_management":"User Management"
+
+  },
+  "org_structure":{
+    "add_hierarchy":"Add Hierarchy"
   },
    "organization":{
     "add_organization":"Add Organization",
@@ -115,12 +125,59 @@
     "issue":{
      "issue_management":"Issue Management",
       "myissue":"My Issue",
-      "add_issue":"Add Issue",
+      "add_issue":"Report New Issue",
       "modal_title":"Add new Issue",
        "created_date":"Created Date",
       "priority_level":"Priority Level",
-      "category":"Issue Category"
-  }
+      "category":"Issue Category",
+      "issue_screenshot":"Issue Screenshot",
+      "action_taken":"Action Taken"
+  },
 
-  
+    "task_list":{
+    "tasklist":"TaskList",
+    "title":"Bug-Issue Tracking System",
+    "subtitle":"EAII QA Issue Management",
+    "priority_level":"Priority Level",
+     "category":"Issue Category",
+    "system_name":"System Name",
+    "due_date":"Due Date"
+  },
+   "QATask": {
+    "qa_task_list":"QA Task List",
+    "title":"Bug-Issue Tracking System",
+    "subtitle":"EAII QA Team – Issue Management",
+    "qa_task_detail":"QA Task Detail"
+  },
+    "TLTask": {
+    "tl_task_list":"Team Leader Task List",
+    "title":"Bug-Issue Tracking System",
+    "subtitle":"EAII Team Leader – Issue Management",
+    "assign_developer":"Assign Developer",
+    "task_summary":"Task Summary",
+    "developer":"Developer"
+  },
+   "DeveloperTask": {
+    "developer_task_list": "Developer Task List",
+    "title": "Bug-Issue Tracking System",
+    "subtitle": "EAII Developer – Issue Management"
+  },
+    "CATask":{
+     "ca_task_list": "Central Admin Task List",
+    "title": "Bug-Issue Tracking System",
+    "subtitle": "This is the issue  management of the  Organization central Admin",
+    "task_summary":"Task Summary"
+  },
+   "user":{
+    "user_name":"User Name",
+    "full_name":"Full Name",
+    "phone_number":"Phone Number",
+    "email":"Email",
+    "role":"Role",
+    "add_user":"Add User",
+    "user_type":"User Type",
+    "organization_name": "Organization Name"
+
+
+  }
 }

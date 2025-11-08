@@ -9,92 +9,154 @@ import {
   TableRow,
 } from "../../ui/table";
 import { useTranslation } from "react-i18next";
-import AddPriorityLevel from "../../../pages/priorityLevel/priorityLevelModal";
-import Alert from "../../../components/ui/alert/Alert";
+import AddUser from "../../../pages/Users/usersModal";
+import Alert from "../../ui/alert/Alert";
 
-interface PriorityLevel {
+interface User {
   id: string;
-  priority_level: string;
-  color_code: String;
-  response_time: number;
-  description: string;
+  full_name:String;
+  username: string;
+  phone_number: string;
+  email:String;
+  role:String;
+  user_type:String;
+  branch_id:String;
+  organization_name:String;
+}
+interface Organization {
+  id: string;
+  organization_name: string;
+  has_branch: boolean;
+}
+interface Branch {
+  id: string;
+  organization_id: string;
+  parent_hierarchy_id?: string;
+}
+interface Hierarchy {
+  id: string;
+  hierarchy_name: string;
+  parent_hierarchy_id?: string;
 }
 
-// Mock data
-const mockPriorityLevels: PriorityLevel[] = [
+interface Role {
+  id: string;
+  name:String;
+}
+const mockRoles: Role[] = [
+    {
+    id:"1",
+    name:"admin"
+    },
+     {
+    id:"1",
+    name:"developer"
+    },
+     {
+    id:"1",
+    name:"team leader"
+    },
+     {
+    id:"1",
+    name:"quality assurance"
+    },
+]
+const mockUsers: User[] = [
   {
     id: "org001",
-    priority_level: "critical",
-    response_time: 1,
-    color_code: "#f64f2aff",
-    description: "Handles system maintenance and updates.",
+    full_name:"Test User",
+    phone_number:"0912345678",
+    username: "test_user",
+    user_type:"internal",
+    email:"user@gmail.com",
+    role:"Developer",
+    branch_id:"3",
+    organization_name:"EPA"
   },
 ];
+const mockBranches: Branch[] = [
+ 
+];
+const mockHierarchies: Hierarchy[] = [
+  { id: "h1", hierarchy_name: "Central" },
+  { id: "h2", hierarchy_name: "City" , parent_hierarchy_id: "h1"},
+  { id: "h3", hierarchy_name: "Subcity", parent_hierarchy_id: "h2" },
+  { id: "h4", hierarchy_name: "Woreda", parent_hierarchy_id: "h3"},
+];
 
-// Component
-export default function CityTable() {
+// Sample organizations
+const mockOrganizations: Organization[] = [
+  { id: "org001", organization_name: "EPA", has_branch: true },
+  { id: "org002", organization_name: "Horizon", has_branch: false },
+  { id: "org003", organization_name: "EthioTech", has_branch: true },
+];
+
+
+export default function UserTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [entriesPerPage, setEntriesPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editData, setEditData] = useState<PriorityLevel | null>(null);
+  const [editData, setEditData] = useState<User | null>(null);
   const { t } = useTranslation();
   const [alert, setAlert] = useState<{ type: string; message: string } | null>(
     null
   );
 
-  const filteredPriorityLevel = useMemo(() => {
-    return mockPriorityLevels.filter((priority_level) =>
-      priority_level.priority_level.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm]);
+  const filteredUsers = useMemo(() => {
+  return mockUsers.filter((user) =>
+    user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.user_type.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+}, [searchTerm]);
 
 
   const startIndex = (currentPage - 1) * entriesPerPage;
-  const paginatedPriorityLevels = filteredPriorityLevel.slice(
+  const paginatedUsers = filteredUsers.slice(
     startIndex,
     startIndex + entriesPerPage
   );
-  const totalPages = Math.ceil(filteredPriorityLevel.length / entriesPerPage);
+  const totalPages = Math.ceil(filteredUsers.length / entriesPerPage);
 
-  // Handlers
   const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this Priority Level?")) {
-      console.log("Deleting city:", id);
+    if (confirm("Are you sure you want to delete this subcity?")) {
+      console.log("Deleting subcity:", id);
     }
   };
-  const openModal = (org?: PriorityLevel) => {
-    setEditData(org || null);
-    setIsModalOpen(true);
-  };
+const openModal = (org?: User) => {
+  setEditData(org || null);
+  setIsModalOpen(true);
+};
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setEditData(null);
-  };
+const closeModal = () => {
+  setIsModalOpen(false);
+  setEditData(null);
+};
 
   const handleView = (id: string) => {
-    console.log("Viewing city:", id);
+    console.log("Viewing subcity:", id);
   };
 
-  const handleEdit = (id: string) => {
-    const org = mockPriorityLevels.find((o) => o.id === id);
-    console.log("org", org)
-    if (org) openModal(org);
+const handleEdit = (id: string) => {
+  const org = mockUsers.find((o) => o.id === id);
+  console.log("org",org)
+  if (org) openModal(org);
 
-  };
+};
 
-  const handleFormSubmit = (values: Record<string, any>) => {
-    if (editData) {
-      console.log("Updating:", { ...editData, ...values });
-      setAlert({ type: "success", message: "Priority Level updated successfully!" });
-    } else {
-      console.log("Adding:", values);
-      setAlert({ type: "success", message: "Priority Level added successfully!" });
-    }
-    closeModal();
-    setTimeout(() => setAlert(null), 3000);
-  };
+const handleFormSubmit = (values: Record<string, any>) => {
+  if (editData) {
+    console.log("Updating:", { ...editData, ...values });
+    setAlert({ type: "success", message: "User updated successfully!" });
+  } else {
+    console.log("Adding:", values);
+    setAlert({ type: "success", message: "User added successfully!" });
+  }
+  closeModal();
+  setTimeout(() => setAlert(null), 3000);
+};
   return (
     <>
       {alert && (
@@ -136,7 +198,7 @@ export default function CityTable() {
           <div className="relative flex-1 max-w-md">
             <input
               type="text"
-              placeholder="Search Priority Levels..."
+              placeholder="Search users..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
@@ -144,10 +206,10 @@ export default function CityTable() {
           </div>
 
           <button
-            onClick={() => openModal()}
+            onClick={()=>openModal()}
             className="inline-flex items-center gap-2 px-4 py-2 bg-[#094C81] text-white rounded-lg hover:bg-blue-800 transition-colors"
           >
-            {t("priority_level.add_priority_level")}
+            {t("user.add_user")}
           </button>
         </div>
       </div>
@@ -167,21 +229,26 @@ export default function CityTable() {
                   isHeader
                   className="px-5 py-3 font-semibold text-white text-start"
                 >
-                  {t("basedata.priority_level")}
+                  {t("user.user_name")}
                 </TableCell>
-                <TableCell
+                 <TableCell
                   isHeader
                   className="px-5 py-3 font-semibold text-white text-start"
                 >
-                  {t("basedata.response_time")}
+                  {t("user.phone_number")}
                 </TableCell>
-                <TableCell
+                 <TableCell
                   isHeader
                   className="px-5 py-3 font-semibold text-white text-start"
                 >
-                  {t("basedata.color_code")}
+                  {t("user.email")}
                 </TableCell>
-
+                 <TableCell
+                  isHeader
+                  className="px-5 py-3 font-semibold text-white text-start"
+                >
+                  {t("user.role")}
+                </TableCell>
                 <TableCell
                   isHeader
                   className="px-5 py-3 font-semibold text-white text-start last:rounded-tr-xl"
@@ -192,46 +259,47 @@ export default function CityTable() {
             </TableHeader>
 
             <TableBody>
-              {paginatedPriorityLevels.map((priority_level, index) => (
-                <TableRow key={priority_level.id}>
+              {paginatedUsers.map((user, index) => (
+                <TableRow key={user.id}>
                   <TableCell className="px-4 py-3 text-[#1E516A] text-start">
                     {index + 1}
                   </TableCell>
-                  <TableCell className="px-5 py-4 text-start">
-                    <span className="font-medium px-2 py-1 rounded"style={{ backgroundColor: priority_level.color_code.toString() }}>
-                      {priority_level.priority_level}
+                   <TableCell className="px-5 py-4 text-start">
+                    <span className="font-medium text-[#1E516A]">
+                      {user.username}
                     </span>
                   </TableCell>
                   <TableCell className="px-5 py-4 text-start">
                     <span className="font-medium text-[#1E516A]">
-                      {priority_level.response_time} {t("basedata.days")}
+                      {user.phone_number}
                     </span>
                   </TableCell>
-                  <TableCell className="px-5 py-4 text-start">
-                    <span
-                      className="font-medium px-2 py-1 rounded"
-                      style={{ backgroundColor: priority_level.color_code.toString() }}
-                    >
-                      {priority_level.color_code.toString()}
+                   <TableCell className="px-5 py-4 text-start">
+                    <span className="font-medium text-[#1E516A]">
+                      {user.email}
+                    </span>
+                  </TableCell> <TableCell className="px-5 py-4 text-start">
+                    <span className="font-medium text-[#1E516A]">
+                      {user.role}
                     </span>
                   </TableCell>
-
+                
                   <TableCell className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => handleView(priority_level.id)}
+                        onClick={() => handleView(user.id)}
                         className="text-blue-500 hover:text-blue-600"
                       >
                         <EyeIcon className="w-5 h-5" />
                       </button>
                       <button
-                        onClick={() => handleEdit(priority_level.id)}
+                        onClick={() => handleEdit(user.id)}
                         className="text-gray-600 hover:text-blue-700"
                       >
                         <PencilIcon className="w-5 h-5" />
                       </button>
                       <button
-                        onClick={() => handleDelete(priority_level.id)}
+                        onClick={() => handleDelete(user.id)}
                         className="text-red-600 hover:text-red-700"
                       >
                         <TrashIcon className="w-5 h-5" />
@@ -248,17 +316,18 @@ export default function CityTable() {
       <div className="flex items-center justify-between p-4 border-t border-gray-100 dark:border-gray-800">
         <div className="text-[#1E516A] text-sm">
           Showing {startIndex + 1} to{" "}
-          {Math.min(startIndex + entriesPerPage, filteredPriorityLevel.length)}{" "}
-          of {filteredPriorityLevel.length} entries
+          {Math.min(startIndex + entriesPerPage, filteredUsers.length)}{" "}
+          of {filteredUsers.length} entries
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
             disabled={currentPage === 1}
-            className={`px-3 py-1 rounded ${currentPage === 1
+            className={`px-3 py-1 rounded ${
+              currentPage === 1
                 ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                 : "bg-white text-gray-700 hover:bg-gray-50"
-              }`}
+            }`}
           >
             Previous
           </button>
@@ -266,10 +335,11 @@ export default function CityTable() {
             <button
               key={i + 1}
               onClick={() => setCurrentPage(i + 1)}
-              className={`px-3 py-1 rounded ${currentPage === i + 1
+              className={`px-3 py-1 rounded ${
+                currentPage === i + 1
                   ? "bg-blue-600 text-white"
                   : "bg-white text-gray-700 hover:bg-gray-50"
-                }`}
+              }`}
             >
               {i + 1}
             </button>
@@ -277,48 +347,28 @@ export default function CityTable() {
           <button
             onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
             disabled={currentPage === totalPages}
-            className={`px-3 py-1 rounded ${currentPage === totalPages
+            className={`px-3 py-1 rounded ${
+              currentPage === totalPages
                 ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                 : "bg-white text-gray-700 hover:bg-gray-50"
-              }`}
+            }`}
           >
             Next
           </button>
         </div>
       </div>
 
-    {isModalOpen && (
-  <AddPriorityLevel
+{isModalOpen && (
+  <AddUser
     onClose={closeModal}
     onSubmit={handleFormSubmit}
     fields={[
-      {
-        id: "priority_level",
-        label: t("basedata.priority_level"),
-        type: "text",
-        placeholder: "Enter Priority level",
-        value: editData?.priority_level || "",
-      },
-      {
-        id: "color_code",
-        label: t("basedata.color_code"),
-        type: "color", // <-- color picker
-        value: editData?.color_code || "#000000", // default hex
-      },
-      {
-        id: "response_time",
-        label: t("basedata.response_time"),
-        type: "number",
-        placeholder: "Enter response time in number",
-        value: editData?.response_time || "",
-      },
-      {
-        id: "description",
-        label: t("common.description"),
-        type: "textarea",
-        placeholder: "Enter description",
-        value: editData?.description || "",
-      },
+      { id: "full_name", label: t("user.full_name"), type: "text", placeholder: "Enter Full Name", value: editData?.full_name || "" },
+      { id: "email", label: t("user.email"), type: "email", placeholder: "Enter Email", value: editData?.email || "" },
+      { id: "phone_number", label: t("user.phone_number"), type: "number", placeholder: "Enter Phone Number", value: editData?.phone_number || "" },
+      { id: "user_type", label: t("user.user_type"), type: "select", options: [{ value: "internal", label: "Internal" }, { value: "external", label: "External" }], placeholder: "Select User Type", value: editData?.user_type || "" },
+      { id: "organization_name", label: t("user.organization_name"), type: "select", options: [{ value: "EPA", label: "EPA" }, { value: "MESOB", label: "MESOB" }], placeholder: "Select Organization", value: editData?.organization_name || "" },
+   
     ]}
   />
 )}

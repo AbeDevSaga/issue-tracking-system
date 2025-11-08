@@ -1,4 +1,4 @@
-import { PencilIcon, EyeIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, EyeIcon, TrashIcon, UserPlusIcon } from "@heroicons/react/24/solid";
 import { useMemo, useState } from "react";
 import Badge from "../../ui/badge/Badge";
 import {
@@ -9,14 +9,17 @@ import {
   TableRow,
 } from "../../ui/table";
 import { useTranslation } from "react-i18next";
-import Alert from "../../../components/ui/alert/Alert";
+import AddMyIssue from "../../../pages/issue/my_issue_modal";
+import Alert from "../../ui/alert/Alert";
 import { useNavigate } from "react-router-dom";
 
-interface MyIssue {
+interface DeveloperTask {
   id: string;
   category: string;
+  organization: String;
   priority_level: string;
-  created_date: string;
+  system_name: string,
+  due_date: string;
   center_action: string;
   status: string;
   description: string;
@@ -26,12 +29,14 @@ interface MyIssue {
   issue_screenshot: File;
 }
 
-const mockIssues: MyIssue[] = [
+const mockIssues: DeveloperTask[] = [
   {
     id: "org001",
-    category: "Category 1",
+    category: "Ethiopian AI Institute",
+    organization: "MOFA",
+    system_name: "Human Resource Management System",
     priority_level: "High",
-    created_date: "2025-10-30",
+    due_date: "2025-10-30",
     center_action: "Handles system maintenance and updates.",
     status: "active",
     description: "System encountered network latency issues.",
@@ -42,22 +47,24 @@ const mockIssues: MyIssue[] = [
   },
 ];
 
-export default function MyissueTable() {
+export default function DeveloperTaskListTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [entriesPerPage, setEntriesPerPage] = useState(5);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [editData, setEditData] = useState<MyIssue | null>(null);
+  const [editData, setEditData] = useState<DeveloperTask | null>(null);
   const [selectedStatus, setSelectedStatus] = useState("");
   const { t } = useTranslation();
   const [alert, setAlert] = useState<{ type: string; message: string } | null>(
     null
   );
+  const navigate = useNavigate()
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const filteredissues = useMemo(() => {
     return mockIssues.filter((issue) => {
-      const issueDate = new Date(issue.created_date);
+      const issueDate = new Date(issue.due_date);
       const from = fromDate ? new Date(fromDate) : null;
       const to = toDate ? new Date(toDate) : null;
 
@@ -68,14 +75,13 @@ export default function MyissueTable() {
       const matchesSearch =
         issue.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
         issue.priority_level.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        issue.created_date.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        issue.due_date.toLowerCase().includes(searchTerm.toLowerCase()) ||
         issue.status.toLowerCase().includes(searchTerm.toLowerCase());
 
       return matchesSearch && matchesDate;
     });
   }, [mockIssues, searchTerm, fromDate, toDate]);
 
-  const navigate = useNavigate()
   const startIndex = (currentPage - 1) * entriesPerPage;
   const paginatedIssues = filteredissues.slice(
     startIndex,
@@ -88,11 +94,19 @@ export default function MyissueTable() {
       console.log("Deleting organization:", id);
     }
   };
-  const add_issue = (org?: MyIssue) => {
+  const openModal = (org?: DeveloperTask) => {
+  setEditData(org || null);
+  setIsModalOpen(true);
+};
+
+const closeModal = () => {
+  setIsModalOpen(false);
+  setEditData(null);
+};
+  const take_action = (org?: DeveloperTask) => {
     console.log("org", org)
     setEditData(org ?? null);
-    navigate("/add_issue", { state: { issue: org } });
-
+    navigate("/qa_tasks_detail", { state: { issue: org } });
   };
 
   const handleView = (id: string) => {
@@ -101,20 +115,10 @@ export default function MyissueTable() {
 
   const handleEdit = (id: string) => {
     const org = mockIssues.find((o) => o.id === id);
-    if (org) add_issue(org);
+    console.log("org", org)
 
   };
 
-  const handleFormSubmit = (values: Record<string, any>) => {
-    if (editData) {
-      console.log("Updating:", { ...editData, ...values });
-      setAlert({ type: "success", message: "Issue updated successfully!" });
-    } else {
-      console.log("Adding:", values);
-      setAlert({ type: "success", message: "Issue added successfully!" });
-    }
-    setTimeout(() => setAlert(null), 3000);
-  };
   return (
     <>
       {alert && (
@@ -205,15 +209,8 @@ export default function MyissueTable() {
             </svg>
           </div>
 
-          <button
-            onClick={() => add_issue()}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[#094C81] text-white rounded-lg hover:bg-blue-800 transition-colors"
-          >
-            {t("issue.add_issue")}
-          </button>
         </div>
       </div>
-
 
       <div className="max-w-full overflow-x-auto">
         <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
@@ -231,23 +228,23 @@ export default function MyissueTable() {
                   isHeader
                   className="px-5 py-3 font-semibold text-white text-start"
                 >
-                  {t("issue.category")}
+                  {t("task_list.system_name")}
+                </TableCell>
+                <TableCell
+                  isHeader
+                  className="px-5 py-3 font-semibold text-white text-start"
+                >
+                  {t("task_list.priority_level")}
                 </TableCell>
 
                 <TableCell
                   isHeader
                   className="px-5 py-3 font-semibold text-white text-start"
                 >
-                  {t("issue.priority_level")}
+                  {t("task_list.due_date")}
                 </TableCell>
 
 
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-semibold text-white text-start"
-                >
-                  {t("issue.created_date")}
-                </TableCell>
 
                 <TableCell
                   isHeader
@@ -272,61 +269,59 @@ export default function MyissueTable() {
                     {index + 1}
                   </TableCell>
                   <TableCell className="px-5 py-4 text-start">
-                    <span className="font-medium text-[#1E516A]">
-                      {issue.category}
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-[#1E516A] text-sm">
+                        {issue.organization}
+                      </span>
+                      <span className="text-gray-500 text-xs">
+                        {issue.system_name}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-start">
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-semibold
+      ${issue.priority_level === "Critical"
+                          ? "bg-red-100 text-red-700"
+                          : issue.priority_level === "High"
+                            ? "bg-orange-100 text-orange-700"
+                            : issue.priority_level === "Medium"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : issue.priority_level === "Low"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-gray-100 text-gray-600"
+                        }`}
+                    >
+                      {issue.priority_level}
                     </span>
                   </TableCell>
-                 <TableCell className="px-4 py-3 text-start">
-  <span
-    className={`px-2 py-1 rounded ${
-      issue.priority_level === "High"
-        ? "bg-red-100 text-red-800"
-        : issue.priority_level === "Medium"
-        ? "bg-yellow-100 text-yellow-800"
-        : "bg-green-100 text-green-800"
-    }`}
-  >
-    {issue.priority_level}
-  </span>
-</TableCell>
 
                   <TableCell className="px-4 py-3 text-[#1E516A] text-start">
-                    {issue.created_date}
+                    {issue.due_date}
                   </TableCell>
                   <TableCell className="px-4 py-3">
                     <Badge
                       size="sm"
-                      className={`px-3 py-1 rounded-full text-white ${issue.status === "active" ? "bg-yellow-600" : "bg-green-600"
+                      className={`px-3 py-1 rounded-full text-white ${issue.status ? "bg-yellow-600" : "bg-green-600"
                         }`}
                     >
-                      {issue.status === "active" ? "Pending" : "Accepted"}
+                      {issue.status ? "Pending" : "Accepted"}
                     </Badge>
-
                   </TableCell>
                   <TableCell className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => handleView(issue.id)}
-                        className="text-blue-500 hover:text-blue-600"
+                        onClick={() => take_action(issue)}
+                        className="flex items-center gap-2 text-blue-500 px-2 py-1 rounded hover:text-blue-600 transition-colors"
                       >
-                        <EyeIcon className="w-5 h-5" />
+                        {/* <UserPlusIcon className="h-5 w-5" /> */}
+                        <EyeIcon className="h-5 w-5" />
                       </button>
-                      <button
-                        onClick={() => handleEdit(issue.id)}
-                        className="text-gray-600 hover:text-blue-700"
-                      >
-                        <PencilIcon className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(issue.id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <TrashIcon className="w-5 h-5" />
-                      </button>
+
                     </div>
                   </TableCell>
                 </TableRow>
-              ))}
+              ))} 
             </TableBody>
           </Table>
         </div>
@@ -343,8 +338,8 @@ export default function MyissueTable() {
             onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
             disabled={currentPage === 1}
             className={`px-3 py-1 rounded ${currentPage === 1
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                : "bg-white text-gray-700 hover:bg-gray-50"
+              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+              : "bg-white text-gray-700 hover:bg-gray-50"
               }`}
           >
             Previous
@@ -354,8 +349,8 @@ export default function MyissueTable() {
               key={i + 1}
               onClick={() => setCurrentPage(i + 1)}
               className={`px-3 py-1 rounded ${currentPage === i + 1
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-700 hover:bg-gray-50"
+                ? "bg-blue-600 text-white"
+                : "bg-white text-gray-700 hover:bg-gray-50"
                 }`}
             >
               {i + 1}
@@ -365,14 +360,43 @@ export default function MyissueTable() {
             onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
             disabled={currentPage === totalPages}
             className={`px-3 py-1 rounded ${currentPage === totalPages
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                : "bg-white text-gray-700 hover:bg-gray-50"
+              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+              : "bg-white text-gray-700 hover:bg-gray-50"
               }`}
           >
             Next
           </button>
         </div>
       </div>
+ {isModalOpen && (
+  <AddPriorityLevel
+    onClose={closeModal}
+    onSubmit={handleFormSubmit}
+    fields={[
+      {
+        id: "priority_level",
+        label: t("basedata.priority_level"),
+        type: "text",
+        placeholder: "Enter Priority level",
+        value: editData?.priority_level || "",
+      },
+         {
+        id: "response_time",
+        label: t("basedata.response_time"),
+        type: "number",
+        placeholder: "Enter response time in number",
+        value: editData?.priority_level || "",
+      },
+        {
+        id: "description",
+        label: t("common.description"),
+        type: "textarea",
+        placeholder: "Enter description",
+        value: editData?.description || "",
+      },
+    ]}
+  />
+)}
     </>
   );
 }

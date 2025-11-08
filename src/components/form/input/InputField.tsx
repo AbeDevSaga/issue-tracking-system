@@ -52,21 +52,23 @@ const Input: FC<InputProps> = ({
 
   return (
     <div className="relative">
-      <input
-        type={type}
-        id={id}
-        name={name}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        required={required}
-        min={min}
-        max={max}
-        step={step}
-        disabled={disabled}
-        defaultValue={defaultValue}
-        className={inputClasses}
-      />
+     <input
+  type={type}
+  id={id}
+  name={name}
+  placeholder={placeholder}
+  value={value}
+  onChange={onChange}
+  required={required}
+  min={min}
+  max={max}
+  step={step}
+  disabled={disabled}
+  defaultValue={defaultValue}
+  className={inputClasses}
+  readOnly={type === "date" || type === "time"}
+/>
+
 
       {hint && (
         <p

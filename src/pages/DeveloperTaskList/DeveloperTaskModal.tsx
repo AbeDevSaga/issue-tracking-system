@@ -26,13 +26,13 @@ interface Field {
   value?: any;
 }
 
-interface AddMyIssueProps {
+interface FixIssueProps {
   onClose: () => void;
   onSubmit?: (values: Record<string, any>) => void;
   fields?: Field[];
 }
 
-export default function AddIssueCategory({ onClose, onSubmit, fields = [] }: AddMyIssueProps) {
+export default function AddDeveloperIssue({ onClose, onSubmit, fields = [] }: FixIssueProps) {
   const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -88,8 +88,8 @@ export default function AddIssueCategory({ onClose, onSubmit, fields = [] }: Add
           ✕
         </button>
 
-        <h2 className="text-2xl text-[#094C81] font-bold mb-1">{t("issue_category.add_issue_category")}</h2>
-        <p className="text-sm text-gray-500 mb-6">{t("issue_category.modal_title")}</p>
+        <h2 className="text-2xl text-[#094C81] font-bold mb-1">{t("DeveloperTask.fix_issue")}</h2>
+        <p className="text-sm text-gray-500 mb-6">{t("DeveloperTask.modal_title")}</p>
 
     {/* Progress Bar */}
 <div className="flex items-center justify-between mb-8 gap-4">
@@ -99,9 +99,7 @@ export default function AddIssueCategory({ onClose, onSubmit, fields = [] }: Add
 
     return (
       <div key={step.id} className="flex-1 min-w-0 flex flex-col items-center relative">
-        {/* Step rectangle */}
         <div className="w-full h-12 flex items-center justify-center bg-gray-100 rounded-md px-2">
-          {/* Step name */}
           <span className="text-sm font-medium text-center truncate">
             {step.id === 1
               ? "Issue/Bug Info"
@@ -111,7 +109,6 @@ export default function AddIssueCategory({ onClose, onSubmit, fields = [] }: Add
           </span>
         </div>
 
-        {/* Circle indicator */}
         <div
           className={`w-8 h-8 flex items-center justify-center rounded-full absolute -translate-y-1/2 ${
             isCompleted

@@ -54,8 +54,48 @@ const IssueIcon = () => (
     <line x1="12" y1="16" x2="12.01" y2="16" />
   </svg>
 );
+const TaskList = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <line x1="9" y1="6" x2="21" y2="6" />
+    <line x1="9" y1="12" x2="21" y2="12" />
+    <line x1="9" y1="18" x2="21" y2="18" />
+    <polyline points="3 6 5 8 7 4" />
+    <polyline points="3 12 5 14 7 10" />
+    <polyline points="3 18 5 20 7 16" />
+  </svg>
+);
 
+const TaskListIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polyline points="3 6 5 8 7 4" />
+    <polyline points="3 12 5 14 7 10" />
+    <polyline points="3 18 5 20 7 16" />
 
+    <line x1="9" y1="6" x2="21" y2="6" />
+    <line x1="9" y1="12" x2="21" y2="12" />
+    <line x1="9" y1="18" x2="21" y2="18" />
+  </svg>
+);
 const LogoIcon = ({ size = 24 }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -111,20 +151,21 @@ const navItems: NavItem[] = [
   {
     icon: <GroupIcon />,
     name: "User Management",
+    path: "/users"
     //permission: PERMISSIONS.USER_READ,
-    subItems: [
-      { 
-        name: "Role & Permissions ", 
-        path: "/roles", 
-       // permission: PERMISSIONS.ROLE_READ 
-      },
+    // subItems: [
+    //   { 
+    //     name: "Role & Permissions ", 
+    //     path: "/roles", 
+    //    // permission: PERMISSIONS.ROLE_READ 
+    //   },
       
-      { 
-        name: " Users", 
-        path: "/users", 
-      //  permission: PERMISSIONS.USER_READ 
-      },
-    ],
+    //   { 
+    //     name: " Users", 
+    //     path: "/users", 
+    //   //  permission: PERMISSIONS.USER_READ 
+    //   },
+    // ],
   },
 
   {
@@ -135,9 +176,30 @@ const navItems: NavItem[] = [
   
   {
     icon: <IssueIcon />,
-    name: "MyIssue",
+    name: "My Issue",
     path: "/my_issue",
   },
+   {
+    icon: <TaskList />,
+    name: "Central Admin Task List",
+    path: "/central_admin_task_list",
+  },
+  {
+    icon: <TaskList />,
+    name: "QA Task List",
+    path: "/qa_tasks", 
+  },
+    {
+    icon: <TaskList />,
+    name: "Team Leader Task List",
+    path: "/tl_tasks", 
+  },
+  {
+    icon: <TaskList />,
+    name: "Developer Task List",
+    path: "/developer_tasks", 
+  },
+
 ];
 
 const othersItems: NavItem[] = [
@@ -328,22 +390,25 @@ const othersItems: NavItem[] = [
                       : "0px",
                 }}
               >
-                <ul className="mt-2 space-y-1 ml-9">
-                  {nav.subItems.map((subItem) => (
-                    <li key={subItem.name}>
-                      <Link
-                        to={subItem.path}
-                        className={`menu-dropdown-item ${
-                          isActive(subItem.path)
-                            ? "menu-dropdown-item-active"
-                            : "menu-dropdown-item-inactive"
-                        }`}
-                      >
-                        {subItem.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+               <ul className="relative mt-2 ml-5">
+  <span className="absolute left-0 top-0 w-[2px] h-full bg-gray-300 dark:bg-gray-600"></span>
+
+  {nav.subItems.map((subItem, idx) => (
+    <li key={subItem.name} className="relative pl-4">
+      <Link
+        to={subItem.path}
+        className={`menu-dropdown-item block ${
+          isActive(subItem.path)
+            ? "menu-dropdown-item-active"
+            : "menu-dropdown-item-inactive"
+        }`}
+      >
+        {subItem.name}
+      </Link>
+    </li>
+  ))}
+</ul>
+
               </div>
             )}
           </li>
@@ -369,39 +434,48 @@ const othersItems: NavItem[] = [
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* 🔵  Logo */}
 
-      <div
-        className={`py-8 flex ${
-          !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-        }`}
-      >
-        <Link to="/" className="flex items-center gap-2 group">
-      {isExpanded || isHovered || isMobileOpen ? (
-        <>
-          <img
-            src={Logo}
-            alt="Logo"
-            // className="w-50 h-50"
-          />
-        
-        </>
-      ) : (
-        <img
-          src={Logo}
-          alt="Logo"
-          // className="w-8 h-8 object-contain  shadow-sm"
-        />
-      )}
-    </Link>
-      </div>
+   <div
+  className={`py-2 flex flex-col mb-4 ${
+    !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+  } border-b border-gray-300`}
+>
+  <Link
+    to="/"
+    className="flex flex-col items-center justify-center group p-2"
+  >
+      {isExpanded || isHovered || isMobileOpen ? (<>
+       <img
+      src={Logo}
+      alt="Logo"
+      className={isExpanded || isHovered || isMobileOpen ? "w-40" : "w-12"}
+    />
+  <h2 className="mt-2 text-xs uppercase text-center leading-[20px] text-[#094C81] dark:text-[#094C81] font-bold">
+  የኢትዮጵያ አርቴፊሻል ኢንተለጀንስ ተቋም
+</h2>
+<h2 className="text-xs uppercase text-center leading-[20px] text-[#094C81] dark:text-[#094C81] font-bold">
+  Ethiopian Artificial Intelligence
+</h2>
+</>):(<> 
+<img
+      src={Logo}
+      alt="Logo"
+      className={isExpanded || isHovered || isMobileOpen ? "w-40" : "w-12"}
+    />
+  
+</>)}
+   
+  </Link>
+
+</div>
+
 
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6">
           <div className="flex flex-col gap-4">
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 dark:text-gray-500 ${
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-[#094C81] dark:text-gray-500 ${
                   !isExpanded && !isHovered
                     ? "lg:justify-center"
                     : "justify-start"

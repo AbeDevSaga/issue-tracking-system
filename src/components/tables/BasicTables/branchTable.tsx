@@ -18,84 +18,64 @@ interface Organization {
   has_branch: boolean;
 }
 
-interface Branch {
+interface Hierarchy {
   id: string;
-  organizationId: string;      
-  organization_name?: string;
-  description: string;
-  has_branch: boolean;
-
-  regionId?: string;
-  cityId?: string;
-  subcityId?: string;
-  zoneId?: string;
-  woredaId?: string;
+  hierarchy_name: string;
+  parent_hierarchy_id?: string;
 }
 
-const mockBranches = [
-  {
-    id: "b001",
-    organization_name: "MESOB",
-    location_type: "region", 
-    region: "Oromia",
-    zone: "Zone A",
-    city: "",
-    subcity: "",
-    woreda: "Woreda 2",
-    description: "Main branch",
-    has_branch: true,
-  },
-  {
-    id: "b002",
-    organization_name: "ICS",
-    location_type: "city",
-    region: "",
-    zone: "",
-    city: "Addis Ababa",
-    subcity: "Subcity 1",
-    woreda: "Woreda 1",
-    description: "Second branch",
-    has_branch: true,
-  },
+interface Branch {
+  id: string;
+  organization_name?: string;
+  hierarchy_id: string;
+  branch_name:String;
+  description: string;
+  has_branch: boolean;
+}
+
+// Sample hierarchies
+const mockHierarchies: Hierarchy[] = [
+  { id: "h1", hierarchy_name: "Central" },
+  { id: "h2", hierarchy_name: "City" , parent_hierarchy_id: "h1"},
+  { id: "h3", hierarchy_name: "Subcity", parent_hierarchy_id: "h2" },
+  { id: "h4", hierarchy_name: "Woreda", parent_hierarchy_id: "h3"},
 ];
 
-
-const mockOrganizations = [
-  { id: "org001", organization_name: "MESOB", has_branch: true },
+// Sample organizations
+const mockOrganizations: Organization[] = [
+  { id: "org001", organization_name: "EPA", has_branch: true },
   { id: "org002", organization_name: "Horizon", has_branch: false },
   { id: "org003", organization_name: "EthioTech", has_branch: true },
 ];
 
-const mockRegions = [
-  { id: "r1", name: "Oromia" },
-  { id: "r2", name: "Addis Ababa" },
+// Sample branches
+const mockBranches: Branch[] = [
+  {
+    id: "b001",
+    organization_name: "MESOB",
+    hierarchy_id: "h1",
+    branch_name:"Branch 1",
+    description: "City-level main branch",
+    has_branch: true,
+  },
+  {
+    id: "b002",
+    organization_name: "MESOB",
+    hierarchy_id: "h2",
+    branch_name:"Branch 2",
+    description: "Subcity branch",
+    has_branch: true,
+  },
+  {
+    id: "b003",
+    organization_name: "MESOB",
+    hierarchy_id: "h3",
+    branch_name:"Branch 3",
+    description: "Woreda branch",
+    has_branch: true,
+  },
 ];
 
-const mockCities = [
-  { id: "c1", regionId: "r1", name: "Adama" },
-  { id: "c2", regionId: "r1", name: "Bishoftu" },
-  { id: "c3", regionId: "r2", name: "Addis Ketema" },
-];
-
-const mockSubcities = [
-  { id: "sc1", cityId: "c1", name: "Subcity 1" },
-  { id: "sc2", cityId: "c1", name: "Subcity 2" },
-  { id: "sc3", cityId: "c3", name: "Subcity 3" },
-];
-
-const mockZones = [
-  { id: "z1", regionId: "r1", name: "Zone A" },
-  { id: "z2", regionId: "r1", name: "Zone B" },
-];
-
-const mockWoredas = [
-  { id: "w1", zoneId: "z1", subcityId: null, name: "Woreda 1" },
-  { id: "w2", zoneId: null, subcityId: "sc1", name: "Woreda 2" },
-  { id: "w3", zoneId: null, subcityId: "sc3", name: "Woreda 3" },
-];
-
-
-// Component
 export default function BranchTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [entriesPerPage, setEntriesPerPage] = useState(5);
@@ -106,23 +86,15 @@ export default function BranchTable() {
   const [alert, setAlert] = useState<{ type: string; message: string } | null>(
     null
   );
-  const [branchFilter, setBranchFilter] = useState("all");
-const filteredBranches = useMemo(() => {
-  const term = searchTerm.toLowerCase();
 
-  return mockBranches.filter((org) => {
-    const branchType = org.has_branch
-      ? "multi-branch organization"
-      : "central only";
-
-    return (
-      org.organization_name.toLowerCase().includes(term) ||
-      org.description.toLowerCase().includes(term) ||
-      branchType.includes(term)
+  // Filter branches
+  const filteredBranches = useMemo(() => {
+    const term = searchTerm.toLowerCase();
+    return mockBranches.filter((b) => 
+      b.organization_name?.toLowerCase().includes(term) ||
+      b.description.toLowerCase().includes(term)
     );
-  });
-}, [searchTerm]);
-
+  }, [searchTerm]);
 
   const startIndex = (currentPage - 1) * entriesPerPage;
   const paginatedBranches = filteredBranches.slice(
@@ -131,59 +103,52 @@ const filteredBranches = useMemo(() => {
   );
   const totalPages = Math.ceil(filteredBranches.length / entriesPerPage);
 
+  const openModal = (branch?: Branch) => {
+    setEditData(branch ?? null);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditData(null);
+  };
+
+  const handleFormSubmit = (values: Record<string, any>) => {
+    if (editData) {
+      console.log("Updating:", { ...editData, ...values });
+      setAlert({ type: "success", message: "Branch updated successfully!" });
+    } else {
+      console.log("Adding:", values);
+      setAlert({ type: "success", message: "Branch added successfully!" });
+    }
+    closeModal();
+    setTimeout(() => setAlert(null), 3000);
+  };
+
   const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this organization?")) {
-      console.log("Deleting organization:", id);
+    if (confirm("Are you sure you want to delete this branch?")) {
+      console.log("Deleting branch:", id);
     }
   };
-const openModal = (org?: Branch) => {
-  console.log("org",org)
-  setEditData(org ?? null);
-  setIsModalOpen(true);
-};
-
-const closeModal = () => {
-  setIsModalOpen(false);
-  setEditData(null);
-};
 
   const handleView = (id: string) => {
-    console.log("Viewing organization:", id);
+    console.log("Viewing branch:", id);
   };
 
-const handleEdit = (id: string) => {
-  const org = mockBranches.find((o) => o.id === id);
-  console.log("org",org)
-  if (org) openModal(org);
+  const handleEdit = (id: string) => {
+    const branch = mockBranches.find((b) => b.id === id);
+    if (branch) openModal(branch);
+  };
 
-};
-
-const handleFormSubmit = (values: Record<string, any>) => {
-  if (editData) {
-    // ✏️ Edit existing
-    console.log("Updating:", { ...editData, ...values });
-    setAlert({ type: "success", message: "Branch updated successfully!" });
-  } else {
-    // ➕ Add new
-    console.log("Adding:", values);
-    setAlert({ type: "success", message: "Branch added successfully!" });
-  }
-  closeModal();
-  setTimeout(() => setAlert(null), 3000);
-};
   return (
     <>
-      {/* ✅ Alert (Top Right) */}
+      {/* Alert */}
       {alert && (
         <div className="fixed top-4 right-4 z-50 w-full max-w-xs">
           <div className="scale-95 shadow-md rounded-md">
             <Alert
               variant={alert.type}
-              title={
-                <span className="text-sm font-semibold capitalize">
-                  {alert.type}
-                </span>
-              }
+              title={<span className="text-sm font-semibold capitalize">{alert.type}</span>}
               message={<span className="text-xs">{alert.message}</span>}
               showLink={false}
             />
@@ -191,16 +156,13 @@ const handleFormSubmit = (values: Record<string, any>) => {
         </div>
       )}
 
-      {/* ✅ Table Header */}
+      {/* Header Controls */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 gap-4 border-b border-gray-100 dark:border-gray-800">
         <div className="flex items-center gap-2">
           <span className="text-[#1E516A] text-sm">Show</span>
           <select
             value={entriesPerPage}
-            onChange={(e) => {
-              setEntriesPerPage(Number(e.target.value));
-              setCurrentPage(1);
-            }}
+            onChange={(e) => { setEntriesPerPage(Number(e.target.value)); setCurrentPage(1); }}
             className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value={5}>5</option>
@@ -214,24 +176,15 @@ const handleFormSubmit = (values: Record<string, any>) => {
           <div className="relative flex-1 max-w-md">
             <input
               type="text"
-              placeholder="Search organizations..."
+              placeholder="Search branches..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
             />
-            {/* <select
-  value={branchFilter}
-  onChange={(e) => setBranchFilter(e.target.value)}
-  className="ml-2 border p-2 rounded"
->
-  <option value="all">All</option>
-  <option value="multi">Multi-Branch</option>
-  <option value="central">Central Only</option>
-</select> */}
           </div>
 
           <button
-            onClick={()=>openModal()}
+            onClick={() => openModal()}
             className="inline-flex items-center gap-2 px-4 py-2 bg-[#094C81] text-white rounded-lg hover:bg-blue-800 transition-colors"
           >
             {t("branch.add_branch")}
@@ -239,99 +192,76 @@ const handleFormSubmit = (values: Record<string, any>) => {
         </div>
       </div>
 
+      {/* Table */}
       <div className="max-w-full overflow-x-auto">
         <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
-         <Table>
-  <TableHeader className="bg-[#094C81] h-[60px]">
-    <TableRow>
-      <TableCell isHeader className="px-5 py-3 font-semibold text-white text-start first:rounded-tl-xl">
-        {t("common.id")}
-      </TableCell>
-      <TableCell isHeader className="px-5 py-3 font-semibold text-white text-start">
-        {t("organization.organization_name")}
-      </TableCell>
-      <TableCell isHeader className="px-5 py-3 font-semibold text-white text-start">
-        {t("branch.branch_type")}
-      </TableCell>
-      <TableCell isHeader className="px-5 py-3 font-semibold text-white text-start">
-        {t("branch.location")}
-      </TableCell>
-      <TableCell isHeader className="px-5 py-3 font-semibold text-white text-start last:rounded-tr-xl">
-        {t("common.action")}
-      </TableCell>
-    </TableRow>
-  </TableHeader>
+          <Table>
+            <TableHeader className="bg-[#094C81] h-[60px]">
+              <TableRow>
+                <TableCell isHeader className="px-5 py-3 font-semibold text-white text-start first:rounded-tl-xl">
+                  {t("common.id")}
+                </TableCell>
+                <TableCell isHeader className="px-5 py-3 font-semibold text-white text-start">
+                  {t("organization.organization_name")}
+                </TableCell>
+                <TableCell isHeader className="px-5 py-3 font-semibold text-white text-start">
+                  {t("branch.hierarchy_level")}
+                </TableCell>
+                 <TableCell isHeader className="px-5 py-3 font-semibold text-white text-start">
+                  {t("branch.branch_name")}
+                </TableCell>
+                <TableCell isHeader className="px-5 py-3 font-semibold text-white text-start last:rounded-tr-xl">
+                  {t("common.action")}
+                </TableCell>
+              </TableRow>
+            </TableHeader>
 
-  <TableBody>
-    {paginatedBranches.map((branch, index) => (
-      <TableRow key={branch.id}>
-        <TableCell className="px-4 py-3 text-[#1E516A] text-start">{index + 1}</TableCell>
-
-        <TableCell className="px-5 py-4 text-start">
-          <span className="font-medium text-[#1E516A]">{branch.organization_name}</span>
-        </TableCell>
-
-        <TableCell className="px-4 py-3">
-          <Badge
-            size="sm"
-            className={`px-3 py-1 rounded-full text-white ${
-              branch.has_branch ? "bg-green-600" : "bg-red-600"
-            }`}
-          >
-            {branch.has_branch ? "Multi-Branch" : "Central Only"}
-          </Badge>
-        </TableCell>
-
-        <TableCell className="px-4 py-3 text-[#1E516A] text-start">
-          {branch.location_type === "city" ? (
-            <>
-              {/* {branch.city} / {branch.subcity} / {branch.woreda} */}
-              {branch.city}
-            </>
-          ) : (
-            <>
-              {/* {branch.region} / {branch.zone} / {branch.woreda} */}
-             {branch.region}
-            </>
-          )}
-        </TableCell>
-
-        <TableCell className="px-4 py-3">
-          <div className="flex items-center gap-2">
-            <button onClick={() => handleView(branch.id)} className="text-blue-500 hover:text-blue-600">
-              <EyeIcon className="w-5 h-5" />
-            </button>
-            <button onClick={() => handleEdit(branch.id)} className="text-gray-600 hover:text-blue-700">
-              <PencilIcon className="w-5 h-5" />
-            </button>
-            <button onClick={() => handleDelete(branch.id)} className="text-red-600 hover:text-red-700">
-              <TrashIcon className="w-5 h-5" />
-            </button>
-          </div>
-        </TableCell>
-      </TableRow>
-    ))}
-  </TableBody>
-</Table>
-
+            <TableBody>
+              {paginatedBranches.map((branch, index) => {
+                const hierarchy = mockHierarchies.find(h => h.id === branch.hierarchy_id);
+                return (
+                  <TableRow key={branch.id}>
+                    <TableCell className="px-4 py-3 text-[#1E516A] text-start">{index + 1}</TableCell>
+                    <TableCell className="px-5 py-4 text-start">
+                      <span className="font-medium text-[#1E516A]">{branch.organization_name}</span>
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-[#1E516A]">
+                      {hierarchy?.hierarchy_name || "—"}
+                    </TableCell>
+                      <TableCell className="px-4 py-3 text-[#1E516A]">
+                      {branch?.branch_name || "—"}
+                    </TableCell>
+                    <TableCell className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => handleView(branch.id)} className="text-blue-500 hover:text-blue-600">
+                          <EyeIcon className="w-5 h-5" />
+                        </button>
+                        <button onClick={() => handleEdit(branch.id)} className="text-gray-600 hover:text-blue-700">
+                          <PencilIcon className="w-5 h-5" />
+                        </button>
+                        <button onClick={() => handleDelete(branch.id)} className="text-red-600 hover:text-red-700">
+                          <TrashIcon className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         </div>
       </div>
 
+      {/* Pagination */}
       <div className="flex items-center justify-between p-4 border-t border-gray-100 dark:border-gray-800">
         <div className="text-[#1E516A] text-sm">
-          Showing {startIndex + 1} to{" "}
-          {Math.min(startIndex + entriesPerPage, filteredBranches.length)}{" "}
-          of {filteredBranches.length} entries
+          Showing {startIndex + 1} to {Math.min(startIndex + entriesPerPage, filteredBranches.length)} of {filteredBranches.length} entries
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
             disabled={currentPage === 1}
-            className={`px-3 py-1 rounded ${
-              currentPage === 1
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                : "bg-white text-gray-700 hover:bg-gray-50"
-            }`}
+            className={`px-3 py-1 rounded ${currentPage === 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 hover:bg-gray-50"}`}
           >
             Previous
           </button>
@@ -339,11 +269,7 @@ const handleFormSubmit = (values: Record<string, any>) => {
             <button
               key={i + 1}
               onClick={() => setCurrentPage(i + 1)}
-              className={`px-3 py-1 rounded ${
-                currentPage === i + 1
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-700 hover:bg-gray-50"
-              }`}
+              className={`px-3 py-1 rounded ${currentPage === i + 1 ? "bg-blue-600 text-white" : "bg-white text-gray-700 hover:bg-gray-50"}`}
             >
               {i + 1}
             </button>
@@ -351,113 +277,54 @@ const handleFormSubmit = (values: Record<string, any>) => {
           <button
             onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
             disabled={currentPage === totalPages}
-            className={`px-3 py-1 rounded ${
-              currentPage === totalPages
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                : "bg-white text-gray-700 hover:bg-gray-50"
-            }`}
+            className={`px-3 py-1 rounded ${currentPage === totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 hover:bg-gray-50"}`}
           >
             Next
           </button>
         </div>
       </div>
-{isModalOpen && (
-  <AddBranch
-    onClose={closeModal}
-    onSubmit={handleFormSubmit}
-    organizations={mockOrganizations.filter(org => org.has_branch)} // Only show orgs with has_branch true
-    regions={mockRegions}
-    cities={mockCities}
-    subcities={mockSubcities}
-    zones={mockZones}
-    woredas={mockWoredas}
-    fields={[
-      // Organization
-      {
-        id: "organizationId", // match Branch interface
-        label: t("organization.organization_name"),
-        type: "select",
-        options: mockOrganizations
-          .filter(org => org.has_branch)
-          .map(o => ({ value: o.id, label: o.organization_name })),
-        value: editData?.organizationId || "",
-      },
-      // Location Type
-      {
-        id: "location_type",
-        label: "Location Type",
-        type: "select",
-        options: [
-          { value: "city", label: "City" },
-          { value: "region", label: "Region" },
-        ],
-        value: editData?.location_type || "",
-      },
-      // Region
-      {
-        id: "regionId",
-        label: "Region",
-        type: "select",
-        options: mockRegions.map(r => ({ value: r.id, label: r.name })),
-        value: editData?.regionId || "",
-      },
-      // City
-      {
-        id: "cityId",
-        label: "City",
-        type: "select",
-        options: mockCities
-          .filter(c => c.regionId === editData?.regionId)
-          .map(c => ({ value: c.id, label: c.name })),
-        value: editData?.cityId || "",
-      },
-      // Subcity
-      {
-        id: "subcityId",
-        label: "Subcity",
-        type: "select",
-        options: mockSubcities
-          .filter(sc => sc.cityId === editData?.cityId)
-          .map(sc => ({ value: sc.id, label: sc.name })),
-        value: editData?.subcityId || "",
-      },
-      // Zone
-      {
-        id: "zoneId",
-        label: "Zone",
-        type: "select",
-        options: mockZones
-          .filter(z => z.regionId === editData?.regionId)
-          .map(z => ({ value: z.id, label: z.name })),
-        value: editData?.zoneId || "",
-      },
-      // Woreda
-      {
-        id: "woredaId",
-        label: "Woreda",
-        type: "select",
-        options: mockWoredas
-          .filter(
-            w => w.zoneId === editData?.zoneId || w.subcityId === editData?.subcityId
-          )
-          .map(w => ({ value: w.id, label: w.name })),
-        value: editData?.woredaId || "",
-      },
-      // Description
-      {
-        id: "description",
-        label: t("common.description"),
-        type: "textarea",
-        placeholder: "Enter description",
-        value: editData?.description || "",
-      },
-     
-    ]}
-  />
-)}
 
+      {isModalOpen && (
+        <AddBranch
+  onClose={closeModal}
+  onSubmit={handleFormSubmit}
+  organizations={mockOrganizations.filter(org => org.has_branch)}
+  hierarchies={mockHierarchies}
+  fields={[
+    {
+      id: "organizationId",
+      label: t("organization.organization_name"),
+      type: "select",
+      options: mockOrganizations
+        .filter(org => org.has_branch)
+        .map(o => ({ value: o.id, label: o.organization_name })),
+      value: editData?.organization_name || "",
+    },
+    {
+      id: "hierarchy_id",
+      label: t("branch.hierarchy_level"),
+      type: "select",
+      options: mockHierarchies.map(h => ({ value: h.id, label: h.hierarchy_name })),
+      value: editData?.hierarchy_id || "",
+    },
+    {
+      id: "branch_name",
+      label: t("branch.branch_name"),
+      type: "text",
+      placeholder: "Enter branch name",
+      value: editData?.branch_name || "",
+    },
+    {
+      id: "description",
+      label: t("common.description"),
+      type: "textarea",
+      placeholder: "Enter description (optional)",
+      value: editData?.description || "",
+    },
+  ]}
+/>
 
-
+      )}
     </>
   );
 }
