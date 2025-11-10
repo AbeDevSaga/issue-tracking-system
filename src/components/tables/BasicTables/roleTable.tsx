@@ -274,25 +274,26 @@ const handleFormSubmit = (values: Record<string, any>) => {
   <AddRole
     onClose={closeModal}
     onSubmit={handleFormSubmit}
-    fields={[
-      {
-        id: "role_name",
-        label: t("role.role_name"),
-        type: "text",
-        placeholder: "Enter role name",
-        value: editData?.role_name || "",
-      },
-     {
-        id: "permissions",
-        label: "Frontend",
-        type: "select",
-        multiple: true,
-        options: mockPermissions.map((permissions) => ({
-          value: permissions.id,
-          label: permissions.resource,
-        })),
-      },
-    ]}
+   fields={[
+  {
+    id: "role_name",
+    label: t("role.role_name"),
+    type: "text",
+    placeholder: "Enter role name",
+    value: editData?.role_name || "",
+  },
+  {
+    id: "permissions",
+    label: "Permissions",
+    type: "checkbox-group",
+    options: mockPermissions.map((perm) => ({
+      value: perm.id,
+      label: `${perm.resource} - ${perm.action}`,
+    })),
+    value: editData?.permissions?.map(p => p.id) || [],
+  },
+]}
+
   />
 )}
 
