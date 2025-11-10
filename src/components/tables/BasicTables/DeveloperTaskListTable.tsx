@@ -106,7 +106,7 @@ const closeModal = () => {
   const take_action = (org?: DeveloperTask) => {
     console.log("org", org)
     setEditData(org ?? null);
-    navigate("/qa_tasks_detail", { state: { issue: org } });
+    navigate("/developer_tasks_detail", { state: { issue: org } });
   };
 
   const handleView = (id: string) => {
@@ -368,35 +368,7 @@ const closeModal = () => {
           </button>
         </div>
       </div>
- {isModalOpen && (
-  <AddPriorityLevel
-    onClose={closeModal}
-    onSubmit={handleFormSubmit}
-    fields={[
-      {
-        id: "priority_level",
-        label: t("basedata.priority_level"),
-        type: "text",
-        placeholder: "Enter Priority level",
-        value: editData?.priority_level || "",
-      },
-         {
-        id: "response_time",
-        label: t("basedata.response_time"),
-        type: "number",
-        placeholder: "Enter response time in number",
-        value: editData?.priority_level || "",
-      },
-        {
-        id: "description",
-        label: t("common.description"),
-        type: "textarea",
-        placeholder: "Enter description",
-        value: editData?.description || "",
-      },
-    ]}
-  />
-)}
+
     </>
   );
 }

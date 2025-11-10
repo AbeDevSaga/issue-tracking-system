@@ -7,8 +7,8 @@ import Screenshot1 from "../../assets/screenshot1.png";
 import Screenshot2 from "../../assets/screenshot2.png";
 import Screenshot3 from "../../assets/screenshot2.png";
 import Alert from "../../components/ui/alert/Alert";
-import AssignDeveloper from "./TeamLeaderTaskModal";
-export default function TeamLeaderTask_Detail() {
+import AssignDeveloper from "./QAExpertTaskModal";
+export default function CentralAdminTask_Detail() {
   const { t } = useTranslation();
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [modalImageIndex, setModalImageIndex] = useState<number | null>(null);
@@ -36,6 +36,18 @@ export default function TeamLeaderTask_Detail() {
   const closeReworkModal = () => setReworkModal(false);
   const closeModal = () => setModalImageIndex(null);
 
+  const handleMarkAsInProgress = async () => {
+    try {
+      setAlert({ type: "success", message: "Status updated to In Progress!" });
+      setSelectedAction(null);
+      setTimeout(() => setAlert(null), 2000);
+    } catch (error) {
+      setAlert({ type: "error", message: "Error updating status." });
+      console.error(error);
+      setTimeout(() => setAlert(null), 3000);
+    }
+  };
+
   const openAssignModal = () => {
     setIsModalOpen(true);
   };
@@ -49,15 +61,15 @@ export default function TeamLeaderTask_Detail() {
   };
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setAlert({ type: "success", message: "Description added successfully!" });
+    setAlert({ type: "success", message: "Issue Esclated successfully!" });
     setSelectedAction(null);
     setTimeout(() => {
       setAlert(null);
     }, 1500);
   };
-    const handleSubmitDocument = (e: React.FormEvent) => {
+  const handleSubmitDocument = (e: React.FormEvent) => {
     e.preventDefault();
-    setAlert({ type: "success", message: "File and Description added successfully!" });
+    setAlert({ type: "success", message: "Issue Solved successfully!" });
     setSelectedAction(null);
     setTimeout(() => {
       setAlert(null);
@@ -75,8 +87,8 @@ export default function TeamLeaderTask_Detail() {
         >
           <div
             className={`transition-all duration-500 ease-in-out ${selectedAction === "resolve" || selectedAction === "escalate"
-                ? "lg:pr-[380px]"
-                : ""
+              ? "lg:pr-[380px]"
+              : ""
               }`}
           >
             <div className="flex flex-col w-full">
@@ -109,13 +121,7 @@ export default function TeamLeaderTask_Detail() {
                 style={{ backgroundColor: "rgba(9, 76, 129, 0.05)" }}
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-y-2">
-                  <div>
-                    <p className="font-semibold text-[#1E516A] text-sm">
-                      Organization
-                    </p>
-                    <p className="text-gray-700">Addis Ababa City Admin</p>
-                  </div>
-                  <div>
+                                  <div>
                     <p className="font-semibold text-[#1E516A] text-sm">
                       System
                     </p>
@@ -133,23 +139,32 @@ export default function TeamLeaderTask_Detail() {
                     </p>
                     <p className="text-gray-700">Addis Ketema IT Dep.</p>
                   </div>
-                </div>
-
-                <div className="mt-4">
-                  <p className="font-semibold text-[#1E516A] text-sm">
+                  <div >
+                 <p className="font-semibold text-[#1E516A] text-sm">
                     Reported On
                   </p>
                   <p className="text-gray-700">2025-11-02 09:30 am</p>
                 </div>
-
-                <div className="mt-4">
-                  <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3 text-gray-700">
-                    <p className="font-semibold text-[#1E516A] text-sm mb-1">
-                      Description
-                    </p>
-                    Database connection timeout occurring during peak hours
-                  </div>
                 </div>
+
+             
+
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3 text-gray-700">
+    <p className="font-semibold text-[#1E516A] text-sm mb-1">
+      Description
+    </p>
+    Database connection timeout occurring during peak hours
+  </div>
+
+  <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3 text-gray-700">
+    <p className="font-semibold text-[#1E516A] text-sm mb-1">
+      Action Taken
+    </p>
+    Database connection timeout occurring during peak hours
+  </div>
+</div>
+
               </div>
 
               <div className="bg-white border border-[#BFD7EA] rounded-lg p-3 flex-1">
@@ -176,6 +191,14 @@ export default function TeamLeaderTask_Detail() {
               <div className="flex flex-col md:flex-row gap-4 mb-6">
                 {[
                   {
+                    key: "mark_as_inprogress",
+                    label: "Mark as Inprogress",
+                    desc: "Start working on this issue It will update the status to “In progress",
+                    color: "#c2b56cff",
+                    bg: "#E7F3FF",
+                    border: "#BFD7EA",
+                  },
+                  {
                     key: "resolve",
                     label: "Resolve Issue",
                     desc: "You have fixed the issue. Provide resolution detail to close the issue.",
@@ -194,7 +217,14 @@ export default function TeamLeaderTask_Detail() {
                 ].map((action) => (
                   <button
                     key={action.key}
-                    onClick={() => setSelectedAction(action.key)}
+                    onClick={() => {
+                      if (action.key === "mark_as_inprogress") {
+                        handleMarkAsInProgress();
+                          setSelectedAction(action.key);
+                      } else {
+                        setSelectedAction(action.key);
+                      }
+                    }}
                     className={`flex-1 text-left border rounded-lg p-4 transition-all ${selectedAction === action.key
                       ? `border-[${action.border}] bg-[${action.bg}]`
                       : "border-[#D5E3EC] bg-white"
@@ -288,72 +318,61 @@ export default function TeamLeaderTask_Detail() {
             </div>
           )}
 
-          <AnimatePresence>
-            {selectedAction && (
-              <motion.div
-                key={selectedAction}
-                initial={{ opacity: 0, x: 100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 100 }}
-                transition={{ duration: 0.35, ease: "easeInOut" }}
-                className="absolute top-0 right-0 w-full lg:w-[360px] bg-white border-l border-[#D5E3EC] h-full p-6 flex flex-col gap-4"
-              >
-                {selectedAction === "resolve" ? (
-                  <>
-                    <h4 className="font-semibold text-[#1E516A]">
-                      Document Attachment
-                    </h4>
-                    <div className="border border-dashed border-[#BFD7EA] rounded-lg flex flex-col items-center justify-center p-6 text-gray-500 hover:bg-[#F9FBFC] transition">
-                      <Upload className="w-8 h-8 mb-2 text-[#1E516A]" />
-                      <p className="text-sm">
-                        Drag your file(s) or{" "}
-                        <span className="text-[#1E516A] underline cursor-pointer">
-                          browse
-                        </span>
-                      </p>
-                      <p className="text-xs mt-1">Max xx MB files allowed</p>
-                    </div>
+        <AnimatePresence>
+  {(selectedAction === "resolve" || selectedAction === "escalate") && (
+    <motion.div
+      key={selectedAction}
+      initial={{ opacity: 0, x: 100 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 100 }}
+      transition={{ duration: 0.35, ease: "easeInOut" }}
+      className="absolute top-0 right-0 w-full lg:w-[360px] bg-white border-l border-[#D5E3EC] h-full p-6 flex flex-col gap-4"
+    >
+ 
+        <>
+          <h4 className="font-semibold text-[#1E516A]">Document Attachment</h4>
+          <div className="border border-dashed border-[#BFD7EA] rounded-lg flex flex-col items-center justify-center p-6 text-gray-500 hover:bg-[#F9FBFC] transition">
+            <Upload className="w-8 h-8 mb-2 text-[#1E516A]" />
+            <p className="text-sm">
+              Drag your file(s) or{" "}
+              <span className="text-[#1E516A] underline cursor-pointer">
+                browse
+              </span>
+            </p>
+            <p className="text-xs mt-1">Max xx MB files allowed</p>
+          </div>
 
-                    <h4 className="font-semibold text-[#1E516A] mt-6">
-                      Resolution Detail
-                    </h4>
-                    <textarea
-                      className="w-full border border-[#BFD7EA] rounded-lg p-3 text-sm h-32 focus:outline-none focus:ring-2 focus:ring-[#1E516A]"
-                      placeholder="Describe how you solved this issue"
-                    ></textarea>
+          <h4 className="font-semibold text-[#1E516A] mt-6">
+          {selectedAction === "resolve" ? (<>Resolution Detail</>):(<>Esclation Reason</>)}  
+          </h4>
+          <textarea
+            className="w-full border border-[#BFD7EA] rounded-lg p-3 text-sm h-32 focus:outline-none focus:ring-2 focus:ring-[#1E516A]"
+            placeholder="Describe how you solved this issue"
+          ></textarea>
+ {selectedAction === "resolve" ? (<>
+ <div className="w-full flex justify-end">
+            <button
+              onClick={handleSubmitDocument}
+              className="px-4 py-2 rounded-md bg-[#1E516A] text-white font-semibold"
+            >
+              Confirm
+            </button>
+          </div></>):(<>
+            <div className="w-full flex justify-end">
+            <button
+              onClick={handleSubmit}
+              className="px-4 py-2 rounded-md bg-[#1E516A] text-white font-semibold"
+            >
+              Confirm
+            </button>
+          </div>
+          </>)}
+        </>
+    
+    </motion.div>
+  )}
+</AnimatePresence>
 
-                    <div className="w-full flex justify-end">
-                      <button
-                        onClick={handleSubmitDocument}
-                        className="px-4 py-2 rounded-md bg-[#1E516A] text-white font-semibold"
-                      >
-                        Confirm
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <h4 className="font-semibold text-[#1E516A] mt-6">
-                      Description
-                    </h4>
-                    <textarea
-                      className="w-full border border-[#BFD7EA] rounded-lg p-3 text-sm h-32 focus:outline-none focus:ring-2 focus:ring-[#1E516A]"
-                      placeholder="Describe why you're escalating this issue"
-                    ></textarea>
-
-                    <div className="w-full flex justify-end">
-                      <button
-                        onClick={handleSubmit}
-                        className="px-4 py-2 rounded-md bg-[#1E516A] text-white font-semibold"
-                      >
-                        Confirm
-                      </button>
-                    </div>
-                  </>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </div>
       {isModalOpen && (

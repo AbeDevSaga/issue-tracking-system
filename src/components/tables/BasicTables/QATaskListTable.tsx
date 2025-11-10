@@ -302,9 +302,9 @@ export default function QATaskListTable() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => take_action(issue)}
-                        className="border font-semibold border-blue-500 text-blue-500 px-3 py-1 rounded hover:bg-blue-50 hover:text-blue-500 transition-colors"
+                        className="font-semibold border-blue-500 text-blue-500 px-3 py-1 rounded hover:bg-blue-50 hover:text-blue-500 transition-colors"
                       >
-                        Take Action
+                       <EyeIcon className="h-5 w-5" />
                       </button>
                     </div>
                   </TableCell>

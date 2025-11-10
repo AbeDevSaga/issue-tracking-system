@@ -186,12 +186,12 @@ const navItems: NavItem[] = [
   },
   {
     icon: <TaskList />,
-    name: "QA Task List",
+    name: "QA Leader Task List",
     path: "/qa_tasks", 
   },
     {
     icon: <TaskList />,
-    name: "Team Leader Task List",
+    name: "QA Expert Task List",
     path: "/tl_tasks", 
   },
   {

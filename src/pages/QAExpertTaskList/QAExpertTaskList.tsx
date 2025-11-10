@@ -1,6 +1,6 @@
 import ComponentCard from "../../components/common/ComponentCard";
 import PageMeta from "../../components/common/PageMeta";
-import TeamLeaderTaskListTable from "../../components/tables/BasicTables/TeamLeaderTaskListTable";
+import TeamLeaderTaskListTable from "../../components/tables/BasicTables/QAExpertTaskListTable";
 import { useTranslation } from "react-i18next";
 export default function TaskList() {
       const { t } = useTranslation();

@@ -27,8 +27,16 @@
     "no_permission_available": "ምንም ፈቃድ የለም"
   },
   "role": {
-    "role": "ሚና"
+    "role": "ሚና",
+    "add_role":"ሚና አክል",
+    "role_name":"የሚና ስም"
   },
+  "Subrole":{
+    "subrole_name":"Subrole Name",
+    "add_subrole":"Add SubRole",
+    "select_role":"Select Role"
+  },
+
   "basedata": {
     "title": "ቤዝ ዳታ",
     "first_subtitle": "ይህ የማዕከላዊ አስተዳዳሪው ቤዝ ዳታ ነው።",
@@ -41,6 +49,8 @@
     "project": "ፕሮጀክት",
     "project_management": "የፕሮጀክት አስተዳደር",
     "branch_management": "የቅርንጫፍ አስተዳደር",
+    "role_management": "የሚና አስተዳደር",
+    "subrole_management": "Role Management",
     "issue_category_management": "ጉዳይ ምድብ አስተዳደር",
     "risk_level_management": "የአደጋ ደረጃ አስተዳደር",
     "priority_level_management": "የቅድሚያ ደረጃ አስተዳደር",

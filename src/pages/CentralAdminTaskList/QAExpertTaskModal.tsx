@@ -5,7 +5,7 @@ import Select from "../../components/form/Select";
 import Switch from "../../components/form/switch/Switch";
 import { useTranslation } from "react-i18next";
 
-interface AssignTeamLeaderProps {
+interface AssignQAExpertProps {
   onClose: () => void;
   onSubmit?: (values: Record<string, any>) => void;
   fields?: Array<{
@@ -27,11 +27,11 @@ interface AssignTeamLeaderProps {
   }>;
 }
 
-export default function AssignTeamLeader({
+export default function AssignQAExpert({
   onClose,
   onSubmit,
   fields,
-}: AssignTeamLeaderProps) {
+}: AssignQAExpertProps) {
   const { t } = useTranslation();
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {

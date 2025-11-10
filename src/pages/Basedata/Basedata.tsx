@@ -12,39 +12,51 @@ export default function Basedata() {
     {
       title: t("basedata.organization_management"),
       description: t("basedata.subtitle", { title: t("basedata.organization") }),
-      icon: <FaBuilding size={24} />,
+      icon: <FaBuilding size={24} color={"#094C81"}/>,
       route: "/organization",
     },
        {
       title: t("basedata.org_structure_management"),
       description: t("basedata.subtitle", { title: t("basedata.org_structure") }),
-      icon: <FaBuilding size={24} />,
+      icon: <FaBuilding size={24} color={"#094C81"} />,
       route: "/org_structure",
     },
        {
       title: t("basedata.branch_management"),
       description: t("basedata.subtitle", { title: t("basedata.branch") }),
-      icon: <FaBuilding size={24} />,
+      icon: <FaBuilding size={24} color={"#094C81"}/>,
       route: "/branch",
+    },
+        {
+      title: t("basedata.role_management"),
+      description: t("basedata.subtitle", { title: t("basedata.role") }),
+      icon: <FaBuilding size={24} color={"#094C81"}/>,
+      route: "/roles",
+    },
+        {
+      title: t("basedata.subrole_management"),
+      description: t("basedata.subtitle", { title: t("basedata.subrole") }),
+      icon: <FaBuilding size={24} color={"#094C81"}/>,
+      route: "/subroles",
     },
        
       {
       title: t("basedata.project_management"),
       description: t("basedata.subtitle", { title: t("basedata.project") }),
-      icon: <FaProjectDiagram size={24} />,
+      icon: <FaProjectDiagram size={24}color={"#094C81"} />,
       route: "/project",
     },
     {
       title: t("basedata.priority_level_management"),
       description: t("basedata.subtitle", { title: t("basedata.priority_level") }),
-      icon: <FaFlag size={24} />,
+      icon: <FaFlag size={24}color={"#094C81"} />,
       route: "/priority_level",
     },
    
     {
       title: t("basedata.issue_category_management"),
       description: t("basedata.subtitle", { title: t("basedata.issue_category") }),
-      icon: <FaExclamationTriangle size={24} />,
+      icon: <FaExclamationTriangle size={24} color={"#094C81"}/>,
       route: "/issue_category",
     },
   ];

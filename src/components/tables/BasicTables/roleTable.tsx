@@ -9,58 +9,67 @@ import {
   TableRow,
 } from "../../ui/table";
 import { useTranslation } from "react-i18next";
-import AddSubCity from "../../../pages/subcity/subcityModal";
+import AddRole from "../../../pages/role/roleModal";
 import Alert from "../../ui/alert/Alert";
 
-interface SubCity {
+interface Permissions {
   id: string;
-  city_name: string;
-  subcity_name: string;
+  resource: string;
+  action: string;
 }
 
-// Mock data
-const mockCities: SubCity[] = [
+interface Role {
+  id: string;
+  role_name: string;
+  permissions: Permissions[];
+}
+const mockPermissions: Permissions[] = [
+  { id: "u1", resource: "user",action:"create" },
+  { id: "u1", resource: "user",action:"delete" },
+  { id: "u1", resource: "user",action:"update" },
+  { id: "u1", resource: "user",action:"read" },
+];
+const mockRoles: Role[] = [
   {
     id: "org001",
-    subcity_name:"Kirkos",
-    city_name: "Addis Ababa",
+    role_name: "Admin",
+    permissions:[mockPermissions[1], mockPermissions[3]],
   },
 ];
 
 // Component
-export default function SubCityTable() {
+export default function RoleTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [entriesPerPage, setEntriesPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editData, setEditData] = useState<SubCity | null>(null);
+  const [editData, setEditData] = useState<Role | null>(null);
   const { t } = useTranslation();
   const [alert, setAlert] = useState<{ type: string; message: string } | null>(
     null
   );
 
-  const filteredCities = useMemo(() => {
-  return mockCities.filter((subcity) =>
-    subcity.subcity_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    subcity.city_name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredRoles = useMemo(() => {
+  return mockRoles.filter((role) =>
+    role.role_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 }, [searchTerm]);
 
 
   const startIndex = (currentPage - 1) * entriesPerPage;
-  const paginatedCities = filteredCities.slice(
+  const paginatedCities = filteredRoles.slice(
     startIndex,
     startIndex + entriesPerPage
   );
-  const totalPages = Math.ceil(filteredCities.length / entriesPerPage);
+  const totalPages = Math.ceil(filteredRoles.length / entriesPerPage);
 
   // Handlers
   const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this subcity?")) {
-      console.log("Deleting subcity:", id);
+    if (confirm("Are you sure you want to delete this role?")) {
+      console.log("Deleting role:", id);
     }
   };
-const openModal = (org?: SubCity) => {
+const openModal = (org?: Role) => {
   setEditData(org || null);
   setIsModalOpen(true);
 };
@@ -71,11 +80,11 @@ const closeModal = () => {
 };
 
   const handleView = (id: string) => {
-    console.log("Viewing subcity:", id);
+    console.log("Viewing role:", id);
   };
 
 const handleEdit = (id: string) => {
-  const org = mockCities.find((o) => o.id === id);
+  const org = mockRoles.find((o) => o.id === id);
   console.log("org",org)
   if (org) openModal(org);
 
@@ -84,10 +93,10 @@ const handleEdit = (id: string) => {
 const handleFormSubmit = (values: Record<string, any>) => {
   if (editData) {
     console.log("Updating:", { ...editData, ...values });
-    setAlert({ type: "success", message: "Subcity updated successfully!" });
+    setAlert({ type: "success", message: "role updated successfully!" });
   } else {
     console.log("Adding:", values);
-    setAlert({ type: "success", message: "Subcity added successfully!" });
+    setAlert({ type: "success", message: "role added successfully!" });
   }
   closeModal();
   setTimeout(() => setAlert(null), 3000);
@@ -141,10 +150,10 @@ const handleFormSubmit = (values: Record<string, any>) => {
           </div>
 
           <button
-            onClick={()=>openModal()}
+           onClick={()=>openModal()}
             className="inline-flex items-center gap-2 px-4 py-2 bg-[#094C81] text-white rounded-lg hover:bg-blue-800 transition-colors"
           >
-            {t("subcity.add_city")}
+            {t("role.add_role")}
           </button>
         </div>
       </div>
@@ -164,13 +173,7 @@ const handleFormSubmit = (values: Record<string, any>) => {
                   isHeader
                   className="px-5 py-3 font-semibold text-white text-start"
                 >
-                  {t("subcity.subcity_name")}
-                </TableCell>
-                 <TableCell
-                  isHeader
-                  className="px-5 py-3 font-semibold text-white text-start"
-                >
-                  {t("city.city_name")}
+                  {t("role.role_name")}
                 </TableCell>
                 <TableCell
                   isHeader
@@ -182,38 +185,33 @@ const handleFormSubmit = (values: Record<string, any>) => {
             </TableHeader>
 
             <TableBody>
-              {paginatedCities.map((subcity, index) => (
-                <TableRow key={subcity.id}>
+              {paginatedCities.map((role, index) => (
+                <TableRow key={role.id}>
                   <TableCell className="px-4 py-3 text-[#1E516A] text-start">
                     {index + 1}
                   </TableCell>
-                   <TableCell className="px-5 py-4 text-start">
-                    <span className="font-medium text-[#1E516A]">
-                      {subcity.subcity_name}
-                    </span>
-                  </TableCell>
                   <TableCell className="px-5 py-4 text-start">
                     <span className="font-medium text-[#1E516A]">
-                      {subcity.city_name}
+                      {role.role_name}
                     </span>
                   </TableCell>
                 
                   <TableCell className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => handleView(subcity.id)}
+                        onClick={() => handleView(role.id)}
                         className="text-blue-500 hover:text-blue-600"
                       >
                         <EyeIcon className="w-5 h-5" />
                       </button>
                       <button
-                        onClick={() => handleEdit(subcity.id)}
+                        onClick={() => handleEdit(role.id)}
                         className="text-gray-600 hover:text-blue-700"
                       >
                         <PencilIcon className="w-5 h-5" />
                       </button>
                       <button
-                        onClick={() => handleDelete(subcity.id)}
+                        onClick={() => handleDelete(role.id)}
                         className="text-red-600 hover:text-red-700"
                       >
                         <TrashIcon className="w-5 h-5" />
@@ -230,8 +228,8 @@ const handleFormSubmit = (values: Record<string, any>) => {
       <div className="flex items-center justify-between p-4 border-t border-gray-100 dark:border-gray-800">
         <div className="text-[#1E516A] text-sm">
           Showing {startIndex + 1} to{" "}
-          {Math.min(startIndex + entriesPerPage, filteredCities.length)}{" "}
-          of {filteredCities.length} entries
+          {Math.min(startIndex + entriesPerPage, filteredRoles.length)}{" "}
+          of {filteredRoles.length} entries
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -273,30 +271,27 @@ const handleFormSubmit = (values: Record<string, any>) => {
       </div>
 
     {isModalOpen && (
-  <AddSubCity
+  <AddRole
     onClose={closeModal}
     onSubmit={handleFormSubmit}
     fields={[
-       {
-        id: "city_name",
-        label: t("subcity.select_city"),
-        type: "select",
-        options: [
-          { value: "addisababa", label: "Addis Ababa 1" },
-          { value: "diredewa", label: "Diredewa 2" },
-        ],
-        placeholder: "Select a city",
-        value: editData?.city_name || "",
-      },
       {
-        id: "subcity_name",
-        label: t("subcity.subcity_name"),
+        id: "role_name",
+        label: t("role.role_name"),
         type: "text",
-        placeholder: "Enter SubCity name",
-        value: editData?.subcity_name || "",
+        placeholder: "Enter role name",
+        value: editData?.role_name || "",
       },
-      
-     
+     {
+        id: "permissions",
+        label: "Frontend",
+        type: "select",
+        multiple: true,
+        options: mockPermissions.map((permissions) => ({
+          value: permissions.id,
+          label: permissions.resource,
+        })),
+      },
     ]}
   />
 )}

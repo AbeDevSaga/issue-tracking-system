@@ -28,7 +28,15 @@
 
   },
    "role":{
-    "role":"Role"
+    "role":"Role",
+    "add_role":"Add Role",
+    "role_name":"Role Name"
+  },
+    "Subrole":{
+    "subrole_name":"Subrole Name",
+    "add_subrole":"Add SubRole",
+    "select_role":"Select Role"
+
   },
    "basedata":{
     "title":"Base Data",
@@ -51,6 +59,8 @@
     "city":"City",
     "priority_level":"Priority Level",
     "risk_level_management":"Risk Level Management",
+    "role_management": "Role Management",
+    "subrole_management": "Subrole Management",
     "issue_category":"Issue Category",
     "branch":"Branch",
     "response_time":"Response Time",

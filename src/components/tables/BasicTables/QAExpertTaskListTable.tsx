@@ -9,11 +9,11 @@ import {
   TableRow,
 } from "../../ui/table";
 import { useTranslation } from "react-i18next";
-import AssignDeveloper from "../../../pages/TeamLeaderTaskList/TeamLeaderTaskModal";
+import AssignDeveloper from "../../../pages/QAExpertTaskList/QAExpertTaskModal";
 import Alert from "../../ui/alert/Alert";
 import { useNavigate } from "react-router-dom";
 
-interface TeamLeaderTask {
+interface QAExpertTask {
   id: string;
   category: string;
   organization: String;
@@ -31,7 +31,7 @@ interface TeamLeaderTask {
   deadline: string;
 }
 
-const mockIssues: TeamLeaderTask[] = [
+const mockIssues: QAExpertTask[] = [
   {
     id: "org001",
     category: "Ethiopian AI Institute",
@@ -68,13 +68,13 @@ const mockIssues: TeamLeaderTask[] = [
   },
 ];
 
-export default function TeamLeaderTaskListTable() {
+export default function QAExpertTaskListTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [entriesPerPage, setEntriesPerPage] = useState(5);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [editData, setEditData] = useState<TeamLeaderTask | null>(null);
+  const [editData, setEditData] = useState<QAExpertTask | null>(null);
   const [selectedStatus, setSelectedStatus] = useState("");
   const { t } = useTranslation();
   const [alert, setAlert] = useState<{ type: string; message: string } | null>(
@@ -116,7 +116,7 @@ export default function TeamLeaderTaskListTable() {
       console.log("Deleting organization:", id);
     }
   };
-  const take_action = (org?: TeamLeaderTask) => {
+  const take_action = (org?: QAExpertTask) => {
     console.log("org", org)
     setEditData(org ?? null);
     navigate("/tl_tasks_detail", { state: { issue: org } });
@@ -125,7 +125,7 @@ export default function TeamLeaderTaskListTable() {
   const handleView = (id: string) => {
     console.log("Viewing organization:", id);
   };
-  const openModal = (org?: TeamLeaderTask) => {
+  const openModal = (org?: QAExpertTask) => {
     setEditData(org || null);
     setIsModalOpen(true);
   };
@@ -351,23 +351,14 @@ export default function TeamLeaderTaskListTable() {
                   </TableCell>
                   <TableCell className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      {issue.status === "pending" && (
-                        <button
-                          onClick={openModal}
-                          className="flex items-center gap-2 text-blue-500 px-2 py-1 rounded hover:text-blue-600 transition-colors"
-                        >
-                          <UserPlusIcon className="h-5 w-5" />
-                        </button>
-                      )}
+               
 
-                      {issue.status === "solved" && (
                         <button
                           onClick={() => take_action(issue)}
                           className="flex items-center gap-2 text-blue-500 px-2 py-1 rounded hover:text-blue-600 transition-colors"
                         >
                           <EyeIcon className="h-5 w-5" />
                         </button>
-                      )}
                     </div>
                   </TableCell>
 

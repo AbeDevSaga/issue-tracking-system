@@ -24,7 +24,8 @@ import Woreda from './pages/woreda/woreda'
 import ProjectLevel from './pages/priorityLevel/priorityLevel'
 import IssueCategory from './pages/issueCategory/issueCategory'
 import MyIssue from './pages/issue/my_issue'
-import Roles from "./pages/Tables/Roles";
+import Roles from "./pages/role/role";
+import Subroles from "./pages/subRole/subRole"
 // import Users from "./pages/Tables/Users";
 import BaseData from "./pages/Basedata/Basedata";
 import OrgStructure from "./pages/org_structure/org_structure"
@@ -32,11 +33,11 @@ import ProtectedRoute from "./ProtectedRoute";
 import MyissueForm from "./pages/issue/my_issue_form";
 import QATask from "./pages/QATaskList/QATaskList"
 import QATaskDetail from "./pages/QATaskList/QATaskDetail"
-import TeamLeaderTask from "./pages/TeamLeaderTaskList/TeamLeaderTaskList";
-import TeamLeaderTaskDetail from "./pages/TeamLeaderTaskList/TeamLeaderTaskDetail";
+import QAExpertTask from "./pages/QAExpertTaskList/QAExpertTaskList";
+import QAExpertTaskDetail from "./pages/QAExpertTaskList/QAExpertTaskDetail";
 import CentralAdminTaskList from "./pages/CentralAdminTaskList/CentralAdminTaskList"
 import CentralAdminTaskDetail from "./pages/CentralAdminTaskList/CentralAdminTaskDetail"
-
+import DeveloperTaskDetail from "./pages/DeveloperTaskList/DeveloperTaskDetail"
 import DeveloperTaskList from "./pages/DeveloperTaskList/DeveloperTaskList"
 import "./localization";
 import Users from "./pages/Users/users"
@@ -108,16 +109,18 @@ function AppContent() {
           <Route path="/add_issue" element={<MyissueForm />} />
           <Route path="/qa_tasks" element={<QATask />} />
           <Route path="/qa_tasks_detail" element={<QATaskDetail />} />
-          <Route path="/tl_tasks" element={<TeamLeaderTask />} />
-          <Route path="/tl_tasks_detail" element={<TeamLeaderTaskDetail />} />
+          <Route path="/tl_tasks" element={<QAExpertTask />} />
+          <Route path="/tl_tasks_detail" element={<QAExpertTaskDetail />} />
           <Route path="/central_admin_task_list" element={<CentralAdminTaskList />} />
           <Route path="/central_admin_task_detail" element={<CentralAdminTaskDetail/>} />
           
           <Route path="/developer_tasks" element={<DeveloperTaskList />} />
+          <Route path="/developer_tasks_detail" element={<DeveloperTaskDetail />} />
           <Route path="/org_structure" element={<OrgStructure />} />
           
 
           <Route path="/basedata" element={<BaseData />} />
+          <Route path="/subroles" element={<Subroles />} />
 
           <Route
             path="/roles"
@@ -128,6 +131,9 @@ function AppContent() {
             }
           />
         </Route>
+        
+        
+        
 
         <Route
           path="/login"
