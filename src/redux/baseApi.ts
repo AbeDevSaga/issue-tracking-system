@@ -48,6 +48,8 @@ export const baseApi = createApi({
     "Hierarchy",
     "HierarchyNode",
     "Issue",
+    "IssuePriority",
+    "IssueCategory",
     "Assignment",
     "Escalation",
     "Attachment",

@@ -1,13 +1,17 @@
-import ComponentCard from "../../components/common/ComponentCard";
-import PageMeta from "../../components/common/PageMeta";
-import PriorityLevelTable from "../../components/tables/BasicTables/priorityLevelTable";
-import { useTranslation } from "react-i18next";
+// import ComponentCard from "../../components/common/ComponentCard";
+// import PageMeta from "../../components/common/PageMeta";
+// import PriorityLevelTable from "../../components/tables/BasicTables/priorityLevelTable";
+
+import IssuePriorityList from "../../components/tables/lists/issuePriorityList";
+
+// import { useTranslation } from "react-i18next";
 export default function City() {
-      const { t } = useTranslation();
-    
+  // const { t } = useTranslation();
+
   return (
     <>
-      <PageMeta
+      <IssuePriorityList />
+      {/* <PageMeta
         title={t("basedata.priority_level_management")}
         description={t("basedata.subtitle", { title: t("basedata.priority_level_") })}
       />
@@ -16,7 +20,7 @@ export default function City() {
         <ComponentCard title={t("basedata.priority_level_management")}>
           <PriorityLevelTable />
         </ComponentCard>
-      </div>
+      </div> */}
     </>
   );
 }

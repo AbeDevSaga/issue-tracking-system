@@ -1,0 +1,157 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { Plus, Edit, Trash2 } from "lucide-react";
+import { Button } from "../../ui/cn/button";
+import { PageLayout } from "../../common/PageLayout";
+import { DataTable } from "../../common/CommonTable";
+import { ActionButton, FilterField } from "../../../types/layout";
+import {
+  useGetIssuePrioritiesQuery,
+  useDeleteIssuePriorityMutation,
+} from "../../../redux/services/issuePriorityApi";
+import { CreatePriorityModal } from "../../modals/CreatePriorityModal";
+
+// --- Define table columns ---
+const PriorityTableColumns = [
+  {
+    accessorKey: "name",
+    header: "Priority Name",
+    cell: ({ row }: any) => (
+      <div className="font-medium text-blue-600">{row.getValue("name")}</div>
+    ),
+  },
+  {
+    accessorKey: "description",
+    header: "Description",
+    cell: ({ row }: any) => <div>{row.getValue("description") || "N/A"}</div>,
+  },
+
+  {
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }: any) => {
+      const priority = row.original;
+      const [deletePriority] = useDeleteIssuePriorityMutation();
+
+      return (
+        <div className="flex items-center space-x-2">
+          {/* Edit button - can implement edit modal if needed */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 w-8 p-0"
+            // onClick={() => openEditModal(priority)}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+            onClick={() => deletePriority(priority.priority_id)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      );
+    },
+  },
+];
+
+export default function IssuePriorityList() {
+  const [response, setResponse] = useState<any[]>([]);
+  const [filteredResponse, setFilteredResponse] = useState<any[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [pageDetail, setPageDetail] = useState({
+    pageIndex: 0,
+    pageCount: 1,
+    pageSize: 10,
+  });
+
+  const { data, isLoading, isError } = useGetIssuePrioritiesQuery();
+
+  const actions: ActionButton[] = [
+    {
+      label: "Add Priority",
+      icon: <Plus className="h-4 w-4" />,
+      variant: "default",
+      size: "default",
+      onClick: () => setModalOpen(true),
+    },
+  ];
+
+  const filterFields: FilterField[] = [
+    {
+      key: "status",
+      label: "Status",
+      type: "multiselect",
+      options: [
+        { label: "Active", value: "ACTIVE" },
+        { label: "Inactive", value: "INACTIVE" },
+      ],
+      value: statusFilter,
+      onChange: (value: string | string[]) => {
+        setStatusFilter(Array.isArray(value) ? value[0] : value);
+        setPageDetail({ ...pageDetail, pageIndex: 0 });
+      },
+    },
+  ]; // Add filters if needed
+
+  useEffect(() => {
+    if (!isError && !isLoading && data) {
+      setResponse(data.data || []);
+      setFilteredResponse(data.data || []);
+    }
+  }, [data, isError, isLoading]);
+
+  useEffect(() => {
+    const filtered = response.filter((item) => {
+      if (!statusFilter || statusFilter === "all") return true;
+      if (statusFilter === "ACTIVE") return item.is_active;
+      if (statusFilter === "INACTIVE") return !item.is_active;
+      return true;
+    });
+    setFilteredResponse(filtered);
+  }, [response, statusFilter]);
+
+  const handlePagination = (index: number, size: number) => {
+    setPageDetail({
+      ...pageDetail,
+      pageIndex: index,
+      pageSize: size,
+    });
+  };
+  // Optional: filter by name or other criteria
+  // const [searchTerm, setSearchTerm] = useState("");
+  // useEffect(() => {
+  //   const filtered = response.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  //   setFilteredResponse(filtered);
+  // }, [response, searchTerm]);
+
+  return (
+    <>
+      <PageLayout
+        filters={filterFields}
+        filterColumnsPerRow={1}
+        actions={actions}
+      >
+        <DataTable
+          columns={PriorityTableColumns}
+          data={filteredResponse}
+          handlePagination={handlePagination}
+          tablePageSize={pageDetail.pageSize}
+          totalPageCount={pageDetail.pageCount}
+          currentIndex={pageDetail.pageIndex}
+        />
+      </PageLayout>
+
+      <CreatePriorityModal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+      />
+    </>
+  );
+}

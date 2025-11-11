@@ -7,8 +7,6 @@ import {
   FaExclamationTriangle,
   FaFlag,
   FaBuilding,
-  FaCity,
-  FaMapMarkerAlt,
 } from "react-icons/fa";
 
 export default function Basedata() {

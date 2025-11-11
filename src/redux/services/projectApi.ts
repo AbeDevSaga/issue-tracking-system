@@ -74,6 +74,7 @@ export const projectApi = baseApi.injectEndpoints({
         user_id: string;
         role_id: string;
         sub_role_id?: string;
+        hierarchy_node_id: string;
       }
     >({
       query: (data) => ({

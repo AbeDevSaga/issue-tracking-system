@@ -18,6 +18,7 @@ import {
 } from "../../../redux/services/userApi";
 
 // --- Define table columns ---
+// --- Define table columns ---
 const UserTableColumns = [
   {
     accessorKey: "full_name",
@@ -33,10 +34,45 @@ const UserTableColumns = [
     header: "Email",
     cell: ({ row }: any) => <div>{row.getValue("email")}</div>,
   },
+  // {
+  //   accessorKey: "position",
+  //   header: "Position",
+  //   cell: ({ row }: any) => <div>{row.getValue("position") || "N/A"}</div>,
+  // },
+
+  // "institute": {
+  //               "institute_id": "66aa142b-dc70-44cb-8082-8835e049d6a0",
+  //               "name": "Bole Airport International"
+  //           },
   {
-    accessorKey: "position",
-    header: "Position",
-    cell: ({ row }: any) => <div>{row.getValue("position") || "N/A"}</div>,
+    accessorKey: "institute.name", // ✅ Access nested userType name
+    header: "Institute",
+    cell: ({ row }: any) => {
+      const inst = row.original.institute?.name || "N/A";
+      return (
+        <span className={`px-2 py-1 text-xs font-semibold rounded-full`}>
+          {inst.replace("_", " ")}
+        </span>
+      );
+    },
+  },
+  {
+    accessorKey: "userType.name", // ✅ Access nested userType name
+    header: "User Type",
+    cell: ({ row }: any) => {
+      const userType = row.original.userType?.name || "N/A";
+      return (
+        <span
+          className={`px-2 py-1 text-xs font-semibold rounded-full ${
+            userType === "internal_user"
+              ? "bg-blue-100 text-blue-800"
+              : "bg-yellow-100 text-yellow-800"
+          }`}
+        >
+          {userType.replace("_", " ")}
+        </span>
+      );
+    },
   },
   {
     accessorKey: "is_active",
