@@ -167,38 +167,39 @@ const AppSidebar: React.FC = () => {
       path: "/users",
     },
 
+  {
+    icon: <BaseDataIcon />,
+    name: "BaseData",
+    path: "/basedata",
+  },
+  
+  {
+    icon: <IssueIcon />,
+    name: "My Issue",
+    path: "/my_issue",
+  },
+   {
+    icon: <TaskList />,
+    name: "Central Admin Task List",
+    path: "/central_admin_task_list",
+  },
+  {
+    icon: <TaskList />,
+    name: "QA Leader Task List",
+    path: "/qa_tasks", 
+  },
     {
-      icon: <BaseDataIcon />,
-      name: "BaseData",
-      path: "/basedata",
-    },
+    icon: <TaskList />,
+    name: "QA Expert Task List",
+    path: "/tl_tasks", 
+  },
+  {
+    icon: <TaskList />,
+    name: "Developer Task List",
+    path: "/developer_tasks", 
+  },
 
-    {
-      icon: <IssueIcon />,
-      name: "My Issue",
-      path: "/my_issue",
-    },
-    {
-      icon: <TaskList />,
-      name: "Central Admin Task List",
-      path: "/central_admin_task_list",
-    },
-    {
-      icon: <TaskList />,
-      name: "QA Task List",
-      path: "/qa_tasks",
-    },
-    {
-      icon: <TaskList />,
-      name: "Team Leader Task List",
-      path: "/tl_tasks",
-    },
-    {
-      icon: <TaskList />,
-      name: "Developer Task List",
-      path: "/developer_tasks",
-    },
-  ];
+];
 
   const othersItems: NavItem[] = [
     {

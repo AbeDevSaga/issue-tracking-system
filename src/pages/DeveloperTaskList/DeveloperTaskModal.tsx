@@ -7,6 +7,7 @@ import Switch from "../../components/form/switch/Switch";
 import DatePickerField from "../../components/form/input/DatePickerField";
 import TimePickerField from "../../components/form/input/TimePickerField";
 import { useTranslation } from "react-i18next";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Field {
   id: string;
@@ -80,7 +81,19 @@ export default function AddDeveloperIssue({ onClose, onSubmit, fields = [] }: Fi
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
    <div className="bg-white dark:bg-gray-800 w-full max-w-3xl rounded-xl p-6 shadow-lg relative overflow-y-auto max-h-[100vh]">
-
+  <AnimatePresence>
+                  {alert && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 20 }}
+                      className={`fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-lg text-white font-semibold ${alert.type === "success" ? "bg-green-600" : "bg-red-600"
+                        }`}
+                    >
+                      {alert.message}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:hover:text-white"

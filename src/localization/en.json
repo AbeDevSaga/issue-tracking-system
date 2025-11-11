@@ -26,8 +26,16 @@
     "current_role_permissions": "Current role permissions:",
     "no_permission_available": "No permissions available"
   },
-  "role": {
-    "role": "Role"
+   "role":{
+    "role":"Role",
+    "add_role":"Add Role",
+    "role_name":"Role Name"
+  },
+    "Subrole":{
+    "subrole_name":"Subrole Name",
+    "add_subrole":"Add SubRole",
+    "select_role":"Select Role"
+
   },
   "basedata": {
     "title": "Base Data",

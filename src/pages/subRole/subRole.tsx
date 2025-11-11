@@ -1,6 +1,6 @@
 import ComponentCard from "../../components/common/ComponentCard";
 import PageMeta from "../../components/common/PageMeta";
-import RoleTable from "../../components/tables/BasicTables/roleTable";
+import SubroleTable from "../../components/tables//BasicTables/subRoleTable";
 import { useTranslation } from "react-i18next";
 export default function City() {
       const { t } = useTranslation();
@@ -14,7 +14,7 @@ export default function City() {
     
       <div className="space-y-1">
         <ComponentCard title={t("basedata.role_management")}>
-          <RoleTable />
+          <SubroleTable />
         </ComponentCard>
       </div>
     </>
