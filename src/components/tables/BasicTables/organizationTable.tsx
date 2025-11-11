@@ -40,22 +40,21 @@ export default function OrganizationTable() {
     null
   );
   const [branchFilter, setBranchFilter] = useState("all");
-const filteredOrganizations = useMemo(() => {
-  const term = searchTerm.toLowerCase();
+  const filteredOrganizations = useMemo(() => {
+    const term = searchTerm.toLowerCase();
 
-  return mockOrganizations.filter((org) => {
-    const branchType = org.has_branch
-      ? "multi-branch organization"
-      : "central only";
+    return mockOrganizations.filter((org) => {
+      const branchType = org.has_branch
+        ? "multi-branch organization"
+        : "central only";
 
-    return (
-      org.organization_name.toLowerCase().includes(term) ||
-      org.description.toLowerCase().includes(term) ||
-      branchType.includes(term)
-    );
-  });
-}, [searchTerm]);
-
+      return (
+        org.organization_name.toLowerCase().includes(term) ||
+        org.description.toLowerCase().includes(term) ||
+        branchType.includes(term)
+      );
+    });
+  }, [searchTerm]);
 
   const startIndex = (currentPage - 1) * entriesPerPage;
   const paginatedOrganizations = filteredOrganizations.slice(
@@ -69,41 +68,46 @@ const filteredOrganizations = useMemo(() => {
       console.log("Deleting organization:", id);
     }
   };
-const openModal = (org?: Organization) => {
-  console.log("org",org)
-  setEditData(org ?? null);
-  setIsModalOpen(true);
-};
+  const openModal = (org?: Organization) => {
+    console.log("org", org);
+    setEditData(org ?? null);
+    setIsModalOpen(true);
+  };
 
-const closeModal = () => {
-  setIsModalOpen(false);
-  setEditData(null);
-};
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditData(null);
+  };
 
   const handleView = (id: string) => {
     console.log("Viewing organization:", id);
   };
 
-const handleEdit = (id: string) => {
-  const org = mockOrganizations.find((o) => o.id === id);
-  console.log("org",org)
-  if (org) openModal(org);
+  const handleEdit = (id: string) => {
+    const org = mockOrganizations.find((o) => o.id === id);
+    console.log("org", org);
+    if (org) openModal(org);
+  };
 
-};
-
-const handleFormSubmit = (values: Record<string, any>) => {
-  if (editData) {
-    // ✏️ Edit existing
-    console.log("Updating:", { ...editData, ...values });
-    setAlert({ type: "success", message: "Organization updated successfully!" });
-  } else {
-    // ➕ Add new
-    console.log("Adding:", values);
-    setAlert({ type: "success", message: "Organization added successfully!" });
-  }
-  closeModal();
-  setTimeout(() => setAlert(null), 3000);
-};
+  const handleFormSubmit = (values: Record<string, any>) => {
+    if (editData) {
+      // ✏️ Edit existing
+      console.log("Updating:", { ...editData, ...values });
+      setAlert({
+        type: "success",
+        message: "Organization updated successfully!",
+      });
+    } else {
+      // ➕ Add new
+      console.log("Adding:", values);
+      setAlert({
+        type: "success",
+        message: "Organization added successfully!",
+      });
+    }
+    closeModal();
+    setTimeout(() => setAlert(null), 3000);
+  };
   return (
     <>
       {/* ✅ Alert (Top Right) */}
@@ -153,18 +157,18 @@ const handleFormSubmit = (values: Record<string, any>) => {
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
             />
             <select
-  value={branchFilter}
-  onChange={(e) => setBranchFilter(e.target.value)}
-  className="ml-2 border p-2 rounded"
->
-  <option value="all">All</option>
-  <option value="multi">Multi-Branch</option>
-  <option value="central">Central Only</option>
-</select>
+              value={branchFilter}
+              onChange={(e) => setBranchFilter(e.target.value)}
+              className="ml-2 border p-2 rounded"
+            >
+              <option value="all">All</option>
+              <option value="multi">Multi-Branch</option>
+              <option value="central">Central Only</option>
+            </select>
           </div>
 
           <button
-            onClick={()=>openModal()}
+            onClick={() => openModal()}
             className="inline-flex items-center gap-2 px-4 py-2 bg-[#094C81] text-white rounded-lg hover:bg-blue-800 transition-colors"
           >
             {t("organization.add_organization")}
@@ -222,7 +226,9 @@ const handleFormSubmit = (values: Record<string, any>) => {
                         org.has_branch ? "bg-green-600" : "bg-red-600"
                       }`}
                     >
-                    {org.has_branch ? "Multi-Branch Organization" : "Central Only"}
+                      {org.has_branch
+                        ? "Multi-Branch Organization"
+                        : "Central Only"}
                     </Badge>
                   </TableCell>
                   <TableCell className="px-4 py-3">
@@ -299,31 +305,34 @@ const handleFormSubmit = (values: Record<string, any>) => {
         </div>
       </div>
 
-    {isModalOpen && (
-  <AddOrganization
-    onClose={closeModal}
-    onSubmit={handleFormSubmit}
-    fields={[
-      {
-        id: "organization_name",
-        label:  t("organization.organization_name"),
-        type: "text",
-        placeholder: "Enter organization name",
-        value: editData?.organization_name || "",
-      },
-      {
-        id: "description",
-        label: t("common.description"),
-        type: "textarea",
-        placeholder: "Enter description",
-        value: editData?.description || "",
-      },
-      { id: "has_branch", label: "Has Branch", type: "checkbox", value: editData?.has_branch || false },
-    ]}
-  />
-)}
-
-
+      {isModalOpen && (
+        <AddOrganization
+          onClose={closeModal}
+          onSubmit={handleFormSubmit}
+          fields={[
+            {
+              id: "organization_name",
+              label: t("organization.organization_name"),
+              type: "text",
+              placeholder: "Enter organization name",
+              value: editData?.organization_name || "",
+            },
+            {
+              id: "description",
+              label: t("common.description"),
+              type: "textarea",
+              placeholder: "Enter description",
+              value: editData?.description || "",
+            },
+            {
+              id: "has_branch",
+              label: "Has Branch",
+              type: "checkbox",
+              value: editData?.has_branch || false,
+            },
+          ]}
+        />
+      )}
     </>
   );
 }

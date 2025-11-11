@@ -1,13 +1,17 @@
-import ComponentCard from "../../components/common/ComponentCard";
-import PageMeta from "../../components/common/PageMeta";
-import UserTable from "../../components/tables/BasicTables/userTable";
-import { useTranslation } from "react-i18next";
+// import ComponentCard from "../../components/common/ComponentCard";
+// import PageMeta from "../../components/common/PageMeta";
+// import UserTable from "../../components/tables/BasicTables/userTable";
+
+import UserList from "../../components/tables/lists/userList";
+
+// import { useTranslation } from "react-i18next";
 export default function Users() {
-      const { t } = useTranslation();
-    
+  // const { t } = useTranslation();
+
   return (
     <>
-      <PageMeta
+      <UserList />
+      {/* <PageMeta
         title={t("basedata.user_management")}
         description={t("basedata.subtitle", { title: t("basedata.users") })}
       />
@@ -16,7 +20,7 @@ export default function Users() {
         <ComponentCard title={t("basedata.user_management")}>
           <UserTable />
         </ComponentCard>
-      </div>
+      </div> */}
     </>
   );
 }

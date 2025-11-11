@@ -2,7 +2,14 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import PageMeta from "../../components/common/PageMeta";
 import InfoCard from "../../components/Basedata/card";
-import { FaProjectDiagram,  FaExclamationTriangle, FaFlag, FaBuilding, FaCity, FaMapMarkerAlt } from "react-icons/fa";
+import {
+  FaProjectDiagram,
+  FaExclamationTriangle,
+  FaFlag,
+  FaBuilding,
+  FaCity,
+  FaMapMarkerAlt,
+} from "react-icons/fa";
 
 export default function Basedata() {
   const { t } = useTranslation();
@@ -11,24 +18,28 @@ export default function Basedata() {
   const cards = [
     {
       title: t("basedata.organization_management"),
-      description: t("basedata.subtitle", { title: t("basedata.organization") }),
+      description: t("basedata.subtitle", {
+        title: t("basedata.organization"),
+      }),
       icon: <FaBuilding size={24} />,
       route: "/organization",
     },
-       {
+    {
       title: t("basedata.org_structure_management"),
-      description: t("basedata.subtitle", { title: t("basedata.org_structure") }),
+      description: t("basedata.subtitle", {
+        title: t("basedata.org_structure"),
+      }),
       icon: <FaBuilding size={24} />,
       route: "/org_structure",
     },
-       {
-      title: t("basedata.branch_management"),
-      description: t("basedata.subtitle", { title: t("basedata.branch") }),
-      icon: <FaBuilding size={24} />,
-      route: "/branch",
-    },
-       
-      {
+    // {
+    //   title: t("basedata.level_management"),
+    //   description: t("basedata.subtitle", { title: t("basedata.level") }),
+    //   icon: <FaBuilding size={24} />,
+    //   route: "/branch",
+    // },
+
+    {
       title: t("basedata.project_management"),
       description: t("basedata.subtitle", { title: t("basedata.project") }),
       icon: <FaProjectDiagram size={24} />,
@@ -36,16 +47,36 @@ export default function Basedata() {
     },
     {
       title: t("basedata.priority_level_management"),
-      description: t("basedata.subtitle", { title: t("basedata.priority_level") }),
+      description: t("basedata.subtitle", {
+        title: t("basedata.priority_level"),
+      }),
       icon: <FaFlag size={24} />,
       route: "/priority_level",
     },
-   
+
     {
       title: t("basedata.issue_category_management"),
-      description: t("basedata.subtitle", { title: t("basedata.issue_category") }),
+      description: t("basedata.subtitle", {
+        title: t("basedata.issue_category"),
+      }),
       icon: <FaExclamationTriangle size={24} />,
       route: "/issue_category",
+    },
+    {
+      title: t("basedata.role"),
+      description: t("basedata.subtitle", {
+        title: t("basedata.role"),
+      }),
+      icon: <FaExclamationTriangle size={24} />,
+      route: "/role",
+    },
+    {
+      title: t("basedata.permission"),
+      description: t("basedata.subtitle", {
+        title: t("basedata.permission"),
+      }),
+      icon: <FaExclamationTriangle size={24} />,
+      route: "/permission",
     },
   ];
 

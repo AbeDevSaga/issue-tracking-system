@@ -2,15 +2,15 @@
 // import PageMeta from "../../components/common/PageMeta";
 // import ProjectTable from "../../components/tables/BasicTables/projectTable";
 
-import ProjectList from "../../components/tables/lists/projectList";
+import PermissionList from "../../components/tables/lists/permissionList";
 
 // import { useTranslation } from "react-i18next";
-export default function Project() {
+export default function Permission() {
   // const { t } = useTranslation();
 
   return (
     <>
-      <ProjectList />
+      <PermissionList />
       {/* <PageMeta
         title={t("basedata.project_management")}
         description={t("basedata.subtitle", { title: t("basedata.project") })}

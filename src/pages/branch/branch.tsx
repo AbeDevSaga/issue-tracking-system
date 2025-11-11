@@ -1,13 +1,17 @@
-import ComponentCard from "../../components/common/ComponentCard";
-import PageMeta from "../../components/common/PageMeta";
-import BranchTable from "../../components/tables/BasicTables/branchTable";
-import { useTranslation } from "react-i18next";
+// import ComponentCard from "../../components/common/ComponentCard";
+// import PageMeta from "../../components/common/PageMeta";
+// import BranchTable from "../../components/tables/BasicTables/branchTable";
+
+import HierarchyNodeList from "../../components/tables/lists/hierarchyNodeList";
+
+// import { useTranslation } from "react-i18next";
 export default function Branch() {
-      const { t } = useTranslation();
-    
+  // const { t } = useTranslation();
+
   return (
     <>
-      <PageMeta
+      <HierarchyNodeList />
+      {/* <PageMeta
         title={t("basedata.branch_management")}
         description={t("basedata.subtitle", { title: t("basedata.branch") })}
       />
@@ -16,7 +20,7 @@ export default function Branch() {
         <ComponentCard title={t("basedata.branch_management")}>
           <BranchTable />
         </ComponentCard>
-      </div>
+      </div> */}
     </>
   );
 }

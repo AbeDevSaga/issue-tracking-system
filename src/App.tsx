@@ -20,11 +20,12 @@ import Login from "./components/auth/Login";
 import City from "./pages/city/city";
 import SubCity from "./pages/subcity/subcity";
 import Project from "./pages/project/project";
+import Permission from "./pages/permission/permission";
 import Woreda from "./pages/woreda/woreda";
 import ProjectLevel from "./pages/priorityLevel/priorityLevel";
 import IssueCategory from "./pages/issueCategory/issueCategory";
 import MyIssue from "./pages/issue/my_issue";
-import Roles from "./pages/Tables/Roles";
+import Roles from "./pages/role/role";
 // import Users from "./pages/Tables/Users";
 import BaseData from "./pages/Basedata/Basedata";
 import OrgStructure from "./pages/org_structure/org_structure";
@@ -42,6 +43,7 @@ import "./localization";
 import Users from "./pages/Users/users";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
+import ProjectDetail from "./pages/project/ProjectDetail";
 const AuthLoader = () => {
   return (
     <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">
@@ -104,7 +106,10 @@ function AppContent() {
           <Route path="/subcity" element={<SubCity />} />
           <Route path="/woreda" element={<Woreda />} />
           <Route path="/project" element={<Project />} />
+          <Route path="/project/:id" element={<ProjectDetail />} />
           <Route path="/priority_level" element={<ProjectLevel />} />
+          <Route path="/permission" element={<Permission />} />
+          <Route path="/role" element={<Roles />} />
           <Route path="/issue_category" element={<IssueCategory />} />
           <Route path="/my_issue" element={<MyIssue />} />
           <Route path="/add_issue" element={<MyissueForm />} />
@@ -125,15 +130,6 @@ function AppContent() {
           <Route path="/org_structure" element={<OrgStructure />} />
 
           <Route path="/basedata" element={<BaseData />} />
-
-          <Route
-            path="/roles"
-            element={
-              //<ProtectedRoute requiredPermissions={['role_read']}>
-              <Roles />
-              //</ProtectedRoute>
-            }
-          />
         </Route>
 
         <Route
