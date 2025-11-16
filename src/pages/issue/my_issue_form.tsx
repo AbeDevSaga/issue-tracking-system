@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
 import Select from "../../components/form/Select";
@@ -12,25 +12,26 @@ import {
 
 import { useGetIssueCategoriesQuery } from "../../redux/services/issueCategoryApi";
 import { useGetIssuePrioritiesQuery } from "../../redux/services/issuePriorityApi";
-import { FileUploadField } from "../../components/common/FileUploadField";
 import { useGetCurrentUserQuery } from "../../redux/services/authApi";
+import { useGetProjectsByUserIdQuery } from "../../redux/services/projectApi";
+import { FileUploadField } from "../../components/common/FileUploadField";
 
 export default function AddIssue() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { state } = useLocation();
+  const editData = state?.issue;
 
   // 🔹 Fetch logged-in user
   const { data: loggedUser, isLoading: userLoading } = useGetCurrentUserQuery();
 
-  // Log the user to console
-  useEffect(() => {
-    if (loggedUser) {
-      console.log("Logged-in user:", loggedUser);
-    }
-  }, [loggedUser]);
-
-  const editData = state?.issue;
+  // 🔹 Fetch projects assigned to this user
+  const { data: userProjectsResponse, isLoading: projectsLoading } =
+    useGetProjectsByUserIdQuery(loggedUser?.user?.user_id ?? "", {
+      skip: !loggedUser?.user?.user_id,
+      refetchOnMountOrArgChange: true,
+    });
+  const userProjects = userProjectsResponse?.projects ?? [];
 
   // Fetch Categories & Priorities
   const { data: prioritiesResponse } = useGetIssuePrioritiesQuery();
@@ -50,6 +51,7 @@ export default function AddIssue() {
   // Form state
   const [formValues, setFormValues] = useState<Record<string, any>>({
     title: editData?.title ?? "",
+    project_id: editData?.project_id ?? "",
     issue_category_id: editData?.issue_category_id ?? "",
     priority_id: editData?.priority_id ?? "",
     issue_occured_time: editData?.issue_occured_time ?? "",
@@ -61,7 +63,7 @@ export default function AddIssue() {
       ? Array.isArray(editData.attachment_id)
         ? editData.attachment_id
         : [editData.attachment_id]
-      : [], // <- make sure it's always an array
+      : [],
   });
 
   const handleChange = (id: string, value: any) => {
@@ -74,6 +76,7 @@ export default function AddIssue() {
 
     const payload = {
       title: formValues.title,
+      project_id: formValues.project_id,
       issue_category_id: formValues.issue_category_id,
       priority_id: formValues.priority_id,
       issue_occured_time: formValues.issue_occured_time,
@@ -82,8 +85,8 @@ export default function AddIssue() {
       action_taken: formValues.action_taken_checkbox
         ? formValues.action_taken
         : null,
-      attachment_id: formValues.attachment_id, // NEW
-      reported_by: "USER_ID_FROM_AUTH", // Replace if needed
+      attachment_id: formValues.attachment_id,
+      reported_by: loggedUser?.user_id,
     };
 
     try {
@@ -109,6 +112,7 @@ export default function AddIssue() {
   const handleReset = () => {
     setFormValues({
       title: "",
+      project_id: "",
       issue_category_id: "",
       priority_id: "",
       issue_occured_time: "",
@@ -116,12 +120,13 @@ export default function AddIssue() {
       url_path: "",
       action_taken: "",
       action_taken_checkbox: false,
-      attachment_id: [], // NEW
+      attachment_id: [],
     });
   };
 
   // Form fields
   const fields = [
+    { id: "project_id", label: "Select Project", type: "select" },
     { id: "issue_category_id", label: "Select Category", type: "select" },
     { id: "priority_id", label: "Priority Level", type: "select" },
     {
@@ -211,6 +216,19 @@ export default function AddIssue() {
             .map((field) => (
               <div key={field.id} className="flex flex-col">
                 <Label>{field.label}</Label>
+
+                {field.type === "select" && field.id === "project_id" && (
+                  <Select
+                    id="project_id"
+                    value={formValues.project_id}
+                    options={userProjects.map((p) => ({
+                      value: p.project_id,
+                      label: p.name,
+                    }))}
+                    onChange={(v) => handleChange("project_id", v)}
+                  />
+                )}
+
                 {field.type === "select" &&
                   field.id === "issue_category_id" && (
                     <Select
@@ -223,6 +241,7 @@ export default function AddIssue() {
                       onChange={(v) => handleChange("issue_category_id", v)}
                     />
                   )}
+
                 {field.type === "select" && field.id === "priority_id" && (
                   <Select
                     id="priority_id"
@@ -234,6 +253,7 @@ export default function AddIssue() {
                     onChange={(v) => handleChange("priority_id", v)}
                   />
                 )}
+
                 {field.type === "datetime" && (
                   <input
                     type="datetime-local"
@@ -244,6 +264,7 @@ export default function AddIssue() {
                     }
                   />
                 )}
+
                 {field.type === "textarea" && (
                   <textarea
                     className="border rounded px-2 py-2"
@@ -252,6 +273,7 @@ export default function AddIssue() {
                     onChange={(e) => handleChange(field.id, e.target.value)}
                   />
                 )}
+
                 {field.type === "url" && (
                   <Input
                     type="url"
