@@ -1,14 +1,8 @@
+// Updated CreateUserModal with normal div modal instead of Dialog
 "use client";
 
 import React, { useState } from "react";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "../ui/cn/dialog";
 import { Input } from "../ui/cn/input";
 import { Label } from "../ui/cn/label";
 import { Button } from "../ui/cn/button";
@@ -31,7 +25,7 @@ import {
   useGetInstitutesQuery,
   Institute,
 } from "../../redux/services/instituteApi";
-
+import { XIcon } from "lucide-react";
 
 interface CreateUserModalProps {
   isOpen: boolean;
@@ -50,18 +44,14 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
   const [selectedUserTypeId, setSelectedUserTypeId] = useState<string>("");
   const [instituteId, setInstituteId] = useState<string>("");
 
-
-  // Fetch user types
   const { data: userTypesResponse, isLoading: loadingUserTypes } =
     useGetUserTypesQuery();
   const userTypes: UserType[] = userTypesResponse?.data || [];
 
-  // Get the selected user type object
   const selectedUserType = userTypes.find(
     (ut) => ut.user_type_id === selectedUserTypeId
   );
 
-  // Fetch institutes
   const { data: institutes, isLoading: loadingInstitutes } =
     useGetInstitutesQuery();
 
@@ -92,23 +82,13 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
     try {
       await createUser(payload).unwrap();
       toast.success("User created successfully!");
-      onClose();
-
-      // Reset form
-      setFullName("");
-      setEmail("");
-      setPhoneNumber("");
-      setPosition("");
-      setSelectedUserTypeId("");
-      setIsActive(true);
-      setInstituteId("");
+      handleClose();
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to create user");
     }
   };
 
   const handleClose = () => {
-    // Reset form when closing
     setFullName("");
     setEmail("");
     setPhoneNumber("");
@@ -119,157 +99,120 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
     onClose();
   };
 
-  return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-2xl bg-white">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
-            Create User
-          </DialogTitle>
-        </DialogHeader>
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) handleClose();
+  };
 
-        <div className="max-h-[60vh] overflow-y-auto pr-2 -mr-2">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-            {/* Left Column */}
-            <div className="space-y-4">
-              {/* User Type first */}
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      onClick={handleBackdropClick}
+    >
+      <div className="bg-white p-6 rounded-2xl w-full max-w-[700px] shadow-2xl max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-[#094C81]">Create User</h2>
+          <button
+            onClick={handleClose}
+            className="text-[#094C81] hover:text-gray-600 transition"
+          >
+            <XIcon className="w-6 h-6 cursor-pointer" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 pr-2">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="block text-sm text-[#094C81] font-medium mb-2">User Type *</Label>
+              <Select
+                value={selectedUserTypeId}
+                onValueChange={setSelectedUserTypeId}
+                disabled={loadingUserTypes}
+              >
+                <SelectTrigger className=" h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
+                  <SelectValue className="text-sm text-[#094C81] font-medium placeholder:text-sm placeholder:text-[#094C81] placeholder:font-medium" placeholder="Select User Type" />
+                </SelectTrigger>
+                <SelectContent className="text-sm text-[#094C81] font-medium">
+                  {userTypes.map((type) => (
+                    <SelectItem className="text-sm text-[#094C81] font-medium" key={type.user_type_id} value={type.user_type_id}>
+                      {type.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="block text-sm text-[#094C81] font-medium mb-2">Full Name *</Label>
+              <Input
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="John Doe"
+                className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+              />
+            </div>
+            {selectedUserType?.name === "external_user" && (
               <div className="space-y-2">
-                <Label htmlFor="user-type" className="font-medium">
-                  User Type *
-                </Label>
+                <Label className="block text-sm text-[#094C81] font-medium mb-2">Institute *</Label>
                 <Select
-                  value={selectedUserTypeId}
-                  onValueChange={(value) => {
-                    setSelectedUserTypeId(value);
-                  }}
-                  disabled={loadingUserTypes}
+                  value={instituteId}
+                  onValueChange={setInstituteId}
+                  disabled={loadingInstitutes}
                 >
-                  <SelectTrigger id="user-type" className="w-full">
-                    <SelectValue placeholder="Select User Type" />
+                  <SelectTrigger className=" h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
+                    <SelectValue className="text-sm text-[#094C81] font-medium" placeholder="Select Institute" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {userTypes.map((type: UserType) => (
-                      <SelectItem
-                        key={type.user_type_id}
-                        value={type.user_type_id}
-                      >
-                        {type.name}
+                  <SelectContent className="text-sm bg-white text-[#094C81] font-medium">
+                    {institutes?.map((inst: Institute) => (
+                      <SelectItem className="text-sm text-[#094C81] font-medium" key={inst.institute_id} value={inst.institute_id}>
+                        {inst.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+            )}
+          
+          </div>
 
-              {/* Full Name */}
-              <div className="space-y-2">
-                <Label htmlFor="full-name" className="font-medium">
-                  Full Name *
-                </Label>
-                <Input
-                  id="full-name"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="John Doe"
-                  className="w-full"
-                />
-              </div>
-
-              {/* Email */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="font-medium">
-                  Email *
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="john@example.com"
-                  className="w-full"
-                />
-              </div>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="block text-sm text-[#094C81] font-medium mb-2">Phone Number</Label>
+              <Input
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="+251 9xxxxxxx"
+                className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+              />
             </div>
 
-            {/* Right Column */}
-            <div className="space-y-4">
-              {/* Phone */}
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="font-medium">
-                  Phone Number
-                </Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="+251 9xxxxxxx"
-                  className="w-full"
-                />
-              </div>
-
-              {/* Institute only for external users */}
-              {selectedUserType?.name === "external_user" && (
-                <div className="space-y-2">
-                  <Label htmlFor="institute" className="font-medium">
-                    Institute *
-                  </Label>
-                  <Select
-                    value={instituteId}
-                    onValueChange={setInstituteId}
-                    disabled={loadingInstitutes}
-                  >
-                    <SelectTrigger id="institute" className="w-full">
-                      <SelectValue placeholder="Select Institute" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {institutes?.map((inst: Institute) => (
-                        <SelectItem
-                          key={inst.institute_id}
-                          value={inst.institute_id}
-                        >
-                          {inst.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {/* Status */}
-              <div className="space-y-2">
-                <Label htmlFor="status" className="font-medium">
-                  Status
-                </Label>
-                <Select
-                  value={isActive ? "active" : "inactive"}
-                  onValueChange={(val) => setIsActive(val === "active")}
-                >
-                  <SelectTrigger id="status" className="w-full">
-                    <SelectValue placeholder="Select Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+           
+  <div className="space-y-2">
+              <Label className="block text-sm text-[#094C81] font-medium mb-2">Email *</Label>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="john@example.com"
+                className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+              />
             </div>
           </div>
         </div>
 
-        <DialogFooter className="mt-6 flex justify-end space-x-2 border-t pt-4">
-          <Button variant="outline" onClick={handleClose} type="button">
+        {/* Footer */}
+        <div className="flex justify-end space-x-3 mt-6 pt-4 border-t">
+          <Button variant="outline" onClick={handleClose}>
             Cancel
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={isLoading}
-            className="min-w-24"
-          >
+          <Button onClick={handleSubmit} disabled={isLoading} className="min-w-24">
             {isLoading ? "Creating..." : "Create User"}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </div>
+    </div>
   );
 };
