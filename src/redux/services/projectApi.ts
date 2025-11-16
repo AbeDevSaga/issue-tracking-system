@@ -74,7 +74,7 @@ export const projectApi = baseApi.injectEndpoints({
         user_id: string;
         role_id: string;
         sub_role_id?: string;
-        hierarchy_node_id: string;
+        hierarchy_node_id?: string;
       }
     >({
       query: (data) => ({
@@ -97,6 +97,17 @@ export const projectApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Project"],
     }),
+
+    // 🔹 Get all projects assigned to a user
+    getProjectsByUserId: builder.query<
+      { success: boolean; count: number; projects: any[] },
+      string
+    >({
+      query: (user_id) => `/projects/user/${user_id}`,
+      providesTags: (result, error, user_id) => [
+        { type: "Project", id: user_id },
+      ],
+    }),
   }),
   overrideExisting: false,
 });
@@ -109,4 +120,5 @@ export const {
   useDeleteProjectMutation,
   useAssignUserToProjectMutation,
   useRemoveUserFromProjectMutation,
+  useGetProjectsByUserIdQuery, // 🔹 New hook added
 } = projectApi;

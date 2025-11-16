@@ -1,7 +1,7 @@
 // src/redux/apis/issueApi.ts
 import { baseApi } from "../baseApi";
 
-// Issue interface
+// Issue interface (matches backend Issue model)
 export interface Issue {
   issue_id: string;
   institute_project_id?: string | null;
@@ -21,7 +21,7 @@ export interface Issue {
   updated_at?: string;
   resolved_at?: string | null;
   closed_at?: string | null;
-  // Optional nested relations
+  attachments?: { attachment_id: string; attachment: any }[];
   category?: any;
   priority?: any;
   reporter?: any;
@@ -45,6 +45,7 @@ export interface CreateIssueDto {
   issue_description?: string;
   issue_occured_time?: string;
   status?: string;
+  attachment_ids?: string[]; // array of attachment UUIDs
 }
 
 // Inject endpoints into the base API

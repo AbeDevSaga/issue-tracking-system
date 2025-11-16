@@ -19,38 +19,116 @@ import {
   useGetParentNodesQuery,
 } from "../../redux/services/hierarchyNodeApi";
 
+// Helper to indent nodes visually
+const indentStyle = (level: number) => ({
+  paddingLeft: `${level * 16}px`,
+});
+
 export function CreateHierarchyNodeModal({ isOpen, onClose }: any) {
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [selectedParentNode, setSelectedParentNode] = useState<string | null>(
     null
   );
+
+  const [navigationStack, setNavigationStack] = useState<any[]>([]);
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
-  // ✅ Fetch projects
+  // Fetch projects
   const { data: projects, isLoading: isLoadingProjects } =
     useGetProjectsQuery();
 
-  // ✅ Fetch parent nodes when project changes
-  const { data: parentNodes, isFetching: isFetchingParents } =
-    useGetParentNodesQuery(selectedProject, { skip: !selectedProject });
+  // Fetch all nodes of a project
+  const { data: parentNodesData, isFetching: isFetchingParents } =
+    useGetParentNodesQuery(selectedProject, {
+      skip: !selectedProject,
+    });
 
-  // ✅ Mutation for creating node
   const [createNode, { isLoading: isCreatingNode }] =
     useCreateHierarchyNodeMutation();
 
   if (!isOpen) return null;
 
+  // Get the tree from API response - FIXED: Use 'nodes' instead of 'parentNodes'
+  const tree = parentNodesData?.nodes || [];
+
+  // Get current level nodes based on navigation stack
+  const getCurrentLevelNodes = () => {
+    if (navigationStack.length === 0) {
+      return tree;
+    }
+
+    // Navigate through the tree based on the stack
+    let currentNode = tree;
+    for (const stackItem of navigationStack) {
+      const foundNode = currentNode.find(
+        (node: any) => node.hierarchy_node_id === stackItem.hierarchy_node_id
+      );
+      if (foundNode && foundNode.children) {
+        currentNode = foundNode.children;
+      } else {
+        return [];
+      }
+    }
+    return currentNode;
+  };
+
+  const currentLevelNodes = getCurrentLevelNodes();
+
+  // Move deeper into a structure
+  const enterStructure = (node: any) => {
+    if (node.children && node.children.length > 0) {
+      setNavigationStack((prev) => [...prev, node]);
+      // Clear selection when navigating deeper
+      setSelectedParentNode(null);
+    }
+  };
+
+  // Move back
+  const goBack = () => {
+    setNavigationStack((prev) => {
+      const newStack = prev.slice(0, -1);
+      // Clear selection when going back
+      setSelectedParentNode(null);
+      return newStack;
+    });
+  };
+
+  const resetNavigation = () => {
+    setNavigationStack([]);
+    setSelectedParentNode(null);
+  };
+
+  // Handle node selection
+  const handleNodeSelect = (nodeId: string | null) => {
+    setSelectedParentNode(nodeId);
+  };
+
+  // Get current path display - for better UX
+  const getCurrentPath = () => {
+    if (navigationStack.length === 0) return "Root";
+    return navigationStack.map((node) => node.name).join(" → ");
+  };
+
+  // Debug function to check the data
+  const debugData = () => {
+    console.log("Tree data:", tree);
+    console.log("Current level nodes:", currentLevelNodes);
+    console.log("Navigation stack:", navigationStack);
+    console.log("Selected parent:", selectedParentNode);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!selectedProject) {
-      toast.error("Please select a project first");
+      toast.error("Select a project first");
       return;
     }
 
     if (!name.trim()) {
-      toast.error("Node name is required");
+      toast.error("Structure name is required");
       return;
     }
 
@@ -63,49 +141,53 @@ export function CreateHierarchyNodeModal({ isOpen, onClose }: any) {
         is_active: true,
       }).unwrap();
 
-      toast.success("Hierarchy node created successfully!");
+      toast.success("Structure created!");
+
       setName("");
       setDescription("");
-      setSelectedParentNode(null);
+      resetNavigation();
       onClose();
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to create hierarchy node");
+      toast.error(error?.data?.message || "Failed to create structure");
     }
   };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
-        <h2 className="text-lg font-semibold mb-4">Create Hierarchy Node</h2>
+      <div className="bg-white p-6 rounded-lg shadow-lg w-[450px] max-h-[85vh] overflow-y-auto">
+        <h2 className="text-lg font-semibold mb-4">Create Structure Node</h2>
 
-        {/* Loading or Empty Projects */}
+        {/* Debug button - remove in production */}
+        <button
+          type="button"
+          onClick={debugData}
+          className="text-xs bg-gray-200 p-1 rounded mb-2"
+          style={{ display: "none" }} // Hidden by default
+        >
+          Debug Data
+        </button>
+
         {isLoadingProjects ? (
           <p>Loading projects...</p>
-        ) : projects && projects.length === 0 ? (
-          <p className="text-red-500">
-            ⚠️ No projects found. Please create a project first.
-          </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Project Selection */}
             <div>
               <Label>Select Project</Label>
               <Select
+                value={selectedProject}
                 onValueChange={(val) => {
                   setSelectedProject(val);
-                  setSelectedParentNode(null);
+                  resetNavigation();
                 }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select project" />
                 </SelectTrigger>
+
                 <SelectContent>
                   {projects?.map((p) => (
-                    <SelectItem
-                      className="bg-white"
-                      key={p.project_id}
-                      value={p.project_id}
-                    >
+                    <SelectItem key={p.project_id} value={p.project_id}>
                       {p.name}
                     </SelectItem>
                   ))}
@@ -113,82 +195,177 @@ export function CreateHierarchyNodeModal({ isOpen, onClose }: any) {
               </Select>
             </div>
 
-            {/* Parent Node Selection */}
+            {/* Structure Selection */}
             {selectedProject && (
-              <div>
-                <Label>Parent Node (optional)</Label>
+              <div className="border p-3 rounded-lg mt-2">
+                <Label>Select Parent Structure (optional)</Label>
+
                 {isFetchingParents ? (
-                  <p className="text-sm text-gray-500">
-                    Loading parent nodes...
-                  </p>
-                ) : parentNodes?.parentNodes?.length ? (
-                  <Select
-                    onValueChange={(val) =>
-                      setSelectedParentNode(val === "none" ? null : val)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select parent node" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white">
-                      <SelectItem className="bg-white" value="none">
-                        None
-                      </SelectItem>
-                      {parentNodes.parentNodes.map((node) => (
-                        <SelectItem
-                          className="bg-white"
-                          key={node.hierarchy_node_id}
-                          value={node.hierarchy_node_id}
-                        >
-                          {node.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <p className="text-sm text-gray-500">Loading structures...</p>
                 ) : (
-                  <p className="text-sm text-gray-500">
-                    No parent nodes found — this will be a root node.
-                  </p>
+                  <>
+                    {/* Current Path Display */}
+                    {navigationStack.length > 0 && (
+                      <div className="text-sm text-gray-600 mb-2">
+                        Current: {getCurrentPath()}
+                      </div>
+                    )}
+
+                    {/* Back Button */}
+                    {navigationStack.length > 0 && (
+                      <Button
+                        type="button"
+                        onClick={goBack}
+                        className="mb-2 text-sm"
+                        variant="outline"
+                        size="sm"
+                      >
+                        ⬅ Back to{" "}
+                        {navigationStack.length > 1 ? "Previous" : "Root"}
+                      </Button>
+                    )}
+
+                    {/* Root Option - Only show at root level */}
+                    {navigationStack.length === 0 && (
+                      <button
+                        type="button"
+                        className={`block text-left w-full py-2 px-3 rounded-md mb-2 transition-colors ${
+                          selectedParentNode === null
+                            ? "bg-blue-100 border border-blue-300 text-blue-800"
+                            : "hover:bg-gray-100 border border-transparent"
+                        }`}
+                        onClick={() => handleNodeSelect(null)}
+                      >
+                        <div className="flex items-center">
+                          <span className="mr-2">📦</span>
+                          <div>
+                            <div className="font-medium">Root Structure</div>
+                            <div className="text-sm text-gray-600">
+                              Create at project root level
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    )}
+
+                    {/* Structure Tree */}
+                    <div className="mt-2 space-y-1 max-h-60 overflow-y-auto">
+                      {currentLevelNodes?.length === 0 ? (
+                        <p className="text-sm text-gray-500 text-center py-4">
+                          No structures found at this level
+                        </p>
+                      ) : (
+                        currentLevelNodes?.map((node: any) => (
+                          <div
+                            key={node.hierarchy_node_id}
+                            className="flex justify-between items-center group"
+                          >
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleNodeSelect(node.hierarchy_node_id)
+                              }
+                              className={`py-2 px-3 rounded-md text-left flex-1 flex items-start transition-colors ${
+                                selectedParentNode === node.hierarchy_node_id
+                                  ? "bg-blue-100 border border-blue-300 text-blue-800"
+                                  : "hover:bg-gray-100 border border-transparent"
+                              }`}
+                              style={indentStyle((node.level || 1) - 1)}
+                            >
+                              <span className="mr-2 mt-0.5">📦</span>
+                              <div className="flex-1">
+                                <div className="font-medium">{node.name}</div>
+                                {node.description && (
+                                  <div className="text-sm text-gray-600 truncate">
+                                    {node.description}
+                                  </div>
+                                )}
+                                <div className="text-xs text-gray-500 mt-1">
+                                  Level {node.level} •{" "}
+                                  {node.children?.length || 0} children
+                                </div>
+                              </div>
+                            </button>
+
+                            {node.children && node.children.length > 0 && (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => enterStructure(node)}
+                                className="opacity-70 group-hover:opacity-100 transition-opacity ml-2"
+                                title={`Explore ${node.name} structure`}
+                              >
+                                ➜
+                              </Button>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    {/* Selected parent info */}
+                    {selectedParentNode && (
+                      <div className="mt-3 p-2 bg-blue-50 rounded-md text-sm border border-blue-200">
+                        <div className="flex items-center">
+                          <span className="mr-2">✅</span>
+                          <div>
+                            <strong>Selected Parent:</strong>{" "}
+                            {
+                              currentLevelNodes?.find(
+                                (n: any) =>
+                                  n.hierarchy_node_id === selectedParentNode
+                              )?.name
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
 
             {/* Node Name */}
             <div>
-              <Label>Node Name</Label>
+              <Label htmlFor="structure-name">Structure Name *</Label>
               <Input
-                placeholder="Enter node name"
+                id="structure-name"
+                placeholder="Enter structure name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                required
               />
             </div>
 
             {/* Description */}
             <div>
-              <Label>Description</Label>
+              <Label htmlFor="structure-description">Description</Label>
               <Input
-                placeholder="Enter node description"
+                id="structure-description"
+                placeholder="Enter structure description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
 
             {/* Buttons */}
-            <div className="flex justify-end space-x-2 pt-2">
+            <div className="flex justify-end space-x-2 pt-4">
               <Button
                 type="button"
-                variant="secondary"
+                variant="outline"
                 onClick={onClose}
-                className="bg-gray-200 hover:bg-gray-300 text-black"
+                disabled={isCreatingNode}
               >
                 Cancel
               </Button>
+
               <Button
                 type="submit"
-                disabled={isCreatingNode}
+                disabled={isCreatingNode || !name.trim()}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
-                {isCreatingNode ? "Creating..." : "Create Node"}
+                {isCreatingNode ? "Creating..." : "Create Structure"}
               </Button>
             </div>
           </form>

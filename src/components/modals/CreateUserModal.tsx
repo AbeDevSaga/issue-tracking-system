@@ -32,6 +32,7 @@ import {
   Institute,
 } from "../../redux/services/instituteApi";
 
+
 interface CreateUserModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -48,6 +49,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
   const [isActive, setIsActive] = useState(true);
   const [selectedUserTypeId, setSelectedUserTypeId] = useState<string>("");
   const [instituteId, setInstituteId] = useState<string>("");
+
 
   // Fetch user types
   const { data: userTypesResponse, isLoading: loadingUserTypes } =
@@ -105,126 +107,165 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
     }
   };
 
+  const handleClose = () => {
+    // Reset form when closing
+    setFullName("");
+    setEmail("");
+    setPhoneNumber("");
+    setPosition("");
+    setSelectedUserTypeId("");
+    setIsActive(true);
+    setInstituteId("");
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg bg-white">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-2xl bg-white">
         <DialogHeader>
-          <DialogTitle>Create User</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">
+            Create User
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 mt-2">
-          {/* User Type first */}
-          <div>
-            <Label>User Type</Label>
-            <Select
-              value={selectedUserTypeId}
-              onValueChange={setSelectedUserTypeId}
-              disabled={loadingUserTypes}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select User Type" />
-              </SelectTrigger>
-              <SelectContent>
-                {userTypes.map((type: UserType) => (
-                  <SelectItem key={type.user_type_id} value={type.user_type_id}>
-                    {type.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="max-h-[60vh] overflow-y-auto pr-2 -mr-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+            {/* Left Column */}
+            <div className="space-y-4">
+              {/* User Type first */}
+              <div className="space-y-2">
+                <Label htmlFor="user-type" className="font-medium">
+                  User Type *
+                </Label>
+                <Select
+                  value={selectedUserTypeId}
+                  onValueChange={(value) => {
+                    setSelectedUserTypeId(value);
+                  }}
+                  disabled={loadingUserTypes}
+                >
+                  <SelectTrigger id="user-type" className="w-full">
+                    <SelectValue placeholder="Select User Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {userTypes.map((type: UserType) => (
+                      <SelectItem
+                        key={type.user_type_id}
+                        value={type.user_type_id}
+                      >
+                        {type.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          {/* Full Name */}
-          <div>
-            <Label>Full Name</Label>
-            <Input
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="John Doe"
-            />
-          </div>
+              {/* Full Name */}
+              <div className="space-y-2">
+                <Label htmlFor="full-name" className="font-medium">
+                  Full Name *
+                </Label>
+                <Input
+                  id="full-name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="John Doe"
+                  className="w-full"
+                />
+              </div>
 
-          {/* Email */}
-          <div>
-            <Label>Email</Label>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="john@example.com"
-            />
-          </div>
-
-          {/* Phone */}
-          <div>
-            <Label>Phone Number</Label>
-            <Input
-              type="tel"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder="+251 9xxxxxxx"
-            />
-          </div>
-
-          {/* Position */}
-          <div>
-            <Label>Position</Label>
-            <Input
-              value={position}
-              onChange={(e) => setPosition(e.target.value)}
-              placeholder="Backend Developer"
-            />
-          </div>
-
-          {/* Institute only for external users */}
-          {selectedUserType?.name === "external_user" && (
-            <div>
-              <Label>Institute</Label>
-              <Select
-                value={instituteId}
-                onValueChange={setInstituteId}
-                disabled={loadingInstitutes}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Institute" />
-                </SelectTrigger>
-                <SelectContent>
-                  {institutes?.map((inst: Institute) => (
-                    <SelectItem
-                      key={inst.institute_id}
-                      value={inst.institute_id}
-                    >
-                      {inst.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {/* Email */}
+              <div className="space-y-2">
+                <Label htmlFor="email" className="font-medium">
+                  Email *
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="john@example.com"
+                  className="w-full"
+                />
+              </div>
             </div>
-          )}
 
-          {/* Status */}
-          <div>
-            <Label>Status</Label>
-            <Select
-              value={isActive ? "active" : "inactive"}
-              onValueChange={(val) => setIsActive(val === "active")}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Right Column */}
+            <div className="space-y-4">
+              {/* Phone */}
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="font-medium">
+                  Phone Number
+                </Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="+251 9xxxxxxx"
+                  className="w-full"
+                />
+              </div>
+
+              {/* Institute only for external users */}
+              {selectedUserType?.name === "external_user" && (
+                <div className="space-y-2">
+                  <Label htmlFor="institute" className="font-medium">
+                    Institute *
+                  </Label>
+                  <Select
+                    value={instituteId}
+                    onValueChange={setInstituteId}
+                    disabled={loadingInstitutes}
+                  >
+                    <SelectTrigger id="institute" className="w-full">
+                      <SelectValue placeholder="Select Institute" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {institutes?.map((inst: Institute) => (
+                        <SelectItem
+                          key={inst.institute_id}
+                          value={inst.institute_id}
+                        >
+                          {inst.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Status */}
+              <div className="space-y-2">
+                <Label htmlFor="status" className="font-medium">
+                  Status
+                </Label>
+                <Select
+                  value={isActive ? "active" : "inactive"}
+                  onValueChange={(val) => setIsActive(val === "active")}
+                >
+                  <SelectTrigger id="status" className="w-full">
+                    <SelectValue placeholder="Select Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
         </div>
 
-        <DialogFooter className="mt-4 flex justify-end space-x-2">
-          <Button variant="outline" onClick={onClose}>
+        <DialogFooter className="mt-6 flex justify-end space-x-2 border-t pt-4">
+          <Button variant="outline" onClick={handleClose} type="button">
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={isLoading}>
+          <Button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="min-w-24"
+          >
             {isLoading ? "Creating..." : "Create User"}
           </Button>
         </DialogFooter>

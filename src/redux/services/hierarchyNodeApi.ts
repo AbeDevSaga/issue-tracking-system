@@ -41,7 +41,7 @@ export interface ParentNodesResponse {
   success: boolean;
   project_id: string;
   count: number;
-  parentNodes: HierarchyNode[];
+  nodes: HierarchyNode[];
 }
 
 // ---------------------------

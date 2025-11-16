@@ -1,7 +1,7 @@
 // src/pages/project/ProjectDetail.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   Card,
@@ -17,6 +17,7 @@ import {
 import { useGetUsersQuery } from "../../redux/services/userApi";
 import { useGetRolesQuery } from "../../redux/services/roleApi";
 import { useGetParentNodesQuery } from "../../redux/services/hierarchyNodeApi";
+import ProjectUserRolesTable from "../../components/tables/lists/ProjectUserRolesTable";
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
@@ -36,8 +37,27 @@ export default function ProjectDetail() {
   const [subRole, setSubRole] = useState<string>("");
   const [structureId, setStructureId] = useState<string>("");
 
+  // State for nested structure navigation
+  const [currentNodes, setCurrentNodes] = useState<any[]>([]);
+  const [currentPath, setCurrentPath] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (structuresResponse?.nodes) {
+      setCurrentNodes(structuresResponse.nodes);
+    }
+  }, [structuresResponse]);
+
   if (isLoading) return <p>Loading project...</p>;
   if (isError || !project) return <p>Project not found.</p>;
+
+  const users = usersResponse?.data || [];
+  const roles = rolesResponse?.data || [];
+  const structures = structuresResponse?.nodes || [];
+
+  console.log("structures: ", structures);
+
+  const selectedRoleData = roles.find((r: any) => r.role_id === selectedRole);
+  const subRoles = selectedRoleData?.roleSubRoles || [];
 
   const handleAssign = async () => {
     if (!selectedUser || !selectedRole) {
@@ -51,7 +71,7 @@ export default function ProjectDetail() {
         user_id: selectedUser,
         role_id: selectedRole,
         sub_role_id: subRole || undefined,
-        hierarchy_node_id: structureId || null,
+        hierarchy_node_id: structureId || "",
       }).unwrap();
 
       alert("User assigned successfully");
@@ -59,18 +79,12 @@ export default function ProjectDetail() {
       setSelectedRole("");
       setSubRole("");
       setStructureId("");
+      setCurrentNodes(structures);
+      setCurrentPath([]);
     } catch (error: any) {
       alert("Error: " + (error.data?.message || error.message));
     }
   };
-
-  const users = usersResponse?.data || [];
-  const roles = rolesResponse?.data || [];
-  const structures = structuresResponse?.parentNodes || [];
-
-  // Get sub-roles for selected role
-  const selectedRoleData = roles.find((r: any) => r.role_id === selectedRole);
-  const subRoles = selectedRoleData?.roleSubRoles || [];
 
   return (
     <div className="p-4 space-y-6">
@@ -86,7 +100,6 @@ export default function ProjectDetail() {
           <p>
             <strong>Status:</strong> {project.is_active ? "Active" : "Inactive"}
           </p>
-
           {project.institutes?.length > 0 && (
             <p>
               <strong>Institutes:</strong>{" "}
@@ -97,37 +110,8 @@ export default function ProjectDetail() {
       </Card>
 
       {/* === Assigned Users === */}
-      {project.projectUserRoles?.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Assigned Users</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <table className="w-full border-collapse border border-gray-300">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="border p-2">User</th>
-                  <th className="border p-2">Email</th>
-                  <th className="border p-2">Role</th>
-                  <th className="border p-2">Structure</th>
-                </tr>
-              </thead>
-              <tbody>
-                {project.projectUserRoles.map((pur: any) => (
-                  <tr key={pur.project_user_role_id}>
-                    <td className="border p-2">{pur.user?.full_name}</td>
-                    <td className="border p-2">{pur.user?.email}</td>
-                    <td className="border p-2">{pur.role?.name}</td>
-                    <td className="border p-2">
-                      {pur.hierarchyNode ? pur.hierarchyNode.name : "-"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </CardContent>
-        </Card>
-      )}
+
+      <ProjectUserRolesTable projectId={project.project_id} />
 
       {/* === Assign User Section === */}
       <Card>
@@ -193,31 +177,73 @@ export default function ProjectDetail() {
               </select>
             )}
 
-            {/* Structure Selection */}
-            <select
-              value={structureId}
-              onChange={(e) => setStructureId(e.target.value)}
-              className="border p-2 rounded"
-              disabled={loadingStructures || errorStructures}
-            >
+            {/* Structure Navigation */}
+            <div className="border p-2 rounded space-y-2">
+              <label className="font-medium">Select Structure</label>
               {loadingStructures ? (
-                <option>Loading structures...</option>
+                <p>Loading structures...</p>
               ) : errorStructures ? (
-                <option>Error loading structures</option>
+                <p>Error loading structures</p>
               ) : (
                 <>
-                  <option value="">Select Structure</option>
-                  {structures.map((s: any) => (
-                    <option
-                      key={s.hierarchy_node_id}
-                      value={s.hierarchy_node_id}
-                    >
-                      {s.name}
-                    </option>
-                  ))}
+                  {currentPath.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        className="text-blue-600 hover:underline"
+                        onClick={() => {
+                          const newPath = [...currentPath];
+                          newPath.pop();
+                          setCurrentPath(newPath);
+                          setCurrentNodes(
+                            newPath.length === 0
+                              ? structures
+                              : newPath[newPath.length - 1].children
+                          );
+                        }}
+                      >
+                        &larr; Back
+                      </button>
+                      <span className="text-gray-500">
+                        {currentPath.map((n: any) => n.name).join(" / ")}
+                      </span>
+                    </div>
+                  )}
+
+                  <ul className="border rounded p-2 max-h-40 overflow-auto space-y-1">
+                    {currentNodes.map((node: any) => (
+                      <li
+                        key={node.hierarchy_node_id}
+                        className="flex justify-between items-center"
+                      >
+                        <span>{node.name}</span>
+                        <div className="space-x-2">
+                          {node.children && node.children.length > 0 && (
+                            <button
+                              className="text-sm text-blue-600 hover:underline"
+                              onClick={() => {
+                                setCurrentPath([...currentPath, node]);
+                                setCurrentNodes(node.children);
+                              }}
+                            >
+                              Open
+                            </button>
+                          )}
+                          <input
+                            type="radio"
+                            name="structure"
+                            value={node.hierarchy_node_id}
+                            checked={structureId === node.hierarchy_node_id}
+                            onChange={() =>
+                              setStructureId(node.hierarchy_node_id)
+                            }
+                          />
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
                 </>
               )}
-            </select>
+            </div>
 
             <Button onClick={handleAssign}>Assign User</Button>
           </div>
