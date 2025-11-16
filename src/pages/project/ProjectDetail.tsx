@@ -71,7 +71,7 @@ export default function ProjectDetail() {
         user_id: selectedUser,
         role_id: selectedRole,
         sub_role_id: subRole || undefined,
-        hierarchy_node_id: structureId || "",
+        hierarchy_node_id: structureId || null,
       }).unwrap();
 
       alert("User assigned successfully");

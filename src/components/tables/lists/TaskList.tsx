@@ -11,7 +11,7 @@ import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
 
 // --- Define table columns ---
-const IssueTableColumns = [
+const TaskTableColumns = [
   {
     accessorKey: "title",
     header: "Title",
@@ -51,16 +51,24 @@ const IssueTableColumns = [
     ),
   },
   {
-    accessorKey: "assignee.full_name",
-    header: "Assignee",
-    cell: ({ row }: any) => (
-      <div>{row.original.assignee?.full_name || "Unassigned"}</div>
-    ),
+    accessorKey: "category.name",
+    header: "Category",
+    cell: ({ row }: any) => <div>{row.original.category?.name || "N/A"}</div>,
   },
   {
     accessorKey: "project.name",
     header: "Project",
     cell: ({ row }: any) => <div>{row.original.project?.name || "N/A"}</div>,
+  },
+  {
+    accessorKey: "issue_occured_time",
+    header: "Occurred Time",
+    cell: ({ row }: any) => {
+      const date = row.original.issue_occured_time
+        ? new Date(row.original.issue_occured_time).toLocaleString()
+        : "N/A";
+      return <div>{date}</div>;
+    },
   },
   {
     id: "actions",
@@ -70,15 +78,15 @@ const IssueTableColumns = [
       return (
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/issues/detail/${issue.issue_id}`}>
+            <Link to={`/task/${issue.issue_id}`}>
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
-          <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/issues/edit/${issue.issue_id}`}>
+          {/* <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
+            <Link to={`/task/edit/${issue.issue_id}`}>
               <Edit className="h-4 w-4" />
             </Link>
-          </Button>
+          </Button> */}
           <Button
             variant="outline"
             size="sm"
@@ -93,7 +101,7 @@ const IssueTableColumns = [
   },
 ];
 
-export default function IssueList() {
+export default function TaskList() {
   const navigate = useNavigate();
   const [response, setResponse] = useState<any[]>([]);
   const [filteredResponse, setFilteredResponse] = useState<any[]>([]);
@@ -103,16 +111,6 @@ export default function IssueList() {
     pageCount: 1,
     pageSize: 10,
   });
-
-  const actions: ActionButton[] = [
-    {
-      label: "Add Issue",
-      icon: <Plus className="h-4 w-4" />,
-      variant: "default",
-      size: "default",
-      onClick: () => navigate("/add_issue"),
-    },
-  ];
 
   const filterFields: FilterField[] = [
     {
@@ -155,13 +153,9 @@ export default function IssueList() {
   };
 
   return (
-    <PageLayout
-      filters={filterFields}
-      filterColumnsPerRow={1}
-      actions={actions}
-    >
+    <PageLayout filters={filterFields} filterColumnsPerRow={1}>
       <DataTable
-        columns={IssueTableColumns}
+        columns={TaskTableColumns}
         data={filteredResponse}
         handlePagination={handlePagination}
         tablePageSize={pageDetail.pageSize}

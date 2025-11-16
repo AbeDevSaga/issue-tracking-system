@@ -31,7 +31,22 @@ export default function AddIssue() {
       skip: !loggedUser?.user?.user_id,
       refetchOnMountOrArgChange: true,
     });
-  const userProjects = userProjectsResponse?.projects ?? [];
+
+  const userProjects =
+    userProjectsResponse?.data?.map((assignment: any) => {
+      const project = assignment.project;
+      return {
+        project_user_role_id: assignment.project_user_role_id,
+        project_id: project.project_id,
+        name: project.name,
+        description: project.description,
+        is_active: project.is_active,
+        hierarchyNode: assignment.hierarchyNode,
+        role: assignment.role,
+        subRole: assignment.subRole,
+        instituteProjects: project.instituteProjects,
+      };
+    }) ?? [];
 
   // Fetch Categories & Priorities
   const { data: prioritiesResponse } = useGetIssuePrioritiesQuery();
@@ -52,6 +67,7 @@ export default function AddIssue() {
   const [formValues, setFormValues] = useState<Record<string, any>>({
     title: editData?.title ?? "",
     project_id: editData?.project_id ?? "",
+    hierarchy_node_id: editData?.hierarchy_node_id ?? "",
     issue_category_id: editData?.issue_category_id ?? "",
     priority_id: editData?.priority_id ?? "",
     issue_occured_time: editData?.issue_occured_time ?? "",
@@ -64,6 +80,7 @@ export default function AddIssue() {
         ? editData.attachment_id
         : [editData.attachment_id]
       : [],
+    reported_by: loggedUser?.user?.user_id ?? "",
   });
 
   const handleChange = (id: string, value: any) => {
@@ -77,6 +94,7 @@ export default function AddIssue() {
     const payload = {
       title: formValues.title,
       project_id: formValues.project_id,
+      hierarchy_node_id: formValues.hierarchy_node_id,
       issue_category_id: formValues.issue_category_id,
       priority_id: formValues.priority_id,
       issue_occured_time: formValues.issue_occured_time,
@@ -85,8 +103,8 @@ export default function AddIssue() {
       action_taken: formValues.action_taken_checkbox
         ? formValues.action_taken
         : null,
-      attachment_id: formValues.attachment_id,
-      reported_by: loggedUser?.user_id,
+      attachment_ids: formValues.attachment_id,
+      reported_by: loggedUser?.user?.user_id ?? "",
     };
 
     try {
@@ -120,7 +138,7 @@ export default function AddIssue() {
       url_path: "",
       action_taken: "",
       action_taken_checkbox: false,
-      attachment_id: [],
+      attachment_ids: [],
     });
   };
 
@@ -225,7 +243,18 @@ export default function AddIssue() {
                       value: p.project_id,
                       label: p.name,
                     }))}
-                    onChange={(v) => handleChange("project_id", v)}
+                    onChange={(selectedProjectId) => {
+                      const selectedProject = userProjects.find(
+                        (p) => p.project_id === selectedProjectId
+                      );
+
+                      handleChange("project_id", selectedProjectId);
+                      handleChange(
+                        "hierarchy_node_id",
+                        selectedProject?.hierarchyNode?.hierarchy_node_id ??
+                          null
+                      );
+                    }}
                   />
                 )}
 

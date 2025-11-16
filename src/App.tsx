@@ -43,6 +43,8 @@ import CentralAdminTaskDetail from "./pages/CentralAdminTaskList/CentralAdminTas
 import DeveloperTaskDetail from "./pages/DeveloperTaskList/DeveloperTaskDetail";
 
 import DeveloperTaskList from "./pages/DeveloperTaskList/DeveloperTaskList";
+import UserTaskList from "./pages/userTasks/TaskList";
+import UserTaskDetail from "./pages/userTasks/TaskDetail";
 import "./localization";
 import Users from "./pages/Users/users";
 import { Provider } from "react-redux";
@@ -99,6 +101,9 @@ function AppContent() {
               </ProtectedRoute>
             }
           /> */}
+
+          <Route path="/task" element={<UserTaskList />} />
+          <Route path="/task/:id" element={<UserTaskDetail />} />
 
           <Route path="/users" element={<Users />} />
           <Route path="/organization" element={<Organization />} />

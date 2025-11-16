@@ -178,6 +178,11 @@ const AppSidebar: React.FC = () => {
     name: "My Issue",
     path: "/my_issue",
   },
+  {
+    icon: <TaskList />,
+    name: "Task List",
+    path: "/task",
+  },
    {
     icon: <TaskList />,
     name: "Central Admin Task List",
