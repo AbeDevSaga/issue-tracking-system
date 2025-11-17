@@ -72,6 +72,11 @@ export const issueApi = baseApi.injectEndpoints({
       query: (id) => `/issues/${id}`,
       providesTags: (result, error, id) => [{ type: "Issue", id }],
     }),
+    getIssuesByUserId: builder.query<Issue[], string>({
+      query: (userId) => `/issues/user/${userId}`,
+      providesTags: ["Issue"],
+    }),
+
     getIssuesByHierarchyAndProject: builder.query<
       Issue[],
       IssuesByHierarchyAndProjectParams
@@ -83,13 +88,12 @@ export const issueApi = baseApi.injectEndpoints({
     // NEW: Get issues by multiple pairs
     getIssuesByMultiplePairs: builder.query<
       Issue[],
-      IssuesByMultiplePairsParams
+      IssuesByMultiplePairsParams & { user_id: string }
     >({
-      query: ({ pairs }) => {
-        const queryParams = new URLSearchParams({
-          pairs: JSON.stringify(pairs),
-        });
-        return `/issues-by-pairs?${queryParams}`;
+      query: ({ pairs, user_id }) => {
+        // Encode the pairs array as a URL parameter
+        const encodedPairs = encodeURIComponent(JSON.stringify(pairs));
+        return `issues/issues-by-pairs/${encodedPairs}/user/${user_id}`;
       },
       providesTags: ["Issue"],
     }),
@@ -127,6 +131,7 @@ export const issueApi = baseApi.injectEndpoints({
 export const {
   useGetIssuesQuery,
   useGetIssueByIdQuery,
+  useGetIssuesByUserIdQuery,
   useCreateIssueMutation,
   useUpdateIssueMutation,
   useDeleteIssueMutation,

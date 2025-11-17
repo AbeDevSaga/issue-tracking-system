@@ -14,7 +14,7 @@ import { useMultipleIssuesQueries } from "../../../hooks/useMultipleIssuesQuerie
 const TaskTableColumns = [
   {
     accessorKey: "title",
-    header: "Title",
+    header: "Issue Title",
     cell: ({ row }: any) => (
       <div className="font-medium text-blue-600">{row.getValue("title")}</div>
     ),
@@ -44,15 +44,21 @@ const TaskTableColumns = [
     cell: ({ row }: any) => row.original.priority?.name || "N/A",
   },
   {
+    accessorKey: "category.name",
+    header: "Category",
+    cell: ({ row }: any) => row.original.category?.name || "N/A",
+  },
+  {
     accessorKey: "reporter.full_name",
     header: "Reporter",
     cell: ({ row }: any) => row.original.reporter?.full_name || "N/A",
   },
   {
-    accessorKey: "category.name",
-    header: "Category",
-    cell: ({ row }: any) => row.original.category?.name || "N/A",
+    accessorKey: "hierarchyNode.name",
+    header: "Structure",
+    cell: ({ row }: any) => row.original.hierarchyNode?.name || "N/A",
   },
+
   {
     accessorKey: "project.name",
     header: "Project",
@@ -102,6 +108,7 @@ export default function TaskList() {
   });
 
   const { data: loggedUser, isLoading: userLoading } = useGetCurrentUserQuery();
+  const userId = loggedUser?.user?.user_id || "";
 
   // Map project-role pairs
   const projectHierarchyPairs = useMemo(
@@ -119,7 +126,7 @@ export default function TaskList() {
     isLoading: issuesLoading,
     isError,
     errors,
-  } = useMultipleIssuesQueries(projectHierarchyPairs);
+  } = useMultipleIssuesQueries(projectHierarchyPairs, userId);
 
   // Apply status filter
   const filteredIssues = useMemo(() => {

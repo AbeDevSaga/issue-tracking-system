@@ -4,11 +4,15 @@ import React, { useEffect, useState } from "react";
 import { Plus, Eye, Edit, Trash2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { useGetIssuesQuery } from "../../../redux/services/issueApi";
+import {
+  useGetIssuesByUserIdQuery,
+  useGetIssuesQuery,
+} from "../../../redux/services/issueApi";
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
+import { useGetCurrentUserQuery } from "../../../redux/services/authApi";
 
 // --- Define table columns ---
 const IssueTableColumns = [
@@ -104,6 +108,8 @@ export default function IssueList() {
     pageSize: 10,
   });
 
+  const { data: loggedUser, isLoading: userLoading } = useGetCurrentUserQuery();
+
   const actions: ActionButton[] = [
     {
       label: "Add Issue",
@@ -132,7 +138,12 @@ export default function IssueList() {
     },
   ];
 
-  const { isLoading, isError, data } = useGetIssuesQuery();
+  const { isLoading, isError, data } = useGetIssuesByUserIdQuery(
+    loggedUser?.user?.user_id ?? "",
+    {
+      skip: !loggedUser?.user?.user_id,
+    }
+  );
 
   useEffect(() => {
     if (!isError && !isLoading && data) {
