@@ -3,10 +3,8 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 // const API_BASE_URL =
 //   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api";
-
 const API_BASE_URL =
-  "https://chose-hawk-identifies-adjustable.trycloudflare.com/api";
-
+  "https://lenses-refine-hampshire-apollo.trycloudflare.com/api";
 // --- Base query with JWT from localStorage ---
 const baseQuery = fetchBaseQuery({
   baseUrl: API_BASE_URL,

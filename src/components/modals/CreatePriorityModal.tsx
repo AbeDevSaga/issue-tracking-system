@@ -70,22 +70,30 @@ export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
               
               <div className="flex flex-col w-full"> 
                 <Label
-                  htmlFor="response-time"
+                  htmlFor="priority-name"
                   className="block text-sm text-[#094C81] font-medium mb-2"
                 >
-                  Response Time
+                  Priority Name
                 </Label>
                 <Input
-                  id="response-time"
-                  type="number"
-                  value={responseTime}
-                  onChange={(e) => setResponseTime(e.target.value)}
-                  placeholder="Enter response time"
+                  id="priority-name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter priority name"
                   required
                   className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
                 />
               </div>
               {/* Response Time */}
+              <div className="flex flex-col w-full">
+                <Label
+                  htmlFor="response-time"
+                  className="block text-sm text-[#094C81] font-medium mb-2"
+                >
+                  Response Time
+                </Label>
+              </div>
               <Select
 
                value={responseTime} onValueChange={(value) => setResponseTime(value)}>
