@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Plus, Eye, Edit, Trash2 } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { Plus, Eye, Trash2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { useGetIssuesQuery } from "../../../redux/services/issueApi";
+import { useGetCurrentUserQuery } from "../../../redux/services/authApi";
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
-import { ActionButton, FilterField } from "../../../types/layout";
+import { FilterField } from "../../../types/layout";
+import { useMultipleIssuesQueries } from "../../../hooks/useMultipleIssuesQueries";
 
-// --- Define table columns ---
 const TaskTableColumns = [
   {
     accessorKey: "title",
@@ -41,34 +41,30 @@ const TaskTableColumns = [
   {
     accessorKey: "priority.name",
     header: "Priority",
-    cell: ({ row }: any) => <div>{row.original.priority?.name || "N/A"}</div>,
+    cell: ({ row }: any) => row.original.priority?.name || "N/A",
   },
   {
     accessorKey: "reporter.full_name",
     header: "Reporter",
-    cell: ({ row }: any) => (
-      <div>{row.original.reporter?.full_name || "N/A"}</div>
-    ),
+    cell: ({ row }: any) => row.original.reporter?.full_name || "N/A",
   },
   {
     accessorKey: "category.name",
     header: "Category",
-    cell: ({ row }: any) => <div>{row.original.category?.name || "N/A"}</div>,
+    cell: ({ row }: any) => row.original.category?.name || "N/A",
   },
   {
     accessorKey: "project.name",
     header: "Project",
-    cell: ({ row }: any) => <div>{row.original.project?.name || "N/A"}</div>,
+    cell: ({ row }: any) => row.original.project?.name || "N/A",
   },
   {
     accessorKey: "issue_occured_time",
     header: "Occurred Time",
-    cell: ({ row }: any) => {
-      const date = row.original.issue_occured_time
+    cell: ({ row }: any) =>
+      row.original.issue_occured_time
         ? new Date(row.original.issue_occured_time).toLocaleString()
-        : "N/A";
-      return <div>{date}</div>;
-    },
+        : "N/A",
   },
   {
     id: "actions",
@@ -82,11 +78,6 @@ const TaskTableColumns = [
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
-          {/* <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/task/edit/${issue.issue_id}`}>
-              <Edit className="h-4 w-4" />
-            </Link>
-          </Button> */}
           <Button
             variant="outline"
             size="sm"
@@ -103,14 +94,39 @@ const TaskTableColumns = [
 
 export default function TaskList() {
   const navigate = useNavigate();
-  const [response, setResponse] = useState<any[]>([]);
-  const [filteredResponse, setFilteredResponse] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [pageDetail, setPageDetail] = useState({
     pageIndex: 0,
     pageCount: 1,
     pageSize: 10,
   });
+
+  const { data: loggedUser, isLoading: userLoading } = useGetCurrentUserQuery();
+
+  // Map project-role pairs
+  const projectHierarchyPairs = useMemo(
+    () =>
+      (loggedUser?.user?.project_roles || []).map((role) => ({
+        project_id: role.project?.project_id!,
+        hierarchy_node_id: role.hierarchy_node?.hierarchy_node_id || null,
+      })),
+    [loggedUser]
+  );
+
+  // Use custom hook to fetch all issues
+  const {
+    allIssues,
+    isLoading: issuesLoading,
+    isError,
+    errors,
+  } = useMultipleIssuesQueries(projectHierarchyPairs);
+
+  // Apply status filter
+  const filteredIssues = useMemo(() => {
+    return allIssues.filter(
+      (issue) => statusFilter === "all" || issue.status === statusFilter
+    );
+  }, [allIssues, statusFilter]);
 
   const filterFields: FilterField[] = [
     {
@@ -123,41 +139,50 @@ export default function TaskList() {
         { label: "Closed", value: "closed" },
       ],
       value: statusFilter,
-      onChange: (value: string | string[]) => {
-        setStatusFilter(Array.isArray(value) ? value[0] : value);
-        setPageDetail({ ...pageDetail, pageIndex: 0 });
-      },
+      onChange: (value: string | string[]) =>
+        setStatusFilter(Array.isArray(value) ? value[0] : value),
     },
   ];
 
-  const { isLoading, isError, data } = useGetIssuesQuery();
+  // Show loading state
+  if (userLoading || issuesLoading) {
+    return (
+      <PageLayout>
+        <div className="flex justify-center items-center h-64">
+          <div>Loading tasks...</div>
+        </div>
+      </PageLayout>
+    );
+  }
 
-  useEffect(() => {
-    if (!isError && !isLoading && data) {
-      setResponse(data);
-      setFilteredResponse(data);
-    }
-  }, [data, isError, isLoading]);
-
-  // Apply status filter
-  useEffect(() => {
-    const filtered = response.filter((item) => {
-      if (!statusFilter || statusFilter === "all") return true;
-      return item.status === statusFilter;
-    });
-    setFilteredResponse(filtered);
-  }, [response, statusFilter]);
-
-  const handlePagination = (index: number, size: number) => {
-    setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
-  };
+  // Show error state
+  if (isError) {
+    return (
+      <PageLayout>
+        <div className="flex justify-center items-center h-64">
+          <div className="text-red-600">
+            Error loading tasks. Please try again.
+            {errors.length > 0 && (
+              <div className="text-sm text-gray-600 mt-2">
+                {errors.map((error, index) => (
+                  <div key={index}>Error: {JSON.stringify(error)}</div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
 
   return (
     <PageLayout filters={filterFields} filterColumnsPerRow={1}>
       <DataTable
         columns={TaskTableColumns}
-        data={filteredResponse}
-        handlePagination={handlePagination}
+        data={filteredIssues}
+        handlePagination={(index, size) =>
+          setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size })
+        }
         tablePageSize={pageDetail.pageSize}
         totalPageCount={pageDetail.pageCount}
         currentIndex={pageDetail.pageIndex}

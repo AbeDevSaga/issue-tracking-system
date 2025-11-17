@@ -2,6 +2,19 @@
 import { baseApi } from "../baseApi";
 
 // Issue interface (matches backend Issue model)
+export interface IssuesByHierarchyAndProjectParams {
+  hierarchy_node_id: string;
+  project_id: string;
+}
+
+// New interface for multiple pairs
+export interface IssuesByMultiplePairsParams {
+  pairs: Array<{
+    project_id: string;
+    hierarchy_node_id: string;
+  }>;
+}
+
 export interface Issue {
   issue_id: string;
   institute_project_id?: string | null;
@@ -59,6 +72,28 @@ export const issueApi = baseApi.injectEndpoints({
       query: (id) => `/issues/${id}`,
       providesTags: (result, error, id) => [{ type: "Issue", id }],
     }),
+    getIssuesByHierarchyAndProject: builder.query<
+      Issue[],
+      IssuesByHierarchyAndProjectParams
+    >({
+      query: ({ hierarchy_node_id, project_id }) =>
+        `/issues/hierarchy/${hierarchy_node_id}/project/${project_id}`,
+      providesTags: ["Issue"],
+    }),
+    // NEW: Get issues by multiple pairs
+    getIssuesByMultiplePairs: builder.query<
+      Issue[],
+      IssuesByMultiplePairsParams
+    >({
+      query: ({ pairs }) => {
+        const queryParams = new URLSearchParams({
+          pairs: JSON.stringify(pairs),
+        });
+        return `/issues-by-pairs?${queryParams}`;
+      },
+      providesTags: ["Issue"],
+    }),
+
     createIssue: builder.mutation<Issue, CreateIssueDto>({
       query: (data) => ({
         url: `/issues`,
@@ -95,4 +130,6 @@ export const {
   useCreateIssueMutation,
   useUpdateIssueMutation,
   useDeleteIssueMutation,
+  useGetIssuesByHierarchyAndProjectQuery,
+  useGetIssuesByMultiplePairsQuery, // NEW: Export the new hook
 } = issueApi;

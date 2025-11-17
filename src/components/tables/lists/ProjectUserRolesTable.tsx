@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
-import { FilterField } from "../../../types/layout";
+import { ActionButton, FilterField } from "../../../types/layout";
 
 import {
   useGetProjectByIdQuery,
@@ -89,6 +89,7 @@ export default function ProjectUserRolesTable({ projectId }: Props) {
   const [response, setResponse] = useState<any[]>([]);
   const [filteredResponse, setFilteredResponse] = useState<any[]>([]);
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [isModalOpen, setModalOpen] = useState(false);
 
   const [pageDetail, setPageDetail] = useState({
     pageIndex: 0,
@@ -98,6 +99,15 @@ export default function ProjectUserRolesTable({ projectId }: Props) {
 
   const { data, isLoading, isError } = useGetProjectByIdQuery(projectId);
 
+  const actions: ActionButton[] = [
+    {
+      label: "Assign User",
+      icon: <Plus className="h-4 w-4" />,
+      variant: "default",
+      size: "default",
+      onClick: () => setModalOpen(true),
+    },
+  ];
   // Filters
   const filterFields: FilterField[] = [
     {
@@ -140,7 +150,11 @@ export default function ProjectUserRolesTable({ projectId }: Props) {
   };
 
   return (
-    <PageLayout filters={filterFields} filterColumnsPerRow={1}>
+    <PageLayout
+      filters={filterFields}
+      filterColumnsPerRow={1}
+      actions={actions}
+    >
       <DataTable
         columns={columns}
         data={filteredResponse}
