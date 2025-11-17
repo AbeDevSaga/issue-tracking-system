@@ -12,6 +12,7 @@ import {
   useGetProjectByIdQuery,
   useRemoveUserFromProjectMutation,
 } from "../../../redux/services/projectApi";
+import AssignUserModal from "../../modals/AssignUserToProjectModal";
 
 // =======================
 // TABLE COLUMNS
@@ -141,6 +142,23 @@ export default function ProjectUserRolesTable({ projectId }: Props) {
     setFilteredResponse(filtered);
   }, [roleFilter, response]);
 
+  // Apply pagination
+  const paginatedData = React.useMemo(() => {
+    const start = pageDetail.pageIndex * pageDetail.pageSize;
+    const end = start + pageDetail.pageSize;
+
+    // Compute page count dynamically
+    const totalCount = filteredResponse.length;
+    const pageCount = Math.ceil(totalCount / pageDetail.pageSize);
+
+    // update pageCount state
+    if (pageCount !== pageDetail.pageCount) {
+      setPageDetail((prev) => ({ ...prev, pageCount }));
+    }
+
+    return filteredResponse.slice(start, end);
+  }, [filteredResponse, pageDetail.pageIndex, pageDetail.pageSize]);
+
   const handlePagination = (index: number, size: number) => {
     setPageDetail({
       ...pageDetail,
@@ -157,11 +175,16 @@ export default function ProjectUserRolesTable({ projectId }: Props) {
     >
       <DataTable
         columns={columns}
-        data={filteredResponse}
+        data={paginatedData}
         handlePagination={handlePagination}
         tablePageSize={pageDetail.pageSize}
         totalPageCount={pageDetail.pageCount}
         currentIndex={pageDetail.pageIndex}
+      />
+      <AssignUserModal
+        project={data}
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
       />
     </PageLayout>
   );

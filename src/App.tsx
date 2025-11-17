@@ -50,6 +50,7 @@ import Users from "./pages/Users/users";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import ProjectDetail from "./pages/project/ProjectDetail";
+import { Toaster } from "sonner";
 const AuthLoader = () => {
   return (
     <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">
@@ -175,6 +176,7 @@ export default function App() {
     <Provider store={store}>
       <AuthProvider>
         <AppContent />
+        <Toaster position="top-right" />
       </AuthProvider>
     </Provider>
   );
