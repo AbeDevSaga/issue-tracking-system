@@ -13,32 +13,6 @@ import { useMultipleIssuesQueries } from "../../../hooks/useMultipleIssuesQuerie
 
 const TaskTableColumns = [
   {
-    accessorKey: "title",
-    header: "Issue Title",
-    cell: ({ row }: any) => (
-      <div className="font-medium text-blue-600">{row.getValue("title")}</div>
-    ),
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }: any) => {
-      const status = row.getValue("status");
-      let bgClass = "bg-gray-100 text-gray-800";
-      if (status === "pending") bgClass = "bg-yellow-100 text-yellow-800";
-      else if (status === "resolved") bgClass = "bg-green-100 text-green-800";
-      else if (status === "closed") bgClass = "bg-red-100 text-red-800";
-
-      return (
-        <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bgClass}`}
-        >
-          {status?.toUpperCase() || "N/A"}
-        </span>
-      );
-    },
-  },
-  {
     accessorKey: "priority.name",
     header: "Priority",
     cell: ({ row }: any) => row.original.priority?.name || "N/A",
@@ -50,7 +24,7 @@ const TaskTableColumns = [
   },
   {
     accessorKey: "reporter.full_name",
-    header: "Reporter",
+    header: "Created By",
     cell: ({ row }: any) => row.original.reporter?.full_name || "N/A",
   },
   {
@@ -71,6 +45,25 @@ const TaskTableColumns = [
       row.original.issue_occured_time
         ? new Date(row.original.issue_occured_time).toLocaleString()
         : "N/A",
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }: any) => {
+      const status = row.getValue("status");
+      let bgClass = "bg-gray-100 text-gray-800";
+      if (status === "pending") bgClass = "bg-yellow-100 text-yellow-800";
+      else if (status === "resolved") bgClass = "bg-green-100 text-green-800";
+      else if (status === "closed") bgClass = "bg-red-100 text-red-800";
+
+      return (
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bgClass}`}
+        >
+          {status?.toUpperCase() || "N/A"}
+        </span>
+      );
+    },
   },
   {
     id: "actions",

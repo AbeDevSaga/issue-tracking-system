@@ -42,6 +42,11 @@ export interface Issue {
   instituteProject?: any;
   hierarchyNode?: any;
 }
+// In src/redux/apis/issueApi.ts
+
+export interface AcceptIssueDto {
+  issue_id: string;
+}
 
 // DTO for creating/updating an Issue
 export interface CreateIssueDto {
@@ -106,6 +111,18 @@ export const issueApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Issue"],
     }),
+    acceptIssue: builder.mutation<
+      { success: boolean; message: string },
+      AcceptIssueDto
+    >({
+      query: (data) => ({
+        url: `/issues/accept`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Issue"], // invalidate issues to refresh queries
+    }),
+
     updateIssue: builder.mutation<
       Issue,
       { id: string; data: Partial<CreateIssueDto> }
@@ -133,6 +150,7 @@ export const {
   useGetIssueByIdQuery,
   useGetIssuesByUserIdQuery,
   useCreateIssueMutation,
+  useAcceptIssueMutation,
   useUpdateIssueMutation,
   useDeleteIssueMutation,
   useGetIssuesByHierarchyAndProjectQuery,

@@ -17,11 +17,19 @@ import { useGetCurrentUserQuery } from "../../../redux/services/authApi";
 // --- Define table columns ---
 const IssueTableColumns = [
   {
-    accessorKey: "title",
-    header: "Title",
-    cell: ({ row }: any) => (
-      <div className="font-medium text-blue-600">{row.getValue("title")}</div>
-    ),
+    accessorKey: "priority.name",
+    header: "Priority",
+    cell: ({ row }: any) => <div>{row.original.priority?.name || "N/A"}</div>,
+  },
+  {
+    accessorKey: "category.name",
+    header: "Category",
+    cell: ({ row }: any) => <div>{row.original.category?.name || "N/A"}</div>,
+  },
+  {
+    accessorKey: "project.name",
+    header: "Project",
+    cell: ({ row }: any) => <div>{row.original.project?.name || "N/A"}</div>,
   },
   {
     accessorKey: "status",
@@ -41,30 +49,6 @@ const IssueTableColumns = [
         </span>
       );
     },
-  },
-  {
-    accessorKey: "priority.name",
-    header: "Priority",
-    cell: ({ row }: any) => <div>{row.original.priority?.name || "N/A"}</div>,
-  },
-  {
-    accessorKey: "reporter.full_name",
-    header: "Reporter",
-    cell: ({ row }: any) => (
-      <div>{row.original.reporter?.full_name || "N/A"}</div>
-    ),
-  },
-  {
-    accessorKey: "assignee.full_name",
-    header: "Assignee",
-    cell: ({ row }: any) => (
-      <div>{row.original.assignee?.full_name || "Unassigned"}</div>
-    ),
-  },
-  {
-    accessorKey: "project.name",
-    header: "Project",
-    cell: ({ row }: any) => <div>{row.original.project?.name || "N/A"}</div>,
   },
   {
     id: "actions",
