@@ -65,12 +65,12 @@ const InstituteTableColumns = [
       return (
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/institutes/detail/${institute.institute_id}`}>
+            <Link to={`/organization/${institute.institute_id}`}>
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
           <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/institutes/edit/${institute.institute_id}`}>
+            <Link to={`/organization/${institute.institute_id}`}>
               <Edit className="h-4 w-4" />
             </Link>
           </Button>

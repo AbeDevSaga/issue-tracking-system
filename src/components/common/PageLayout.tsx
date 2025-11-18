@@ -5,6 +5,7 @@ import { Button } from "../ui/cn/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { PageLayoutProps } from "../../types/layout";
 import { FilterPopover } from "./FilterDrawer";
+import { Select, SelectContent, SelectItem, SelectValue, SelectTrigger } from "../ui/cn/select";
 
 export const PageLayout: React.FC<PageLayoutProps> = ({
   title,
@@ -12,6 +13,9 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
   actions = [],
   filters = [],
   children,
+  toggle = "table",
+  showtoggle = false,
+  onToggle = () => {},
   filterColumnsPerRow = 1,
 }) => {
   const navigate = useNavigate();
@@ -70,7 +74,17 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
                 className="pl-10 w-64"
               />
             </div>
-
+            {showtoggle && (
+              <Select value={toggle} onValueChange={(value: string) => onToggle(value)}>
+                <SelectTrigger className="w-40 bg-white text-gray-700 border-gray-300 focus:ring-0">
+                  <SelectValue placeholder="Table View" />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="table" className="text-gray-700 hover:bg-gray-200">Table View</SelectItem>
+                  <SelectItem value="hierarchy" className="text-gray-700 hover:bg-gray-200">Hierarchy View</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
             {/* Filters */}
             {filters.length > 0 && (
               <FilterPopover

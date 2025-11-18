@@ -15,6 +15,7 @@ import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
 import { CreateHierarchyNodeModal } from "../../modals/CreateHierarchyNodeModal";
+import HierarchyNodeListTree from "./hierarchyNodeListTree";
 
 // ------------------- Table Columns -------------------
 const HierarchyNodeTableColumns = (deleteNode: any) => [
@@ -89,12 +90,12 @@ const HierarchyNodeTableColumns = (deleteNode: any) => [
       return (
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/hierarchy-nodes/detail/${node.hierarchy_node_id}`}>
+            <Link to={`/org_structure/${node.hierarchy_node_id}`}>
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
           <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/hierarchy-nodes/edit/${node.hierarchy_node_id}`}>
+            <Link to={`/org_structure/${node.hierarchy_node_id}`}>
               <Edit className="h-4 w-4" />
             </Link>
           </Button>
@@ -126,7 +127,7 @@ export default function HierarchyNodeList() {
 
   const { data, isLoading, isError } = useGetHierarchyNodesQuery();
   const [deleteNode] = useDeleteHierarchyNodeMutation();
-
+  const [toggleHierarchyNode, setToggleHierarchyNode] = useState("table");
   const actions: ActionButton[] = [
     {
       label: "Add Node",
@@ -174,15 +175,19 @@ export default function HierarchyNodeList() {
   const handlePagination = (index: number, size: number) => {
     setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
   };
-
+console.log("toggleHierarchyNode: ", toggleHierarchyNode);
   return (
     <>
       <PageLayout
         filters={filterFields}
         filterColumnsPerRow={1}
         actions={actions}
+        showtoggle={true}
+        toggle={toggleHierarchyNode}
+        onToggle={(value: string) => setToggleHierarchyNode(value)}
       >
-        <DataTable
+        {toggleHierarchyNode === "table" ? (
+          <DataTable
           columns={HierarchyNodeTableColumns(deleteNode)}
           data={filteredNodes}
           handlePagination={handlePagination}
@@ -190,6 +195,13 @@ export default function HierarchyNodeList() {
           totalPageCount={pageDetail.pageCount}
           currentIndex={pageDetail.pageIndex}
         />
+
+        ):(
+          <HierarchyNodeListTree 
+          data={filteredNodes}
+          isLoading={isLoading}
+          />
+        )}
       </PageLayout>
 
       <CreateHierarchyNodeModal

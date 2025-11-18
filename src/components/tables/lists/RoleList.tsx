@@ -52,12 +52,12 @@ const RoleTableColumns = (handleDelete: (id: string) => void) => [
       return (
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/roles/detail/${role.role_id}`}>
+            <Link to={`/role/${role.role_id}`}>
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
           <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/roles/edit/${role.role_id}`}>
+            <Link to={`/role/${role.role_id}`}>
               <Edit className="h-4 w-4" />
             </Link>
           </Button>

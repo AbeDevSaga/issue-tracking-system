@@ -61,12 +61,12 @@ const CategoryTableColumns = [
       return (
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/categories/detail/${category.category_id}`}>
+            <Link to={`/issue_category/${category.category_id}`}>
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
           <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/categories/edit/${category.category_id}`}>
+            <Link to={`/issue_category/${category.category_id}`}>
               <Edit className="h-4 w-4" />
             </Link>
           </Button>
