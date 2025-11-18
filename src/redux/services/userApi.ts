@@ -75,8 +75,8 @@ export const userApi = baseApi.injectEndpoints({
 
     // Get user by ID
     getUserById: builder.query<User, string>({
-      query: (id) => `/users/${id}`,
-      providesTags: (result, error, id) => [{ type: "User", id }],
+      query: (user_id) => `/users/${user_id}`,
+      providesTags: (result, error, user_id) => [{ type: "User", user_id }],
     }),
 
     // Create a new user

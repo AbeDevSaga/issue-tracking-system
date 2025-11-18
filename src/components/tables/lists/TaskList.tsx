@@ -13,11 +13,38 @@ import { useMultipleIssuesQueries } from "../../../hooks/useMultipleIssuesQuerie
 
 const TaskTableColumns = [
   {
-    accessorKey: "title",
-    header: "Title",
-    cell: ({ row }: any) => (
-      <div className="font-medium text-blue-600">{row.getValue("title")}</div>
-    ),
+    accessorKey: "priority.name",
+    header: "Priority",
+    cell: ({ row }: any) => row.original.priority?.name || "N/A",
+  },
+  {
+    accessorKey: "category.name",
+    header: "Category",
+    cell: ({ row }: any) => row.original.category?.name || "N/A",
+  },
+  {
+    accessorKey: "reporter.full_name",
+    header: "Created By",
+    cell: ({ row }: any) => row.original.reporter?.full_name || "N/A",
+  },
+  {
+    accessorKey: "hierarchyNode.name",
+    header: "Structure",
+    cell: ({ row }: any) => row.original.hierarchyNode?.name || "N/A",
+  },
+
+  {
+    accessorKey: "project.name",
+    header: "Project",
+    cell: ({ row }: any) => row.original.project?.name || "N/A",
+  },
+  {
+    accessorKey: "issue_occured_time",
+    header: "Occurred Time",
+    cell: ({ row }: any) =>
+      row.original.issue_occured_time
+        ? new Date(row.original.issue_occured_time).toLocaleString()
+        : "N/A",
   },
   {
     accessorKey: "status",
@@ -39,34 +66,6 @@ const TaskTableColumns = [
     },
   },
   {
-    accessorKey: "priority.name",
-    header: "Priority",
-    cell: ({ row }: any) => row.original.priority?.name || "N/A",
-  },
-  {
-    accessorKey: "reporter.full_name",
-    header: "Reporter",
-    cell: ({ row }: any) => row.original.reporter?.full_name || "N/A",
-  },
-  {
-    accessorKey: "category.name",
-    header: "Category",
-    cell: ({ row }: any) => row.original.category?.name || "N/A",
-  },
-  {
-    accessorKey: "project.name",
-    header: "Project",
-    cell: ({ row }: any) => row.original.project?.name || "N/A",
-  },
-  {
-    accessorKey: "issue_occured_time",
-    header: "Occurred Time",
-    cell: ({ row }: any) =>
-      row.original.issue_occured_time
-        ? new Date(row.original.issue_occured_time).toLocaleString()
-        : "N/A",
-  },
-  {
     id: "actions",
     header: "Actions",
     cell: ({ row }: any) => {
@@ -78,14 +77,14 @@ const TaskTableColumns = [
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
-          <Button
+          {/* <Button
             variant="outline"
             size="sm"
             className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
             onClick={() => console.log("Delete issue:", issue.issue_id)}
           >
             <Trash2 className="h-4 w-4" />
-          </Button>
+          </Button> */}
         </div>
       );
     },
@@ -102,6 +101,7 @@ export default function TaskList() {
   });
 
   const { data: loggedUser, isLoading: userLoading } = useGetCurrentUserQuery();
+  const userId = loggedUser?.user?.user_id || "";
 
   // Map project-role pairs
   const projectHierarchyPairs = useMemo(
@@ -119,11 +119,22 @@ export default function TaskList() {
     isLoading: issuesLoading,
     isError,
     errors,
-  } = useMultipleIssuesQueries(projectHierarchyPairs);
+  } = useMultipleIssuesQueries(projectHierarchyPairs, userId);
+
+  console.log("allIssues: ", allIssues);
 
   // Apply status filter
+  // const filteredIssues = useMemo(() => {
+  //   return allIssues.filter(
+  //     (issue) => statusFilter === "all" || issue.status === statusFilter
+  //   );
+  // }, [allIssues, statusFilter]);
+
   const filteredIssues = useMemo(() => {
-    return allIssues.filter(
+    const safeIssues = Array.isArray(allIssues?.issues)
+      ? allIssues?.issues
+      : [];
+    return safeIssues.filter(
       (issue) => statusFilter === "all" || issue.status === statusFilter
     );
   }, [allIssues, statusFilter]);

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
@@ -11,11 +11,19 @@ import {
   ChevronRight,
   FileText,
   Image as ImageIcon,
+  Eye,
 } from "lucide-react";
-import AssignQAExpert from "../CentralAdminTaskList/QAExpertTaskModal";
-import { useGetIssueByIdQuery } from "../../redux/services/issueApi";
+import {
+  useAcceptIssueMutation,
+  useGetIssueByIdQuery,
+} from "../../redux/services/issueApi";
 import FileViewer from "../../components/common/FileView";
 import { getFileType, getFileUrl } from "../../utils/fileUrl";
+import EscalationPreview from "./EscalationPreview";
+import { useGetCurrentUserQuery } from "../../redux/services/authApi";
+import { getHeirarchyStructure } from "../../utils/hierarchUtils";
+import ResolutionPreview from "./ResolutionPreview";
+import IssueHistoryLog from "./IssueHistoryLog";
 
 export default function UserTaskDetail() {
   const { id } = useParams<{ id: string }>();
@@ -23,11 +31,27 @@ export default function UserTaskDetail() {
   const { t } = useTranslation();
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [modalImageIndex, setModalImageIndex] = useState<number | null>(null);
-  const [reworkModal, setReworkModal] = useState(false);
-  const [fileViewerUrl, setFileViewerUrl] = useState<string | null>(null);
+  const [acceptIssue, { isLoading: isAccepting }] = useAcceptIssueMutation();
 
-  // Map attachments to files array with proper URLs and file info
-  const files =
+  const [fileViewerUrl, setFileViewerUrl] = useState<string | null>(null);
+  const [hierarchyStructure, setHierarchyStructure] = useState<any>(null);
+
+  const { data: loggedUser, isLoading: userLoading } = useGetCurrentUserQuery();
+  const userId = loggedUser?.user?.user_id || "";
+
+  useEffect(() => {
+    if (loggedUser?.user?.project_roles && issue?.project?.project_id) {
+      const hierarchy = getHeirarchyStructure(issue.project.project_id, {
+        project_roles: loggedUser.user.project_roles,
+      });
+      setHierarchyStructure(hierarchy);
+    }
+  }, [loggedUser?.user?.project_roles, issue?.project?.project_id]);
+
+  console.log("hierarchyStructure: ", hierarchyStructure);
+
+  // Map issue attachments to files array with proper URLs and file info
+  const issueFiles =
     issue?.attachments?.map((attachment) => ({
       url: getFileUrl(attachment.attachment.file_path),
       name: attachment.attachment.file_name,
@@ -35,6 +59,23 @@ export default function UserTaskDetail() {
       type: getFileType(attachment.attachment.file_name),
       uploadedAt: attachment.attachment.created_at,
     })) || [];
+
+  // Map resolution attachments
+  const resolutionFiles =
+    issue?.resolutions?.flatMap(
+      (resolution) =>
+        resolution.attachments?.map((attachment) => ({
+          url: getFileUrl(attachment.attachment.file_path),
+          name: attachment.attachment.file_name,
+          path: attachment.attachment.file_path,
+          type: getFileType(attachment.attachment.file_name),
+          uploadedAt: attachment.attachment.created_at,
+          resolutionId: resolution.resolution_id,
+          resolvedBy: resolution.resolver?.full_name,
+          resolvedAt: resolution.resolved_at,
+          reason: resolution.reason,
+        })) || []
+    ) || [];
 
   // Get file icon based on type
   const getFileIcon = (fileType: string) => {
@@ -50,15 +91,38 @@ export default function UserTaskDetail() {
     }
   };
 
+  // File card component for consistent styling
+  const FileCard = ({ file }: { file: any }) => (
+    <div
+      className="border border-[#BFD7EA] rounded-lg p-3 hover:shadow-md transition-all duration-200 cursor-pointer group bg-white hover:bg-blue-50"
+      onClick={() => openFileViewer(file.url)}
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex-shrink-0">{getFileIcon(file.type)}</div>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-sm text-gray-800 truncate">
+            {file.name}
+          </p>
+          <p className="text-xs text-gray-500 mt-1">
+            {file.type} • {new Date(file.uploadedAt).toLocaleDateString()}
+          </p>
+        </div>
+        <Eye className="w-4 h-4 text-blue-600 opacity-70 group-hover:opacity-100 transition-opacity" />
+      </div>
+    </div>
+  );
+
   const prevImage = () => {
     if (modalImageIndex !== null) {
-      setModalImageIndex((modalImageIndex - 1 + files.length) % files.length);
+      setModalImageIndex(
+        (modalImageIndex - 1 + issueFiles.length) % issueFiles.length
+      );
     }
   };
 
   const nextImage = () => {
     if (modalImageIndex !== null) {
-      setModalImageIndex((modalImageIndex + 1) % files.length);
+      setModalImageIndex((modalImageIndex + 1) % issueFiles.length);
     }
   };
 
@@ -67,51 +131,32 @@ export default function UserTaskDetail() {
     null
   );
 
-  const openModal = (index: number) => setModalImageIndex(index);
   const openFileViewer = (fileUrl: string) => setFileViewerUrl(fileUrl);
   const closeFileViewer = () => setFileViewerUrl(null);
-  const openReworkModal = () => setReworkModal(true);
-  const closeReworkModal = () => setReworkModal(false);
   const closeModal = () => setModalImageIndex(null);
 
   const handleMarkAsInProgress = async () => {
+    if (!id) return;
     try {
-      setAlert({ type: "success", message: "Status updated to In Progress!" });
-      setSelectedAction(null);
+      const res = await acceptIssue({ issue_id: id }).unwrap();
+      setAlert({
+        type: "success",
+        message: res.message || "Status updated to In Progress!",
+      });
+      setSelectedAction("mark_as_inprogress");
       setTimeout(() => setAlert(null), 2000);
-    } catch (error) {
-      setAlert({ type: "error", message: "Error updating status." });
+    } catch (error: any) {
+      setAlert({
+        type: "error",
+        message: error?.data?.message || "Error updating status.",
+      });
       console.error(error);
       setTimeout(() => setAlert(null), 3000);
     }
   };
 
-  const openAssignModal = () => {
-    setIsModalOpen(true);
-  };
   const closeAssignModal = () => {
     setIsModalOpen(false);
-  };
-  const handleFormSubmit = (values: Record<string, any>) => {
-    setAlert({ type: "success", message: "Developer Assigned successfully!" });
-    closeAssignModal();
-    setTimeout(() => setAlert(null), 3000);
-  };
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setAlert({ type: "success", message: "Issue Escalated successfully!" });
-    setSelectedAction(null);
-    setTimeout(() => {
-      setAlert(null);
-    }, 1500);
-  };
-  const handleSubmitDocument = (e: React.FormEvent) => {
-    e.preventDefault();
-    setAlert({ type: "success", message: "Issue Solved successfully!" });
-    setSelectedAction(null);
-    setTimeout(() => {
-      setAlert(null);
-    }, 1500);
   };
 
   // Format date for display
@@ -141,17 +186,13 @@ export default function UserTaskDetail() {
           className={`w-full max-w-[1440px] mx-auto bg-white shadow-md rounded-xl border border-dashed border-[#BFD7EA] p-6 relative overflow-hidden`}
         >
           <div
-            className={`transition-all duration-500 ease-in-out ${
-              selectedAction === "resolve" || selectedAction === "escalate"
-                ? "lg:pr-[380px]"
-                : ""
-            }`}
+            className={`transition-all duration-500 ease-in-out lg:pr-[380px] `}
           >
             <div className="flex flex-col w-full">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
                 <div>
                   <h2 className="text-[#1E516A] text-xl font-bold mb-1">
-                    Issue Action
+                    Issue Detail
                   </h2>
                   <p className="text-gray-600">
                     Review issue details and take appropriate action
@@ -229,52 +270,246 @@ export default function UserTaskDetail() {
                     {issue.action_taken || "No action taken yet"}
                   </div>
                 </div>
+                {/* Issue Attachments */}
+                {issueFiles.length > 0 && (
+                  <div className="bg-white border border-[#BFD7EA] rounded-lg p-3 flex-1 my-6">
+                    <h4 className="font-semibold text-[#1E516A] mb-3">
+                      Issue Attachments ({issueFiles.length})
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {issueFiles.map((file, idx) => (
+                        <FileCard key={idx} file={file} />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {files.length > 0 && (
-                <div className="bg-white border border-[#BFD7EA] rounded-lg p-3 flex-1 mb-6">
-                  <h4 className="font-semibold text-[#1E516A] mb-3">
-                    Attachments ({files.length})
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {files.map((file, idx) => (
+              {/* Issue Escalations */}
+              {issue?.escalations && issue.escalations.length > 0 && (
+                <div className="space-y-6 mb-6">
+                  {issue.escalations.map((escalation, escalationIndex) => {
+                    const escalationFiles =
+                      escalation.attachments?.map((attachment) => ({
+                        url: getFileUrl(attachment.attachment.file_path),
+                        name: attachment.attachment.file_name,
+                        path: attachment.attachment.file_path,
+                        type: getFileType(attachment.attachment.file_name),
+                        uploadedAt: attachment.attachment.created_at,
+                        escalationId: escalation.escalation_id,
+                        escalatedBy: escalation.escalator?.full_name,
+                        escalatedAt: escalation.escalated_at,
+                        reason: escalation.reason,
+                        fromTier: escalation.fromTierNode.name,
+                        toTier: escalation.toTierNode.name,
+                      })) || [];
+
+                    return (
                       <div
-                        key={idx}
-                        className="border border-[#BFD7EA] rounded-lg p-3 hover:shadow-md transition-shadow cursor-pointer group"
-                        onClick={() => openFileViewer(file.url)}
+                        key={escalation.escalation_id}
+                        className="border border-[#BFD7EA] rounded-lg p-4"
+                        style={{ backgroundColor: "rgba(9, 76, 129, 0.05)" }}
                       >
-                        <div className="flex items-center gap-3 mb-2">
-                          {getFileIcon(file.type)}
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm text-gray-800 truncate">
-                              {file.name}
+                        <div className="flex items-center gap-2 mb-4">
+                          <div className="w-2 h-6 bg-[#6D28D9] rounded-full"></div>
+                          <h3 className="text-[#1E516A] font-semibold text-lg">
+                            Escalation {escalationIndex + 1}
+                          </h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                          <div>
+                            <p className="font-semibold text-[#1E516A] text-sm">
+                              Escalated From
                             </p>
-                            <p className="text-xs text-gray-500">
-                              {formatDate(file.uploadedAt)}
+                            <p className="text-gray-700">
+                              {escalation.fromTierNode.name || "N/A"}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="font-semibold text-[#1E516A] text-sm">
+                              Escalated To
+                            </p>
+                            <p className="text-gray-700">
+                              {escalation.toTierNode.name || "N/A"}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="font-semibold text-[#1E516A] text-sm">
+                              Escalated By
+                            </p>
+                            <p className="text-gray-700">
+                              {escalation.escalator?.full_name || "N/A"}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="font-semibold text-[#1E516A] text-sm">
+                              Escalated On
+                            </p>
+                            <p className="text-gray-700">
+                              {formatDate(escalation.escalated_at)}
                             </p>
                           </div>
                         </div>
-                        {file.type === "image" && (
-                          <div className="aspect-video bg-gray-100 rounded-md overflow-hidden">
-                            <img
-                              src={file.url}
-                              alt={file.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                              onError={(e) => {
-                                e.currentTarget.style.display = "none";
-                              }}
-                            />
+
+                        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3 text-gray-700">
+                            <p className="font-semibold text-[#1E516A] text-sm mb-1">
+                              Escalation Reason
+                            </p>
+                            {escalation.reason || "No reason provided"}
+                          </div>
+
+                          <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3 text-gray-700">
+                            <p className="font-semibold text-[#1E516A] text-sm mb-1">
+                              Escalator Level
+                            </p>
+                            {escalation.escalator?.position || "N/A"}
+                          </div>
+                        </div>
+
+                        {/* Escalation Attachments */}
+                        {escalationFiles.length > 0 && (
+                          <div className="mt-4 bg-white border border-[#BFD7EA] rounded-lg p-3">
+                            <h4 className="font-semibold text-[#1E516A] mb-3">
+                              Escalation Attachments ({escalationFiles.length})
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                              {escalationFiles.map((file, idx) => (
+                                <FileCard
+                                  key={`${escalation.escalation_id}-${idx}`}
+                                  file={file}
+                                  showMeta={true}
+                                  metaData={{
+                                    escalatedBy: file.escalatedBy,
+                                    escalatedAt: file.escalatedAt,
+                                    reason: file.reason,
+                                  }}
+                                />
+                              ))}
+                            </div>
                           </div>
                         )}
-                        <div className="mt-2 flex justify-between items-center text-xs text-gray-500">
-                          <span className="capitalize">{file.type}</span>
-                          <span className="text-blue-600 font-medium group-hover:text-blue-700">
-                            View
-                          </span>
-                        </div>
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Issue Resolutions */}
+              {issue?.resolutions && issue.resolutions.length > 0 && (
+                <div className="space-y-6 mb-6">
+                  {issue.resolutions.map((resolution, resolutionIndex) => {
+                    const resolutionFiles =
+                      resolution.attachments?.map((attachment) => ({
+                        url: getFileUrl(attachment.attachment.file_path),
+                        name: attachment.attachment.file_name,
+                        path: attachment.attachment.file_path,
+                        type: getFileType(attachment.attachment.file_name),
+                        uploadedAt: attachment.attachment.created_at,
+                        resolutionId: resolution.resolution_id,
+                        resolvedBy: resolution.resolver?.full_name,
+                        resolvedAt: resolution.resolved_at,
+                        reason: resolution.reason,
+                      })) || [];
+
+                    return (
+                      <div
+                        key={resolution.resolution_id}
+                        className="border border-[#BFD7EA] rounded-lg p-4"
+                        style={{ backgroundColor: "rgba(9, 76, 129, 0.05)" }}
+                      >
+                        <div className="flex items-center gap-2 mb-4">
+                          <div className="w-2 h-6 bg-green-600 rounded-full"></div>
+                          <h3 className="text-[#1E516A] font-semibold text-lg">
+                            Resolution {resolutionIndex + 1}
+                          </h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                          <div>
+                            <p className="font-semibold text-[#1E516A] text-sm">
+                              Resolved By
+                            </p>
+                            <p className="text-gray-700">
+                              {resolution.resolver?.full_name || "N/A"}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="font-semibold text-[#1E516A] text-sm">
+                              Resolver Position
+                            </p>
+                            <p className="text-gray-700">
+                              {resolution.resolver?.position || "N/A"}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="font-semibold text-[#1E516A] text-sm">
+                              Resolved On
+                            </p>
+                            <p className="text-gray-700">
+                              {formatDate(resolution.resolved_at)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="font-semibold text-[#1E516A] text-sm">
+                              Resolution Status
+                            </p>
+                            <p className="text-gray-700">
+                              {issue.status || "N/A"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3 text-gray-700">
+                            <p className="font-semibold text-[#1E516A] text-sm mb-1">
+                              Resolution Reason
+                            </p>
+                            {resolution.reason || "No reason provided"}
+                          </div>
+
+                          <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3 text-gray-700">
+                            <p className="font-semibold text-[#1E516A] text-sm mb-1">
+                              Resolver Contact
+                            </p>
+                            <div className="text-sm">
+                              <p className="text-gray-600">
+                                {resolution.resolver?.email || "N/A"}
+                              </p>
+                              <p className="text-gray-500 text-xs mt-1">
+                                {resolution.resolver?.phone_number ||
+                                  "No phone number"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Resolution Attachments */}
+                        {resolutionFiles.length > 0 && (
+                          <div className="mt-4 bg-white border border-[#BFD7EA] rounded-lg p-3">
+                            <h4 className="font-semibold text-[#1E516A] mb-3">
+                              Resolution Attachments ({resolutionFiles.length})
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                              {resolutionFiles.map((file, idx) => (
+                                <FileCard
+                                  key={`${resolution.resolution_id}-${idx}`}
+                                  file={file}
+                                  showMeta={true}
+                                  metaData={{
+                                    resolvedBy: file.resolvedBy,
+                                    resolvedAt: file.resolvedAt,
+                                    reason: file.reason,
+                                  }}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
@@ -374,7 +609,7 @@ export default function UserTaskDetail() {
           )}
 
           {/* Image Gallery Modal */}
-          {modalImageIndex !== null && files.length > 0 && (
+          {modalImageIndex !== null && issueFiles.length > 0 && (
             <div
               className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75"
               onClick={closeModal}
@@ -384,7 +619,7 @@ export default function UserTaskDetail() {
                 onClick={(e) => e.stopPropagation()}
               >
                 <img
-                  src={files[modalImageIndex].url}
+                  src={issueFiles[modalImageIndex].url}
                   alt={`Attachment ${modalImageIndex + 1}`}
                   className="max-w-full max-h-full object-contain"
                 />
@@ -394,7 +629,7 @@ export default function UserTaskDetail() {
                 >
                   <X className="w-5 h-5" />
                 </button>
-                {files.length > 1 && (
+                {issueFiles.length > 1 && (
                   <>
                     <button
                       className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70"
@@ -411,128 +646,32 @@ export default function UserTaskDetail() {
                   </>
                 )}
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-50 rounded-full px-3 py-1 text-sm">
-                  {modalImageIndex + 1} / {files.length}
+                  {modalImageIndex + 1} / {issueFiles.length}
                 </div>
               </div>
             </div>
           )}
 
           <AnimatePresence>
-            {(selectedAction === "resolve" ||
-              selectedAction === "escalate") && (
-              <motion.div
-                key={selectedAction}
-                initial={{ opacity: 0, x: 100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 100 }}
-                transition={{ duration: 0.35, ease: "easeInOut" }}
-                className="absolute top-0 right-0 w-full lg:w-[360px] bg-white border-l border-[#D5E3EC] h-full p-6 flex flex-col gap-4"
-              >
-                <>
-                  <h4 className="font-semibold text-[#1E516A]">
-                    Document Attachment
-                  </h4>
-                  <div className="border border-dashed border-[#BFD7EA] rounded-lg flex flex-col items-center justify-center p-6 text-gray-500 hover:bg-[#F9FBFC] transition">
-                    <Upload className="w-8 h-8 mb-2 text-[#1E516A]" />
-                    <p className="text-sm">
-                      Drag your file(s) or{" "}
-                      <span className="text-[#1E516A] underline cursor-pointer">
-                        browse
-                      </span>
-                    </p>
-                    <p className="text-xs mt-1">Max xx MB files allowed</p>
-                  </div>
-
-                  <h4 className="font-semibold text-[#1E516A] mt-6">
-                    {selectedAction === "resolve" ? (
-                      <>Resolution Detail</>
-                    ) : (
-                      <>Escalation Reason</>
-                    )}
-                  </h4>
-                  <textarea
-                    className="w-full border border-[#BFD7EA] rounded-lg p-3 text-sm h-32 focus:outline-none focus:ring-2 focus:ring-[#1E516A]"
-                    placeholder={
-                      selectedAction === "resolve"
-                        ? "Describe how you solved this issue"
-                        : "Explain why this issue needs escalation"
-                    }
-                  ></textarea>
-                  {selectedAction === "resolve" ? (
-                    <>
-                      <div className="w-full flex justify-end">
-                        <button
-                          onClick={handleSubmitDocument}
-                          className="px-4 py-2 rounded-md bg-[#1E516A] text-white font-semibold"
-                        >
-                          Confirm
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-full flex justify-end">
-                        <button
-                          onClick={handleSubmit}
-                          className="px-4 py-2 rounded-md bg-[#1E516A] text-white font-semibold"
-                        >
-                          Confirm
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </>
-              </motion.div>
+            {selectedAction ? (
+              selectedAction === "resolve" ? (
+                <ResolutionPreview issue_id={id || ""} resolved_by={userId} />
+              ) : selectedAction === "escalate" ? (
+                <EscalationPreview
+                  issue_id={id || ""}
+                  from_tier={hierarchyStructure?.hierarchy_node_id || ""}
+                  to_tier={hierarchyStructure?.parent_id || ""}
+                  escalated_by={userId}
+                />
+              ) : (
+                <IssueHistoryLog logs={issue?.history || []} />
+              )
+            ) : (
+              <IssueHistoryLog logs={issue?.history || []} />
             )}
           </AnimatePresence>
         </div>
       </div>
-      {isModalOpen && (
-        <AssignQAExpert
-          onClose={closeAssignModal}
-          onSubmit={handleFormSubmit}
-          fields={[
-            {
-              id: "developer",
-              label: t("TLTask.developer"),
-              type: "select",
-              options: [
-                { value: "developer1", label: "Developer 1" },
-                { value: "developer2", label: "Developer 2" },
-              ],
-              placeholder: "Select developer",
-            },
-            {
-              id: "priority_level",
-              label: "Priority Level",
-              type: "select",
-              options: [
-                { value: "High", label: "High" },
-                { value: "Medium", label: "Medium" },
-                { value: "Low", label: "Low" },
-              ],
-            },
-            {
-              id: "deadline",
-              label: "Deadline",
-              type: "date",
-              placeholder: "Enter ",
-            },
-            {
-              id: "task_summary",
-              label: t("TLTask.task_summary"),
-              type: "textarea",
-              placeholder: "Enter Task Summary",
-            },
-            {
-              id: "document_attachement",
-              label: "Document Attachement",
-              type: "file",
-              placeholder: "Enter Task Summary",
-            },
-          ]}
-        />
-      )}
     </>
   );
 }

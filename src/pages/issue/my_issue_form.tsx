@@ -65,7 +65,7 @@ export default function AddIssue() {
 
   // Form state
   const [formValues, setFormValues] = useState<Record<string, any>>({
-    title: editData?.title ?? "",
+    title: "title",
     project_id: editData?.project_id ?? "",
     hierarchy_node_id: editData?.hierarchy_node_id ?? "",
     issue_category_id: editData?.issue_category_id ?? "",
@@ -129,7 +129,7 @@ export default function AddIssue() {
 
   const handleReset = () => {
     setFormValues({
-      title: "",
+      title: "title",
       project_id: "",
       issue_category_id: "",
       priority_id: "",
@@ -217,17 +217,6 @@ export default function AddIssue() {
           onSubmit={handleSubmit}
           className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg"
         >
-          {/* Title */}
-          <div className="md:col-span-2">
-            <Label>Issue Title</Label>
-            <Input
-              id="title"
-              value={formValues.title}
-              placeholder="Enter issue title"
-              onChange={(e) => handleChange("title", e.target.value)}
-            />
-          </div>
-
           {/* Dynamic Fields */}
           {fields
             .filter((f) => f.id !== "action_taken")

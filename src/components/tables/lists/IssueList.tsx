@@ -4,20 +4,32 @@ import React, { useEffect, useState } from "react";
 import { Plus, Eye, Edit, Trash2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { useGetIssuesQuery } from "../../../redux/services/issueApi";
+import {
+  useGetIssuesByUserIdQuery,
+  useGetIssuesQuery,
+} from "../../../redux/services/issueApi";
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
+import { useGetCurrentUserQuery } from "../../../redux/services/authApi";
 
 // --- Define table columns ---
 const IssueTableColumns = [
   {
-    accessorKey: "title",
-    header: "Title",
-    cell: ({ row }: any) => (
-      <div className="font-medium text-blue-600">{row.getValue("title")}</div>
-    ),
+    accessorKey: "priority.name",
+    header: "Priority",
+    cell: ({ row }: any) => <div>{row.original.priority?.name || "N/A"}</div>,
+  },
+  {
+    accessorKey: "category.name",
+    header: "Category",
+    cell: ({ row }: any) => <div>{row.original.category?.name || "N/A"}</div>,
+  },
+  {
+    accessorKey: "project.name",
+    header: "Project",
+    cell: ({ row }: any) => <div>{row.original.project?.name || "N/A"}</div>,
   },
   {
     accessorKey: "status",
@@ -37,30 +49,6 @@ const IssueTableColumns = [
         </span>
       );
     },
-  },
-  {
-    accessorKey: "priority.name",
-    header: "Priority",
-    cell: ({ row }: any) => <div>{row.original.priority?.name || "N/A"}</div>,
-  },
-  {
-    accessorKey: "reporter.full_name",
-    header: "Reporter",
-    cell: ({ row }: any) => (
-      <div>{row.original.reporter?.full_name || "N/A"}</div>
-    ),
-  },
-  {
-    accessorKey: "assignee.full_name",
-    header: "Assignee",
-    cell: ({ row }: any) => (
-      <div>{row.original.assignee?.full_name || "Unassigned"}</div>
-    ),
-  },
-  {
-    accessorKey: "project.name",
-    header: "Project",
-    cell: ({ row }: any) => <div>{row.original.project?.name || "N/A"}</div>,
   },
   {
     id: "actions",
@@ -104,6 +92,8 @@ export default function IssueList() {
     pageSize: 10,
   });
 
+  const { data: loggedUser, isLoading: userLoading } = useGetCurrentUserQuery();
+
   const actions: ActionButton[] = [
     {
       label: "Add Issue",
@@ -132,7 +122,12 @@ export default function IssueList() {
     },
   ];
 
-  const { isLoading, isError, data } = useGetIssuesQuery();
+  const { isLoading, isError, data } = useGetIssuesByUserIdQuery(
+    loggedUser?.user?.user_id ?? "",
+    {
+      skip: !loggedUser?.user?.user_id,
+    }
+  );
 
   useEffect(() => {
     if (!isError && !isLoading && data) {
