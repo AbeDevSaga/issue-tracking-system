@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 
 const API_BASE_URL =
-  "https://hugh-margin-bids-eva.trycloudflare.com/api";
+  "https://breeding-reach-days-performs.trycloudflare.com/api";
 // const API_BASE_URL =
 //   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api";
 
