@@ -84,14 +84,14 @@ const TaskTableColumns = [
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
-          <Button
+          {/* <Button
             variant="outline"
             size="sm"
             className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
             onClick={() => console.log("Delete issue:", issue.issue_id)}
           >
             <Trash2 className="h-4 w-4" />
-          </Button>
+          </Button> */}
         </div>
       );
     },
@@ -128,9 +128,20 @@ export default function TaskList() {
     errors,
   } = useMultipleIssuesQueries(projectHierarchyPairs, userId);
 
+  console.log("allIssues: ", allIssues);
+
   // Apply status filter
+  // const filteredIssues = useMemo(() => {
+  //   return allIssues.filter(
+  //     (issue) => statusFilter === "all" || issue.status === statusFilter
+  //   );
+  // }, [allIssues, statusFilter]);
+
   const filteredIssues = useMemo(() => {
-    return allIssues.filter(
+    const safeIssues = Array.isArray(allIssues?.issues)
+      ? allIssues?.issues
+      : [];
+    return safeIssues.filter(
       (issue) => statusFilter === "all" || issue.status === statusFilter
     );
   }, [allIssues, statusFilter]);

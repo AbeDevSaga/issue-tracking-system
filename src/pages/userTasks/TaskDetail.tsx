@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
@@ -16,6 +16,10 @@ import AssignQAExpert from "../CentralAdminTaskList/QAExpertTaskModal";
 import { useGetIssueByIdQuery } from "../../redux/services/issueApi";
 import FileViewer from "../../components/common/FileView";
 import { getFileType, getFileUrl } from "../../utils/fileUrl";
+import EscalationPreview from "./EscalationPreview";
+import { useGetCurrentUserQuery } from "../../redux/services/authApi";
+import { getHeirarchyStructure } from "../../utils/hierarchUtils";
+import ResolutionPreview from "./ResolutionPreview";
 
 export default function UserTaskDetail() {
   const { id } = useParams<{ id: string }>();
@@ -25,6 +29,21 @@ export default function UserTaskDetail() {
   const [modalImageIndex, setModalImageIndex] = useState<number | null>(null);
   const [reworkModal, setReworkModal] = useState(false);
   const [fileViewerUrl, setFileViewerUrl] = useState<string | null>(null);
+  const [hierarchyStructure, setHierarchyStructure] = useState<any>(null);
+
+  const { data: loggedUser, isLoading: userLoading } = useGetCurrentUserQuery();
+  const userId = loggedUser?.user?.user_id || "";
+
+  useEffect(() => {
+    if (loggedUser?.user?.project_roles && issue?.project?.project_id) {
+      const hierarchy = getHeirarchyStructure(issue.project.project_id, {
+        project_roles: loggedUser.user.project_roles,
+      });
+      setHierarchyStructure(hierarchy);
+    }
+  }, [loggedUser?.user?.project_roles, issue?.project?.project_id]);
+
+  console.log("hierarchyStructure: ", hierarchyStructure);
 
   // Map attachments to files array with proper URLs and file info
   const files =
@@ -418,71 +437,16 @@ export default function UserTaskDetail() {
           )}
 
           <AnimatePresence>
-            {(selectedAction === "resolve" ||
-              selectedAction === "escalate") && (
-              <motion.div
-                key={selectedAction}
-                initial={{ opacity: 0, x: 100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 100 }}
-                transition={{ duration: 0.35, ease: "easeInOut" }}
-                className="absolute top-0 right-0 w-full lg:w-[360px] bg-white border-l border-[#D5E3EC] h-full p-6 flex flex-col gap-4"
-              >
-                <>
-                  <h4 className="font-semibold text-[#1E516A]">
-                    Document Attachment
-                  </h4>
-                  <div className="border border-dashed border-[#BFD7EA] rounded-lg flex flex-col items-center justify-center p-6 text-gray-500 hover:bg-[#F9FBFC] transition">
-                    <Upload className="w-8 h-8 mb-2 text-[#1E516A]" />
-                    <p className="text-sm">
-                      Drag your file(s) or{" "}
-                      <span className="text-[#1E516A] underline cursor-pointer">
-                        browse
-                      </span>
-                    </p>
-                    <p className="text-xs mt-1">Max xx MB files allowed</p>
-                  </div>
-
-                  <h4 className="font-semibold text-[#1E516A] mt-6">
-                    {selectedAction === "resolve" ? (
-                      <>Resolution Detail</>
-                    ) : (
-                      <>Escalation Reason</>
-                    )}
-                  </h4>
-                  <textarea
-                    className="w-full border border-[#BFD7EA] rounded-lg p-3 text-sm h-32 focus:outline-none focus:ring-2 focus:ring-[#1E516A]"
-                    placeholder={
-                      selectedAction === "resolve"
-                        ? "Describe how you solved this issue"
-                        : "Explain why this issue needs escalation"
-                    }
-                  ></textarea>
-                  {selectedAction === "resolve" ? (
-                    <>
-                      <div className="w-full flex justify-end">
-                        <button
-                          onClick={handleSubmitDocument}
-                          className="px-4 py-2 rounded-md bg-[#1E516A] text-white font-semibold"
-                        >
-                          Confirm
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-full flex justify-end">
-                        <button
-                          onClick={handleSubmit}
-                          className="px-4 py-2 rounded-md bg-[#1E516A] text-white font-semibold"
-                        >
-                          Confirm
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </>
-              </motion.div>
+            {selectedAction === "resolve" && (
+              <ResolutionPreview issue_id={id || ""} resolved_by={userId} />
+            )}
+            {selectedAction === "escalate" && (
+              <EscalationPreview
+                issue_id={id || ""}
+                from_tier={hierarchyStructure?.hierarchy_node_id}
+                to_tier={hierarchyStructure?.parent_id}
+                escalated_by={userId}
+              />
             )}
           </AnimatePresence>
         </div>

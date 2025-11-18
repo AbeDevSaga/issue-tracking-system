@@ -38,12 +38,6 @@ const columns = [
     cell: ({ row }: any) => row.original.role?.name,
   },
   {
-    accessorKey: "subRole.name",
-    header: "Sub-Role",
-    cell: ({ row }: any) =>
-      row.original.subRole?.name || <span className="text-gray-400">-</span>,
-  },
-  {
     accessorKey: "hierarchyNode.name",
     header: "Structure",
     cell: ({ row }: any) =>
