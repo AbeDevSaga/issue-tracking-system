@@ -51,6 +51,11 @@ import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import ProjectDetail from "./pages/project/ProjectDetail";
 import { Toaster } from "sonner";
+import UserDetail from "./pages/Users/userDetail";
+import OrganizationDetail from "./pages/organization/organizationDetail";
+import OrgStructureDetail from "./pages/org_structure/org_structureDetail";
+import IssueCategoryDetail from "./pages/issueCategory/issueCategoryDetail";
+import RoleDetail from "./pages/role/roleDetail";
 const AuthLoader = () => {
   return (
     <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">
@@ -107,7 +112,9 @@ function AppContent() {
           <Route path="/task/:id" element={<UserTaskDetail />} />
 
           <Route path="/users" element={<Users />} />
+          <Route path="/users/:id" element={<UserDetail />} />
           <Route path="/organization" element={<Organization />} />
+          <Route path="/organization/:id" element={<OrganizationDetail />} />
           <Route path="/branch" element={<Branch />} />
           <Route path="/region" element={<Region />} />
           <Route path="/zone" element={<Zone />} />
@@ -120,7 +127,9 @@ function AppContent() {
           <Route path="/priority_level" element={<ProjectLevel />} />
           <Route path="/permission" element={<Permission />} />
           <Route path="/role" element={<Roles />} />
+          <Route path="/role/:id" element={<RoleDetail />} />
           <Route path="/issue_category" element={<IssueCategory />} />
+          <Route path="/issue_category/:id" element={<IssueCategoryDetail />} />
           <Route path="/my_issue" element={<MyIssue />} />
           <Route path="/add_issue" element={<MyissueForm />} />
           <Route path="/qa_tasks" element={<QATask />} />
@@ -142,6 +151,7 @@ function AppContent() {
             element={<DeveloperTaskDetail />}
           />
           <Route path="/org_structure" element={<OrgStructure />} />
+          <Route path="/org_structure/:id" element={<OrgStructureDetail />} />
 
           <Route path="/basedata" element={<BaseData />} />
           <Route path="/subroles" element={<Subroles />} />

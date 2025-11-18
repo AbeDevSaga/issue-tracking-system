@@ -109,12 +109,12 @@ const UserTableColumns = [
       return (
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/users/detail/${user.user_id}`}>
+            <Link to={`/users/${user.user_id}`}>
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
           <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/users/edit/${user.user_id}`}>
+            <Link to={`/users/${user.user_id}`}>
               <Edit className="h-4 w-4" />
             </Link>
           </Button>

@@ -42,6 +42,9 @@ export interface PageLayoutProps {
   filters?: FilterField[];
   children?: ReactNode;
   filterColumnsPerRow?: number;
+  toggle?: string;
+  showtoggle?: boolean;
+  onToggle?: (value: string) => void;
 }
 
 export interface DetailPageLayoutProps {
