@@ -51,6 +51,7 @@ import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import ProjectDetail from "./pages/project/ProjectDetail";
 import { Toaster } from "sonner";
+import UserDetail from "./pages/Users/userDetail";
 const AuthLoader = () => {
   return (
     <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">
@@ -107,6 +108,7 @@ function AppContent() {
           <Route path="/task/:id" element={<UserTaskDetail />} />
 
           <Route path="/users" element={<Users />} />
+          <Route path="/users/detail/:id" element={<UserDetail/>} />
           <Route path="/organization" element={<Organization />} />
           <Route path="/branch" element={<Branch />} />
           <Route path="/region" element={<Region />} />

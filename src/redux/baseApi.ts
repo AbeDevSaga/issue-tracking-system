@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 
 const API_BASE_URL =
-  "https://meeting-imports-sussex-logical.trycloudflare.com/api";
+  "https://communications-prediction-usb-border.trycloudflare.com/api";
 // const API_BASE_URL =
 //   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api";
 
