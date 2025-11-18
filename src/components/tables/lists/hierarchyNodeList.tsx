@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Eye, Edit, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -15,7 +15,7 @@ import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
 import { CreateHierarchyNodeModal } from "../../modals/CreateHierarchyNodeModal";
-import HierarchyNodeListTree from "./hierarchyNodeListTree";
+import HierarchyD3Tree from "./HierarchyD3Tree";
 
 // ------------------- Table Columns -------------------
 const HierarchyNodeTableColumns = (deleteNode: any) => [
@@ -197,7 +197,7 @@ console.log("toggleHierarchyNode: ", toggleHierarchyNode);
         />
 
         ):(
-          <HierarchyNodeListTree 
+          <HierarchyD3Tree
           data={filteredNodes}
           isLoading={isLoading}
           />

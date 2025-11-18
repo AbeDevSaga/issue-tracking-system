@@ -72,7 +72,7 @@ export default function IssueHistoryLog({ logs, onClose }: LogsPreviewProps) {
         {onClose && (
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors text-sm"
+            className="text-gray-400 hover:text-gray-600 transition-colors"
           >
             ✕
           </button>
@@ -83,25 +83,27 @@ export default function IssueHistoryLog({ logs, onClose }: LogsPreviewProps) {
         {/* Vertical timeline line */}
         <div className="absolute left-5 top-2 bottom-2 w-0.5 bg-gradient-to-b from-blue-200 via-purple-200 to-green-200"></div>
 
-        <div className="space-y-2">
+        <div className="space-y-4">
           {logs.map((log, index) => (
-            <div key={log.history_id} className="relative flex gap-2">
+            <div key={log.history_id} className="relative flex gap-3">
               {/* Timeline number */}
-              <div
-                className={`flex-shrink-0 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center z-10 text-xs font-semibold ${
-                  log.resolution
-                    ? "bg-green-500 text-white"
-                    : log.escalation
-                    ? "bg-purple-500 text-white"
-                    : "bg-blue-500 text-white"
-                }`}
-              >
-                {index + 1}
+              <div className="relative w-6 h-6 ">
+                <div
+                  className={`w-6 h-6 absolute text-xs top-0 left-2 rounded-full border-2 border-white flex items-center justify-center z-10 font-semibold ${
+                    log.resolution
+                      ? "bg-green-500 text-white"
+                      : log.escalation
+                      ? "bg-purple-500 text-white"
+                      : "bg-blue-500 text-white"
+                  }`}
+                >
+                  {index + 1}
+                </div>
               </div>
 
               {/* Content card */}
               <div
-                className={`flex-1 p-2 rounded-lg border text-xs ${getActionColor(
+                className={`flex-1 p-2 rounded-lg border text-sm ${getActionColor(
                   log
                 )}`}
               >
@@ -119,25 +121,27 @@ export default function IssueHistoryLog({ logs, onClose }: LogsPreviewProps) {
                 </div>
 
                 {/* Action description */}
-                <p className="capitalize mb-1 text-gray-800">{log.action}</p>
+                <div className="flex justify-between items-center">
+                  <p className="capitalize mb-1 text-gray-800">{log.action}</p>
 
-                {log.escalation && (
-                  <div className="flex items-center gap-1 text-purple-700 bg-purple-50 p-1 rounded border border-purple-100 text-[11px]">
-                    <span className="font-medium">
-                      {log.escalation.fromTierNode.name}
-                    </span>
-                    <ArrowRight className="w-3 h-3" />
-                    <span className="font-medium">
-                      {log.escalation.toTierNode.name}
-                    </span>
-                  </div>
-                )}
+                  {log.escalation && (
+                    <div className="flex items-center gap-1 text-purple-700 bg-purple-50 p-1 rounded border border-purple-100 text-[11px]">
+                      <span className="font-medium">
+                        {log.escalation.fromTierNode.name}
+                      </span>
+                      <ArrowRight className="w-3 h-3" />
+                      <span className="font-medium">
+                        {log.escalation.toTierNode.name}
+                      </span>
+                    </div>
+                  )}
+                </div>
 
-                {log.resolution && (
+                {/* {log.resolution && (
                   <div className="flex items-center gap-1 text-green-700 bg-green-50 p-1 rounded border border-green-100 text-[11px]">
                     {log.resolution.reason}
                   </div>
-                )}
+                )} */}
 
                 {/* Timestamp */}
                 <div className="flex items-center gap-1 text-[10px] text-gray-500 mt-1">
