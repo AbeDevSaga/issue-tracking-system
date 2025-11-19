@@ -113,7 +113,7 @@ const UserTableColumns = [
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
-          <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
+          {/* <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
             <Link to={`/users/${user.user_id}`}>
               <Edit className="h-4 w-4" />
             </Link>
@@ -125,7 +125,7 @@ const UserTableColumns = [
             onClick={handleDelete}
           >
             <Trash2 className="h-4 w-4" />
-          </Button>
+          </Button> */}
         </div>
       );
     },
