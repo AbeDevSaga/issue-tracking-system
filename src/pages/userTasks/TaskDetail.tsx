@@ -49,6 +49,11 @@ export default function UserTaskDetail() {
   }, [loggedUser?.user?.project_roles, issue?.project?.project_id]);
 
   console.log("hierarchyStructure: ", hierarchyStructure);
+  const canMarkInProgress = issue?.status === "pending";
+  const canResolve =
+    issue?.status === "in_progress" && issue?.assigned_to === userId;
+  const canEscalate =
+    issue?.status === "in_progress" && hierarchyStructure?.parent_id;
 
   // Map issue attachments to files array with proper URLs and file info
   const issueFiles =
@@ -301,7 +306,7 @@ export default function UserTaskDetail() {
                         escalatedAt: escalation.escalated_at,
                         reason: escalation.reason,
                         fromTier: escalation.fromTierNode.name,
-                        toTier: escalation.toTierNode.name,
+                        toTier: escalation.toTierNode?.name || "EAII",
                       })) || [];
 
                     return (
@@ -331,7 +336,7 @@ export default function UserTaskDetail() {
                               Escalated To
                             </p>
                             <p className="text-gray-700">
-                              {escalation.toTierNode.name || "N/A"}
+                              {escalation.toTierNode?.name || "EAII"}
                             </p>
                           </div>
                           <div>
@@ -526,6 +531,7 @@ export default function UserTaskDetail() {
                     color: "#c2b56cff",
                     bg: "#E7F3FF",
                     border: "#BFD7EA",
+                    // state: {issue?.status === "pending" ?active:deactive},
                   },
                   {
                     key: "resolve",
@@ -534,6 +540,7 @@ export default function UserTaskDetail() {
                     color: "#1E516A",
                     bg: "#E7F3FF",
                     border: "#BFD7EA",
+                    // state: {issue?.status === "pending" ?active:deactive},
                   },
                   {
                     key: "escalate",
@@ -542,6 +549,7 @@ export default function UserTaskDetail() {
                     color: "#6D28D9",
                     bg: "#F5F3FF",
                     border: "#D9D3FA",
+                    // state: {issue?.status === "pending" ?active:deactive},
                   },
                 ].map((action) => (
                   <button

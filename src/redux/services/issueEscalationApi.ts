@@ -13,7 +13,7 @@ export interface IssueEscalation {
   escalation_id: string;
   issue_id: string;
   from_tier: string;
-  to_tier: string;
+  to_tier: string | null;
   reason?: string;
   escalated_by: string;
   escalated_at?: string;
@@ -27,7 +27,7 @@ export interface IssueEscalationHistory {
   issue_escalation_history_id: string;
   issue_id: string;
   from_tier: string;
-  to_tier: string;
+  to_tier: string | null;
   escalated_by: string;
   created_at: string;
   escalator?: any;
@@ -37,7 +37,7 @@ export interface IssueEscalationHistory {
 export interface EscalateIssueDto {
   issue_id: string;
   from_tier: string;
-  to_tier: string;
+  to_tier: string | null;
   reason?: string;
   escalated_by: string;
   attachment_ids?: string[];
