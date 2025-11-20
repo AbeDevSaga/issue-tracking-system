@@ -117,8 +117,8 @@ const UserTableColumns = [
             <Link to={`/users/${user.user_id}`}>
               <Edit className="h-4 w-4" />
             </Link>
-          </Button>
-          <Button
+          </Button> */}
+          {/* <Button
             variant="outline"
             size="sm"
             className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
@@ -132,8 +132,13 @@ const UserTableColumns = [
   },
 ];
 
+interface UserListProps {
+  inistitute_id?: string
+}
+
 export default function UserList() {
   const { data, isLoading, isError } = useGetUsersQuery();
+  // useGetUsersByInstituteIdQuery
   const [response, setResponse] = useState<User[]>([]);
   const [filteredResponse, setFilteredResponse] = useState<User[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");

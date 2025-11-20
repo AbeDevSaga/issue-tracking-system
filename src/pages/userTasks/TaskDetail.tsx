@@ -12,6 +12,7 @@ import {
   FileText,
   Image as ImageIcon,
   Eye,
+  Lock,
 } from "lucide-react";
 import {
   useAcceptIssueMutation,
@@ -24,6 +25,11 @@ import { useGetCurrentUserQuery } from "../../redux/services/authApi";
 import { getHeirarchyStructure } from "../../utils/hierarchUtils";
 import ResolutionPreview from "./ResolutionPreview";
 import IssueHistoryLog from "./IssueHistoryLog";
+import {
+  canEscalate,
+  canMarkInProgress,
+  canResolve,
+} from "../../utils/taskHelper";
 
 export default function UserTaskDetail() {
   const { id } = useParams<{ id: string }>();
@@ -49,6 +55,14 @@ export default function UserTaskDetail() {
   }, [loggedUser?.user?.project_roles, issue?.project?.project_id]);
 
   console.log("hierarchyStructure: ", hierarchyStructure);
+  const markInProgress = canMarkInProgress(
+    userId,
+    issue?.status,
+    issue?.escalations
+  );
+  const resolveIssue = canResolve(userId, issue?.status, issue?.history);
+  const escalateIssue =
+    issue?.status === canEscalate(userId, issue?.status, issue?.escalations);
 
   // Map issue attachments to files array with proper URLs and file info
   const issueFiles =
@@ -59,23 +73,6 @@ export default function UserTaskDetail() {
       type: getFileType(attachment.attachment.file_name),
       uploadedAt: attachment.attachment.created_at,
     })) || [];
-
-  // Map resolution attachments
-  const resolutionFiles =
-    issue?.resolutions?.flatMap(
-      (resolution) =>
-        resolution.attachments?.map((attachment) => ({
-          url: getFileUrl(attachment.attachment.file_path),
-          name: attachment.attachment.file_name,
-          path: attachment.attachment.file_path,
-          type: getFileType(attachment.attachment.file_name),
-          uploadedAt: attachment.attachment.created_at,
-          resolutionId: resolution.resolution_id,
-          resolvedBy: resolution.resolver?.full_name,
-          resolvedAt: resolution.resolved_at,
-          reason: resolution.reason,
-        })) || []
-    ) || [];
 
   // Get file icon based on type
   const getFileIcon = (fileType: string) => {
@@ -126,7 +123,6 @@ export default function UserTaskDetail() {
     }
   };
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [alert, setAlert] = useState<{ type: string; message: string } | null>(
     null
   );
@@ -155,10 +151,6 @@ export default function UserTaskDetail() {
     }
   };
 
-  const closeAssignModal = () => {
-    setIsModalOpen(false);
-  };
-
   // Format date for display
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -169,6 +161,51 @@ export default function UserTaskDetail() {
       minute: "2-digit",
     });
   };
+
+  // Action buttons configuration with permissions
+  const actionButtons = [
+    {
+      key: "mark_as_inprogress",
+      label: "Mark as Inprogress",
+      desc: markInProgress
+        ? 'Start working on this issue It will update the status to "In progress"'
+        : "Cannot mark in progress - issue is already in progress or you have escalated it",
+      color: "#c2b56cff",
+      bg: "#E7F3FF",
+      border: "#BFD7EA",
+      enabled: markInProgress,
+      onClick: () => {
+        if (markInProgress) {
+          handleMarkAsInProgress();
+          setSelectedAction("mark_as_inprogress");
+        }
+      },
+    },
+    {
+      key: "resolve",
+      label: "Resolve Issue",
+      desc: resolveIssue
+        ? "You have fixed the issue. Provide resolution detail to close the issue."
+        : "Cannot resolve - only the user who last accepted this issue can resolve it",
+      color: "#1E516A",
+      bg: "#E7F3FF",
+      border: "#BFD7EA",
+      enabled: resolveIssue,
+      onClick: () => resolveIssue && setSelectedAction("resolve"),
+    },
+    {
+      key: "escalate",
+      label: "Escalate Issue",
+      desc: escalateIssue
+        ? "This issue requires advanced debugging or specialized expertise from EAII."
+        : "Cannot escalate - issue is not in progress or you have already escalated it",
+      color: "#6D28D9",
+      bg: "#F5F3FF",
+      border: "#D9D3FA",
+      enabled: escalateIssue,
+      onClick: () => escalateIssue && setSelectedAction("escalate"),
+    },
+  ];
 
   if (isLoading) return <div>Loading...</div>;
   if (isError || !issue) return <div>Error loading issue details</div>;
@@ -301,7 +338,7 @@ export default function UserTaskDetail() {
                         escalatedAt: escalation.escalated_at,
                         reason: escalation.reason,
                         fromTier: escalation.fromTierNode.name,
-                        toTier: escalation.toTierNode.name,
+                        toTier: escalation.toTierNode?.name || "EAII",
                       })) || [];
 
                     return (
@@ -331,7 +368,7 @@ export default function UserTaskDetail() {
                               Escalated To
                             </p>
                             <p className="text-gray-700">
-                              {escalation.toTierNode.name || "N/A"}
+                              {escalation.toTierNode?.name || "EAII"}
                             </p>
                           </div>
                           <div>
@@ -526,6 +563,7 @@ export default function UserTaskDetail() {
                     color: "#c2b56cff",
                     bg: "#E7F3FF",
                     border: "#BFD7EA",
+                    // state: {issue?.status === "pending" ?active:deactive},
                   },
                   {
                     key: "resolve",
@@ -534,6 +572,7 @@ export default function UserTaskDetail() {
                     color: "#1E516A",
                     bg: "#E7F3FF",
                     border: "#BFD7EA",
+                    // state: {issue?.status === "pending" ?active:deactive},
                   },
                   {
                     key: "escalate",
@@ -542,6 +581,7 @@ export default function UserTaskDetail() {
                     color: "#6D28D9",
                     bg: "#F5F3FF",
                     border: "#D9D3FA",
+                    // state: {issue?.status === "pending" ?active:deactive},
                   },
                 ].map((action) => (
                   <button
@@ -580,6 +620,60 @@ export default function UserTaskDetail() {
                       </p>
                     </div>
                     <p className="text-sm text-gray-600">{action.desc}</p>
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-col md:flex-row gap-4 mb-6">
+                {actionButtons.map((action) => (
+                  <button
+                    key={action.key}
+                    onClick={action.onClick}
+                    disabled={!action.enabled}
+                    className={`flex-1 text-left border rounded-lg p-4 transition-all relative ${
+                      selectedAction === action.key
+                        ? `border-[${action.border}] bg-[${action.bg}]`
+                        : action.enabled
+                        ? "border-[#D5E3EC] bg-white hover:bg-gray-50 cursor-pointer"
+                        : "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
+                    }`}
+                  >
+                    {!action.enabled && (
+                      <div className="absolute top-2 right-2">
+                        <Lock className="w-4 h-4 text-gray-400" />
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 mb-1">
+                      <div
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                          selectedAction === action.key
+                            ? `border-[${action.color}]`
+                            : action.enabled
+                            ? "border-gray-300"
+                            : "border-gray-200"
+                        }`}
+                      >
+                        {selectedAction === action.key && (
+                          <CheckCircle2
+                            className="w-4 h-4"
+                            style={{ color: action.color }}
+                          />
+                        )}
+                      </div>
+                      <p
+                        className={`font-semibold ${
+                          action.enabled ? "text-[#1E516A]" : "text-gray-500"
+                        }`}
+                      >
+                        {action.label}
+                      </p>
+                    </div>
+                    <p
+                      className={`text-sm ${
+                        action.enabled ? "text-gray-600" : "text-gray-400"
+                      }`}
+                    >
+                      {action.desc}
+                    </p>
                   </button>
                 ))}
               </div>

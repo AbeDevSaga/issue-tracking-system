@@ -75,12 +75,20 @@ const columns = [
 
 interface Props {
   projectId: string;
+  inistitute_id: string;
+  hierarchy_node_id: string;
+  hierarchy_node_name: string;
 }
 
 // =======================
 // COMPONENT
 // =======================
-export default function ProjectUserRolesTable({ projectId }: Props) {
+export default function ProjectUserRolesTable({
+  projectId,
+  inistitute_id,
+  hierarchy_node_id,
+  hierarchy_node_name,
+}: Props) {
   const [response, setResponse] = useState<any[]>([]);
   const [filteredResponse, setFilteredResponse] = useState<any[]>([]);
   const [roleFilter, setRoleFilter] = useState<string>("all");
@@ -92,7 +100,9 @@ export default function ProjectUserRolesTable({ projectId }: Props) {
     pageSize: 10,
   });
 
-  const { data, isLoading, isError } = useGetProjectByIdQuery(projectId);
+  const { data, isLoading, isError } = useGetProjectByIdQuery(projectId, {
+    skip: !projectId,
+  });
 
   const actions: ActionButton[] = [
     {
@@ -176,7 +186,10 @@ export default function ProjectUserRolesTable({ projectId }: Props) {
         currentIndex={pageDetail.pageIndex}
       />
       <AssignUserModal
-        project={data}
+        inistitute_id={inistitute_id}
+        project_id={projectId}
+        hierarchy_node_id={hierarchy_node_id}
+        hierarchy_node_name={hierarchy_node_name}
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
       />

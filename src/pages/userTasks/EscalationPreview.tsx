@@ -9,7 +9,7 @@ import { FileUploadField } from "../../components/common/FileUploadField";
 interface EscalationPreviewProps {
   issue_id: string;
   from_tier: string;
-  to_tier: string;
+  to_tier: string | null;
   escalated_by: string;
   onClose?: () => void;
 }
@@ -35,7 +35,7 @@ export default function EscalationPreview({
       await escalateIssue({
         issue_id,
         from_tier,
-        to_tier,
+        to_tier: to_tier || null,
         reason,
         escalated_by,
         attachment_ids: attachmentIds,

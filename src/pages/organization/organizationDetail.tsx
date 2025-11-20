@@ -1,23 +1,23 @@
-import { useParams, Link } from 'react-router-dom';
-import { useGetInstituteByIdQuery } from '../../redux/services/instituteApi';
-import { Project } from '../../redux/services/projectApi';
-import PageMeta from '../../components/common/PageMeta';
-import Badge from '../../components/ui/badge/Badge';
-import { format } from 'date-fns';
-import { 
-  BuildingOfficeIcon, 
-  CalendarIcon, 
-  CheckCircleIcon, 
+import { useParams, Link } from "react-router-dom";
+import { useGetInstituteByIdQuery } from "../../redux/services/instituteApi";
+import { Project } from "../../redux/services/projectApi";
+import PageMeta from "../../components/common/PageMeta";
+import Badge from "../../components/ui/badge/Badge";
+import { format } from "date-fns";
+import {
+  BuildingOfficeIcon,
+  CalendarIcon,
+  CheckCircleIcon,
   XCircleIcon,
   ArrowLeftIcon,
-  FolderIcon
-} from '@heroicons/react/24/outline';
+  FolderIcon,
+} from "@heroicons/react/24/outline";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
-} from '../../components/ui/cn/card';
+} from "../../components/ui/cn/card";
 import {
   Table,
   TableBody,
@@ -25,16 +25,21 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '../../components/ui/table/table';
+} from "../../components/ui/table/table";
+import ProjectList from "../../components/tables/lists/projectList";
 
 const OrganizationDetail = () => {
-    const { id } = useParams<{ id: string }>();
-    const { data: organizationDetail, isLoading, isError } = useGetInstituteByIdQuery(id!);
+  const { id } = useParams<{ id: string }>();
+  const {
+    data: organizationDetail,
+    isLoading,
+    isError,
+  } = useGetInstituteByIdQuery(id!);
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     try {
-      return format(new Date(dateString), 'PPP p');
+      return format(new Date(dateString), "PPP p");
     } catch {
       return dateString;
     }
@@ -45,7 +50,9 @@ const OrganizationDetail = () => {
       <div className="min-h-screen bg-[#F9FBFC] p-6 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#094C81] mx-auto mb-4"></div>
-          <p className="text-[#1E516A] text-lg">Loading organization details...</p>
+          <p className="text-[#1E516A] text-lg">
+            Loading organization details...
+          </p>
         </div>
       </div>
     );
@@ -57,8 +64,13 @@ const OrganizationDetail = () => {
         <Card className="max-w-md w-full">
           <CardContent className="pt-6 text-center">
             <XCircleIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-[#1E516A] mb-2">Organization Not Found</h2>
-            <p className="text-gray-600 mb-4">The organization you're looking for doesn't exist or has been removed.</p>
+            <h2 className="text-xl font-semibold text-[#1E516A] mb-2">
+              Organization Not Found
+            </h2>
+            <p className="text-gray-600 mb-4">
+              The organization you're looking for doesn't exist or has been
+              removed.
+            </p>
             <Link
               to="/organization"
               className="inline-flex items-center gap-2 text-[#094C81] hover:text-[#073954] font-medium"
@@ -98,13 +110,15 @@ const OrganizationDetail = () => {
             <CardHeader className="flex flex-row items-center border w-full justify-between text-[#094C81] rounded-t-xl">
               <div className="flex items-start gap-3">
                 <BuildingOfficeIcon className="h-6 w-6" />
-                <CardTitle className="text-[#094C81] text-xl">{organizationDetail.name}</CardTitle>
+                <CardTitle className="text-[#094C81] text-xl">
+                  {organizationDetail.name}
+                </CardTitle>
               </div>
               {/* Status Badge */}
               <div className="">
                 <Badge
                   variant="light"
-                  color={organizationDetail.is_active ? 'success' : 'error'}
+                  color={organizationDetail.is_active ? "success" : "error"}
                   size="md"
                   className="text-sm"
                 >
@@ -120,16 +134,18 @@ const OrganizationDetail = () => {
                     </>
                   )}
                 </Badge>
-    </div>
+              </div>
             </CardHeader>
             <CardContent className="p-6">
-              
-
               {/* Description */}
               {organizationDetail.description && (
                 <div className="mb-6">
-                  <h3 className="text-sm font-semibold text-[#1E516A] mb-2">Description</h3>
-                  <p className="text-gray-700 leading-relaxed">{organizationDetail.description}</p>
+                  <h3 className="text-sm font-semibold text-[#1E516A] mb-2">
+                    Description
+                  </h3>
+                  <p className="text-gray-700 leading-relaxed">
+                    {organizationDetail.description}
+                  </p>
                 </div>
               )}
 
@@ -140,7 +156,7 @@ const OrganizationDetail = () => {
                     Has Branch
                   </p>
                   <p className="text-gray-700 font-medium">
-                    {organizationDetail.has_branch ? 'Yes' : 'No'}
+                    {organizationDetail.has_branch ? "Yes" : "No"}
                   </p>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4">
@@ -178,83 +194,7 @@ const OrganizationDetail = () => {
           </Card>
 
           {/* Projects Section */}
-          <Card className="bg-white rounded-xl shadow-md border border-dashed border-[#BFD7EA]">
-            <CardHeader className="flex flex-row items-center border w-full justify-between text-[#094C81] rounded-t-xl">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <FolderIcon className="h-6 w-6" />
-                  <CardTitle className="text-[#094C81] text-xl">
-                    Projects ({organizationDetail.projects?.length || 0})
-                  </CardTitle>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-6">
-              {organizationDetail.projects && organizationDetail.projects.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader className="bg-[#073954]">
-                      <TableRow>
-                        <TableHead className="text-white font-semibold">
-                          Name
-                        </TableHead>
-                        <TableHead className="text-white font-semibold">
-                          Description
-                        </TableHead>
-                        <TableHead className="text-white font-semibold">
-                          Status
-                        </TableHead>
-                        <TableHead className="text-white font-semibold">
-                          Created At
-                        </TableHead>
-                        <TableHead className="text-white font-semibold">
-                          Updated At
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {organizationDetail.projects.map((project: Project, index: number) => (
-                        <TableRow
-                          key={project.project_id || index}
-                          className="hover:bg-gray-50 transition-colors"
-                        >
-                          <TableCell className="font-medium text-[#1E516A]">
-                            {project.name || 'N/A'}
-                          </TableCell>
-                          <TableCell className="text-gray-700">
-                            {project.description || 'N/A'}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant="light"
-                              color={project.is_active ? 'success' : 'error'}
-                              size="sm"
-                            >
-                              {project.is_active ? 'Active' : 'Inactive'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-gray-600 text-sm">
-                            {formatDate(project.created_at)}
-                          </TableCell>
-                          <TableCell className="text-gray-600 text-sm">
-                            {formatDate(project.updated_at)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <FolderIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg font-medium">No projects found</p>
-                  <p className="text-gray-400 text-sm mt-2">
-                    This organization doesn't have any projects yet.
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <ProjectList insistitute_id={id || ""} />
         </div>
       </div>
     </>
