@@ -34,6 +34,14 @@ export const projectApi = baseApi.injectEndpoints({
       providesTags: (result, error, id) => [{ type: "Project", id }],
     }),
 
+    // 🔹 Get all projects by institute ID
+    getProjectsByInstituteId: builder.query<Project[], string>({
+      query: (institute_id) => `/projects/institute/${institute_id}`,
+      providesTags: (result, error, institute_id) => [
+        { type: "Project", id: `institute-${institute_id}` },
+      ],
+    }),
+
     // Create project
     createProject: builder.mutation<Project, CreateProjectDto>({
       query: (data) => ({
@@ -117,6 +125,7 @@ export const {
   useGetProjectByIdQuery,
   useCreateProjectMutation,
   useUpdateProjectMutation,
+  useGetProjectsByInstituteIdQuery,
   useDeleteProjectMutation,
   useAssignUserToProjectMutation,
   useRemoveUserFromProjectMutation,

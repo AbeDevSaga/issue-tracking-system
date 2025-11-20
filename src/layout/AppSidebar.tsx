@@ -166,7 +166,11 @@ const AppSidebar: React.FC = () => {
       name: "User Management",
       path: "/users",
     },
-
+    {
+      icon: <GroupIcon />,
+      name: "Organization Management",
+      path: "/organization",
+    },
     {
       icon: <BaseDataIcon />,
       name: "BaseData",

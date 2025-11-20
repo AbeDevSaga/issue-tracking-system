@@ -14,22 +14,22 @@ export default function Basedata() {
   const navigate = useNavigate();
 
   const cards = [
-    {
-      title: t("basedata.organization_management"),
-      description: t("basedata.subtitle", {
-        title: t("basedata.organization"),
-      }),
-      icon: <FaBuilding size={24} color={"#094C81"} />,
-      route: "/organization",
-    },
-    {
-      title: t("basedata.org_structure_management"),
-      description: t("basedata.subtitle", {
-        title: t("basedata.org_structure"),
-      }),
-      icon: <FaBuilding size={24} color={"#094C81"} />,
-      route: "/org_structure",
-    },
+    // {
+    //   title: t("basedata.organization_management"),
+    //   description: t("basedata.subtitle", {
+    //     title: t("basedata.organization"),
+    //   }),
+    //   icon: <FaBuilding size={24} color={"#094C81"} />,
+    //   route: "/organization",
+    // },
+    // {
+    //   title: t("basedata.org_structure_management"),
+    //   description: t("basedata.subtitle", {
+    //     title: t("basedata.org_structure"),
+    //   }),
+    //   icon: <FaBuilding size={24} color={"#094C81"} />,
+    //   route: "/org_structure",
+    // },
     // {
     //   title: t("basedata.level_management"),
     //   description: t("basedata.subtitle", { title: t("basedata.level") }),
@@ -44,12 +44,12 @@ export default function Basedata() {
     //   route: "/branch",
     // },
 
-    {
-      title: t("basedata.project_management"),
-      description: t("basedata.subtitle", { title: t("basedata.project") }),
-      icon: <FaProjectDiagram size={24} color={"#094C81"} />,
-      route: "/project",
-    },
+    // {
+    //   title: t("basedata.project_management"),
+    //   description: t("basedata.subtitle", { title: t("basedata.project") }),
+    //   icon: <FaProjectDiagram size={24} color={"#094C81"} />,
+    //   route: "/project",
+    // },
     {
       title: t("basedata.priority_level_management"),
       description: t("basedata.subtitle", {

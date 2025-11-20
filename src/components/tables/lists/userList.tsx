@@ -132,8 +132,13 @@ const UserTableColumns = [
   },
 ];
 
+interface UserListProps {
+  inistitute_id?: string
+}
+
 export default function UserList() {
   const { data, isLoading, isError } = useGetUsersQuery();
+  // useGetUsersByInstituteIdQuery
   const [response, setResponse] = useState<User[]>([]);
   const [filteredResponse, setFilteredResponse] = useState<User[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");

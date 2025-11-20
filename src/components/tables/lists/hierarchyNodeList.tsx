@@ -6,8 +6,8 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 import {
-  useGetHierarchyNodesQuery,
   useDeleteHierarchyNodeMutation,
+  useGetHierarchyNodesByProjectIdQuery,
 } from "../../../redux/services/hierarchyNodeApi";
 
 import { Button } from "../../ui/cn/button";
@@ -113,8 +113,14 @@ const HierarchyNodeTableColumns = (deleteNode: any) => [
   },
 ];
 
+interface HierarchyNodeListProps {
+  project_id: string;
+}
+
 // ------------------- Component -------------------
-export default function HierarchyNodeList() {
+export default function HierarchyNodeList({
+  project_id,
+}: HierarchyNodeListProps) {
   const [nodes, setNodes] = useState<any[]>([]);
   const [filteredNodes, setFilteredNodes] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -125,7 +131,12 @@ export default function HierarchyNodeList() {
     pageSize: 10,
   });
 
-  const { data, isLoading, isError } = useGetHierarchyNodesQuery();
+  const { data, isLoading, isError } = useGetHierarchyNodesByProjectIdQuery(
+    project_id,
+    {
+      skip: !project_id,
+    }
+  );
   const [deleteNode] = useDeleteHierarchyNodeMutation();
   const [toggleHierarchyNode, setToggleHierarchyNode] = useState("table");
   const actions: ActionButton[] = [
@@ -175,7 +186,7 @@ export default function HierarchyNodeList() {
   const handlePagination = (index: number, size: number) => {
     setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
   };
-console.log("toggleHierarchyNode: ", toggleHierarchyNode);
+  console.log("toggleHierarchyNode: ", toggleHierarchyNode);
   return (
     <>
       <PageLayout
@@ -188,23 +199,20 @@ console.log("toggleHierarchyNode: ", toggleHierarchyNode);
       >
         {toggleHierarchyNode === "table" ? (
           <DataTable
-          columns={HierarchyNodeTableColumns(deleteNode)}
-          data={filteredNodes}
-          handlePagination={handlePagination}
-          tablePageSize={pageDetail.pageSize}
-          totalPageCount={pageDetail.pageCount}
-          currentIndex={pageDetail.pageIndex}
-        />
-
-        ):(
-          <HierarchyD3Tree
-          data={filteredNodes}
-          isLoading={isLoading}
+            columns={HierarchyNodeTableColumns(deleteNode)}
+            data={filteredNodes}
+            handlePagination={handlePagination}
+            tablePageSize={pageDetail.pageSize}
+            totalPageCount={pageDetail.pageCount}
+            currentIndex={pageDetail.pageIndex}
           />
+        ) : (
+          <HierarchyD3Tree data={filteredNodes} isLoading={isLoading} />
         )}
       </PageLayout>
 
       <CreateHierarchyNodeModal
+        project_id={project_id}
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
       />

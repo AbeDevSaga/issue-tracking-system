@@ -103,6 +103,12 @@ export const issueApi = baseApi.injectEndpoints({
       providesTags: ["Issue"],
     }),
 
+    // New endpoint: Get escalated issues with null tier
+    getEscalatedIssuesWithNullTier: builder.query<Issue[], void>({
+      query: () => `/issues/escalated/null-tier`,
+      providesTags: ["Issue"], // Refresh when needed
+    }),
+
     createIssue: builder.mutation<Issue, CreateIssueDto>({
       query: (data) => ({
         url: `/issues`,
@@ -149,6 +155,7 @@ export const {
   useGetIssuesQuery,
   useGetIssueByIdQuery,
   useGetIssuesByUserIdQuery,
+  useGetEscalatedIssuesWithNullTierQuery,
   useCreateIssueMutation,
   useAcceptIssueMutation,
   useUpdateIssueMutation,

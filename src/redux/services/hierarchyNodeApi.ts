@@ -68,6 +68,12 @@ export const hierarchyNodeApi = baseApi.injectEndpoints({
       providesTags: ["HierarchyNode"],
     }),
 
+    // Get hierarchy nodes by project ID
+    getHierarchyNodesByProjectId: builder.query<HierarchyNode[], string>({
+      query: (project_id) => `/hierarchy-nodes/project/${project_id}`,
+      providesTags: ["HierarchyNode"],
+    }),
+
     // ✅ Get a single hierarchy node by ID
     getHierarchyNodeById: builder.query<HierarchyNode, string>({
       query: (id) => `/hierarchy-nodes/${id}`,
@@ -114,6 +120,7 @@ export const hierarchyNodeApi = baseApi.injectEndpoints({
 export const {
   useCreateHierarchyNodeMutation,
   useGetHierarchyNodesQuery,
+  useGetHierarchyNodesByProjectIdQuery,
   useGetHierarchyNodeByIdQuery,
   useUpdateHierarchyNodeMutation,
   useDeleteHierarchyNodeMutation,

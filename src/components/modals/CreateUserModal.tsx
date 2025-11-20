@@ -123,21 +123,30 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 pr-2">
-          <div className="space-y-4">
+        <div className="w-full flex flex-col space-y-4">
+          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4  mt-2 pr-2">
             <div className="space-y-2">
-              <Label className="block text-sm text-[#094C81] font-medium mb-2">User Type *</Label>
+              <Label className="block text-sm text-[#094C81] font-medium mb-2">
+                User Type *
+              </Label>
               <Select
                 value={selectedUserTypeId}
                 onValueChange={setSelectedUserTypeId}
                 disabled={loadingUserTypes}
               >
                 <SelectTrigger className=" h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
-                  <SelectValue className="text-sm text-[#094C81] font-medium placeholder:text-sm placeholder:text-[#094C81] placeholder:font-medium" placeholder="Select User Type" />
+                  <SelectValue
+                    className="text-sm text-[#094C81] font-medium placeholder:text-sm placeholder:text-[#094C81] placeholder:font-medium"
+                    placeholder="Select User Type"
+                  />
                 </SelectTrigger>
                 <SelectContent className="text-sm text-[#094C81] font-medium">
                   {userTypes.map((type) => (
-                    <SelectItem className="text-sm text-[#094C81] font-medium" key={type.user_type_id} value={type.user_type_id}>
+                    <SelectItem
+                      className="text-sm text-[#094C81] font-medium"
+                      key={type.user_type_id}
+                      value={type.user_type_id}
+                    >
                       {type.name}
                     </SelectItem>
                   ))}
@@ -145,29 +154,29 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label className="block text-sm text-[#094C81] font-medium mb-2">Full Name *</Label>
-              <Input
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="John Doe"
-                className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
-              />
-            </div>
             {selectedUserType?.name === "external_user" && (
               <div className="space-y-2">
-                <Label className="block text-sm text-[#094C81] font-medium mb-2">Institute *</Label>
+                <Label className="block text-sm text-[#094C81] font-medium mb-2">
+                  Institute *
+                </Label>
                 <Select
                   value={instituteId}
                   onValueChange={setInstituteId}
                   disabled={loadingInstitutes}
                 >
                   <SelectTrigger className=" h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
-                    <SelectValue className="text-sm text-[#094C81] font-medium" placeholder="Select Institute" />
+                    <SelectValue
+                      className="text-sm text-[#094C81] font-medium"
+                      placeholder="Select Institute"
+                    />
                   </SelectTrigger>
                   <SelectContent className="text-sm bg-white text-[#094C81] font-medium">
                     {institutes?.map((inst: Institute) => (
-                      <SelectItem className="text-sm text-[#094C81] font-medium" key={inst.institute_id} value={inst.institute_id}>
+                      <SelectItem
+                        className="text-sm text-[#094C81] font-medium"
+                        key={inst.institute_id}
+                        value={inst.institute_id}
+                      >
                         {inst.name}
                       </SelectItem>
                     ))}
@@ -175,12 +184,21 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                 </Select>
               </div>
             )}
-          
-          </div>
-
-          <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="block text-sm text-[#094C81] font-medium mb-2">Phone Number</Label>
+              <Label className="block text-sm text-[#094C81] font-medium mb-2">
+                Full Name *
+              </Label>
+              <Input
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="John Doe"
+                className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="block text-sm text-[#094C81] font-medium mb-2">
+                Phone Number
+              </Label>
               <Input
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
@@ -188,10 +206,10 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                 className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
               />
             </div>
-
-           
-  <div className="space-y-2">
-              <Label className="block text-sm text-[#094C81] font-medium mb-2">Email *</Label>
+            <div className="space-y-2">
+              <Label className="block text-sm text-[#094C81] font-medium mb-2">
+                Email *
+              </Label>
               <Input
                 type="email"
                 value={email}
@@ -208,7 +226,11 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
           <Button variant="outline" onClick={handleClose}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={isLoading} className="min-w-24">
+          <Button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="min-w-24"
+          >
             {isLoading ? "Creating..." : "Create User"}
           </Button>
         </div>

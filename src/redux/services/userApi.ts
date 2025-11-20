@@ -64,12 +64,44 @@ export interface UpdateUserDto {
   is_active?: boolean;
 }
 
+export interface GetUsersParams {
+  institute_id?: string;
+  user_type_id?: string;
+  hierarchy_node_id?: string;
+  is_active?: boolean;
+  search?: string;
+}
+
 // --------------------- API ---------------------
 export const userApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // Get all users
-    getUsers: builder.query<User[], void>({
-      query: () => `/users`,
+    // Get all users (with optional filters)
+    getUsers: builder.query<User[], GetUsersParams | void>({
+      query: (params) => {
+        if (!params || Object.keys(params).length === 0) {
+          // No filters passed → fetch all users
+          return `/users`;
+        }
+
+        // Build query string from params
+        const queryString =
+          "?" +
+          new URLSearchParams(
+            Object.entries(params).reduce((acc, [key, value]) => {
+              if (value !== undefined && value !== null)
+                acc[key] = String(value);
+              return acc;
+            }, {} as Record<string, string>)
+          ).toString();
+
+        return `/users${queryString}`;
+      },
+      providesTags: ["User"],
+    }),
+
+    // Get users by institute ID
+    getUsersByInstituteId: builder.query<User[], string>({
+      query: (institute_id) => `/users/institute/${institute_id}`,
       providesTags: ["User"],
     }),
 
@@ -155,6 +187,7 @@ export const userApi = baseApi.injectEndpoints({
 // --------------------- Hooks ---------------------
 export const {
   useGetUsersQuery,
+  useGetUsersByInstituteIdQuery,
   useGetUserByIdQuery,
   useCreateUserMutation,
   useUpdateUserMutation,

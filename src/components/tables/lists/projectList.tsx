@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import {
   useGetProjectsQuery,
   useDeleteProjectMutation,
+  useGetProjectsByInstituteIdQuery,
 } from "../../../redux/services/projectApi";
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
@@ -76,8 +77,10 @@ const ProjectTableColumns = [
     },
   },
 ];
-
-export default function ProjectList() {
+interface ProjectListProps {
+  insistitute_id: string;
+}
+export default function ProjectList({ insistitute_id }: ProjectListProps) {
   const [response, setResponse] = useState<any[]>([]);
   const [filteredResponse, setFilteredResponse] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -115,7 +118,9 @@ export default function ProjectList() {
     },
   ];
 
-  const { data, isLoading, isError } = useGetProjectsQuery();
+  // const { data, isLoading, isError } = useGetProjectsQuery();
+  const { data, isLoading, isError } =
+    useGetProjectsByInstituteIdQuery(insistitute_id);
 
   useEffect(() => {
     if (!isError && !isLoading && data) {
@@ -159,6 +164,7 @@ export default function ProjectList() {
         />
       </PageLayout>
       <CreateProjectModal
+        instituteId={insistitute_id}
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
       />

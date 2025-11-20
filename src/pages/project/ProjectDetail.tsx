@@ -10,7 +10,7 @@ import {
 } from "../../components/ui/cn/card";
 
 import { useGetProjectByIdQuery } from "../../redux/services/projectApi";
-import ProjectUserRolesTable from "../../components/tables/lists/ProjectUserRolesTable";
+import HierarchyNodeList from "../../components/tables/lists/hierarchyNodeList";
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
@@ -42,9 +42,8 @@ export default function ProjectDetail() {
         </CardContent>
       </Card>
 
-      {/* Assigned Users */}
-      <ProjectUserRolesTable projectId={project.project_id} />
-
+      {/* Project Hierarchiy */}
+      <HierarchyNodeList project_id={id || ""} />
     </div>
   );
 }
