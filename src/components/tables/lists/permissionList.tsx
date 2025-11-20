@@ -1,28 +1,28 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useMemo, useCallback, JSX } from "react";
 import {
-  ToggleRight,
-  ToggleLeft,
   Shield,
   Activity,
-  Filter,
   RefreshCw,
   Search,
   Settings,
   ChevronDown,
   ChevronRight,
-  CheckCircle,
-  XCircle,
+  Users,
+  Folder,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
-import { FilterField } from "../../../types/layout";
 import {
   useGetPermissionsQuery,
   useTogglePermissionMutation,
 } from "../../../redux/services/permissionApi";
-
+import { AnimatePresence, motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/cn/card";
+import { Input } from "../../ui/cn/input";
+import { MdToggleOff, MdToggleOn } from "react-icons/md";
 // Types
 interface Permission {
   permission_id: string;
@@ -41,33 +41,12 @@ interface PermissionStats {
 
 interface ResourceGroup {
   resource: string;
+  icon: JSX.Element;
   permissions: Permission[];
   isExpanded: boolean;
   activeCount: number;
   totalCount: number;
 }
-
-// Custom Badge Component
-const Badge: React.FC<{
-  children: React.ReactNode;
-  variant?: "default" | "secondary" | "outline";
-  className?: string;
-}> = ({ children, variant = "default", className = "" }) => {
-  const baseStyles =
-    "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
-
-  const variantStyles = {
-    default: "bg-blue-100 text-blue-800 border border-blue-200",
-    secondary: "bg-gray-100 text-gray-800 border border-gray-200",
-    outline: "bg-transparent text-gray-700 border border-gray-300",
-  };
-
-  return (
-    <span className={`${baseStyles} ${variantStyles[variant]} ${className}`}>
-      {children}
-    </span>
-  );
-};
 
 // Loading Skeleton Component
 const Skeleton: React.FC<{ className?: string }> = ({ className = "" }) => (
@@ -90,67 +69,108 @@ const EmptyState: React.FC<{
   </div>
 );
 
-// Permission Row Component
-const PermissionRow: React.FC<{
+// Statistics Component
+const PermissionStats: React.FC<{ stats: PermissionStats }> = ({ stats }) => (
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    {/* Total Card */}
+    <Card className="bg-white border border-gray-200 rounded-lg shadow-sm">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-600">
+              Total Permissions
+            </p>
+            <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+          </div>
+          <div className="p-3 bg-blue-50 rounded-lg">
+            <Shield className="h-6 w-6 text-blue-600" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+
+    {/* Active Card */}
+    <Card className="bg-white border border-gray-200 rounded-lg shadow-sm">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-600">Active</p>
+            <p className="text-2xl font-bold text-green-600">{stats.active}</p>
+          </div>
+          <div className="p-3 bg-green-50 rounded-lg">
+            <Activity className="h-6 w-6 text-green-600" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+
+    {/* Inactive Card */}
+    <Card className="bg-white border border-gray-200 rounded-lg shadow-sm">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-600">Inactive</p>
+            <p className="text-2xl font-bold text-red-600">{stats.inactive}</p>
+          </div>
+          <div className="p-3 bg-red-50 rounded-lg">
+            <Settings className="h-6 w-6 text-red-600" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+);
+
+// Permission Item Component
+const PermissionItem: React.FC<{
   permission: Permission;
   onToggle: (id: string) => Promise<void>;
   isToggling: boolean;
 }> = ({ permission, onToggle, isToggling }) => {
   const isActive = !!permission.is_active;
 
-  const handleToggle = async () => {
+  const handleToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     await onToggle(permission.permission_id);
   };
 
   return (
-    <div className="flex items-center justify-between p-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors">
-      <div className="flex items-center space-x-4 flex-1">
-        <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-          <Shield className="h-4 w-4 text-blue-600" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center space-x-3">
-            <span className="font-medium text-gray-900 capitalize">
-              {permission.action.replace("_", " ")}
-            </span>
-            <Badge
-              variant={isActive ? "default" : "secondary"}
-              className={
-                isActive
-                  ? "bg-green-50 text-green-700 border-green-200"
-                  : "bg-red-50 text-red-700 border-red-200"
-              }
-            >
-              {isActive ? "Active" : "Inactive"}
-            </Badge>
-          </div>
-          <p className="text-sm text-gray-500 mt-1">
-            Permission to {permission.action.replace("_", " ")}{" "}
-            {permission.resource}
-          </p>
-        </div>
+    <div className="flex items-center justify-between py-1 px-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+      <div className="flex items-center space-x-3 flex-1">
+        <span className="text-sm font-medium text-gray-700 capitalize">
+          {permission.action.replace("_", " ")}
+        </span>
+        {/* <span
+          className={`px-2 py-1 text-xs font-medium rounded-full ${
+            isActive
+              ? "bg-green-100 text-green-800 border border-green-200"
+              : "bg-red-100 text-red-800 border border-red-200"
+          }`}
+        >
+          {isActive ? "Active" : "Inactive"}
+        </span> */}
       </div>
 
-      <Button
-        variant="outline"
-        size="sm"
-        className={`h-9 w-9 p-0 transition-all duration-200 border ${
+      <button
+        className={` p-0 transition-all duration-200 ${
           isActive
-            ? "bg-green-50 border-green-200 hover:bg-green-100 hover:border-green-300 text-green-700"
-            : "bg-red-50 border-red-200 hover:bg-red-100 hover:border-red-300 text-red-700"
+            ? " text-green-700"
+            : "   text-red-700"
         }`}
         onClick={handleToggle}
         disabled={isToggling}
         title={isActive ? "Deactivate permission" : "Activate permission"}
       >
         {isToggling ? (
-          <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+          <div className="w-10 h-10 flex items-center justify-center">
+            <div className="h-6 w-6 border-2 border-current border-t-transparent rounded-full animate-spin" />
+          </div>
         ) : isActive ? (
-          <ToggleRight className="h-4 w-4" />
+          <MdToggleOn className="h-10 w-10 " />
         ) : (
-          <ToggleLeft className="h-4 w-4" />
+          <MdToggleOff className="h-10 w-10 " />
         )}
-      </Button>
+      </button>
     </div>
   );
 };
@@ -166,131 +186,86 @@ const ResourceGroup: React.FC<{
   const isSomeActive =
     group.activeCount > 0 && group.activeCount < group.totalCount;
 
-  const getStatusColor = () => {
-    if (isAllActive) return "text-green-600 bg-green-50 border-green-200";
-    if (isSomeActive) return "text-yellow-600 bg-yellow-50 border-yellow-200";
-    return "text-red-600 bg-red-50 border-red-200";
-  };
-
-  const getStatusIcon = () => {
-    if (isAllActive) return <CheckCircle className="h-4 w-4" />;
-    if (isSomeActive)
-      return <div className="h-2 w-2 bg-yellow-500 rounded-full" />;
-    return <XCircle className="h-4 w-4" />;
-  };
-
-  const getStatusText = () => {
+  const getSelectionStatusText = () => {
     if (isAllActive) return "All Active";
     if (isSomeActive) return "Partial";
     return "All Inactive";
   };
 
+  const getSelectionStatusClass = () => {
+    if (isAllActive) return "bg-green-100 text-green-800 border-green-200";
+    if (isSomeActive) return "bg-yellow-100 text-yellow-800 border-yellow-200";
+    return "bg-gray-100 text-gray-600 border-gray-200";
+  };
+
   return (
-    <div className="border border-gray-200 rounded-lg mb-4 last:mb-0 overflow-hidden">
+    <div className="border border-gray-200 rounded-lg self-start">
       {/* Resource Header */}
       <div
-        className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors"
         onClick={() => onToggleExpand(group.resource)}
+        className="flex transition-all hover:bg-[#094C81]/10 duration-200 cursor-pointer items-center justify-between p-4 bg-gray-50 rounded-t-lg"
       >
         <div className="flex items-center space-x-3 flex-1">
-          <div className="p-2 bg-white rounded-lg shadow-sm">
-            <Shield className="h-4 w-4 text-blue-600" />
+          <button
+            type="button"
+            onClick={() => onToggleExpand(group.resource)}
+            className="p-1 hover:bg-gray-200 rounded"
+          >
+            {group.isExpanded ? (
+              <ChevronDown className="h-5 w-5 text-[#094C81] hover:text-[#073954] cursor-pointer" />
+            ) : (
+              <ChevronRight className="h-5 w-5 text-[#094C81] hover:text-[#073954] cursor-pointer" />
+            )}
+          </button>
+          <div className="p-2 text-[#094C81] bg-white rounded-lg shadow-sm">
+            {group.icon}
           </div>
-          <div className="flex-1">
-            <div className="flex items-center space-x-3">
-              <h3 className="font-semibold text-gray-900 capitalize">
-                {group.resource}
-              </h3>
-              <Badge variant="outline" className={getStatusColor()}>
-                <div className="flex items-center space-x-1">
-                  {getStatusIcon()}
-                  <span>{getStatusText()}</span>
-                </div>
-              </Badge>
-            </div>
-            <p className="text-sm text-gray-500 mt-1">
+          <div>
+            <h3 className="font-semibold text-[#094C81] capitalize">
+              {group.resource}
+            </h3>
+            <p className="text-sm text-[#094C81]">
               {group.totalCount} permissions • {group.activeCount} active
             </p>
           </div>
         </div>
-
         <div className="flex items-center space-x-3">
-          <div className="text-right">
-            <div className="text-sm font-medium text-gray-900">
-              {group.activeCount}/{group.totalCount}
-            </div>
-            <div className="text-xs text-gray-500">Active</div>
-          </div>
-          <div
-            className={`transform transition-transform duration-200 ${
-              group.isExpanded ? "rotate-180" : ""
-            }`}
+          <span
+            className={`px-2 py-1 text-xs font-medium border rounded-full text-[#094C81] ${getSelectionStatusClass()}`}
           >
-            <ChevronDown className="h-5 w-5 text-gray-400" />
-          </div>
+            {getSelectionStatusText()}
+          </span>
         </div>
       </div>
 
-      {/* Permissions List */}
-      {group.isExpanded && (
-        <div className="bg-white divide-y divide-gray-100">
-          {group.permissions.map((permission) => (
-            <PermissionRow
-              key={permission.permission_id}
-              permission={permission}
-              onToggle={onToggle}
-              isToggling={isToggling}
-            />
-          ))}
-        </div>
-      )}
+      {/* Permissions List with Animation */}
+      <AnimatePresence>
+        {group.isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden"
+          >
+            <div className="p-4 bg-white rounded-b-lg border-t border-gray-200">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {group.permissions.map((permission) => (
+                  <PermissionItem
+                    key={permission.permission_id}
+                    permission={permission}
+                    onToggle={onToggle}
+                    isToggling={isToggling}
+                  />
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
-
-// Statistics Component
-const PermissionStats: React.FC<{ stats: PermissionStats }> = ({ stats }) => (
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-    {/* Total Card */}
-    <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600">Total Permissions</p>
-          <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-        </div>
-        <div className="p-3 bg-blue-50 rounded-lg">
-          <Shield className="h-6 w-6 text-blue-600" />
-        </div>
-      </div>
-    </div>
-
-    {/* Active Card */}
-    <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600">Active</p>
-          <p className="text-2xl font-bold text-green-600">{stats.active}</p>
-        </div>
-        <div className="p-3 bg-green-50 rounded-lg">
-          <Activity className="h-6 w-6 text-green-600" />
-        </div>
-      </div>
-    </div>
-
-    {/* Inactive Card */}
-    <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600">Inactive</p>
-          <p className="text-2xl font-bold text-red-600">{stats.inactive}</p>
-        </div>
-        <div className="p-3 bg-red-50 rounded-lg">
-          <Settings className="h-6 w-6 text-red-600" />
-        </div>
-      </div>
-    </div>
-  </div>
-);
 
 // Loading Skeleton
 const PermissionSkeleton: React.FC = () => (
@@ -334,15 +309,21 @@ const PermissionSkeleton: React.FC = () => (
 
 export default function PermissionList() {
   const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [expandedResources, setExpandedResources] = useState<Set<string>>(
-    new Set()
-  );
+  const [expandedResource, setExpandedResource] = useState<string | null>(null);
 
   const { data, isLoading, isError, refetch } = useGetPermissionsQuery();
   const [togglePermissionMutation, { isLoading: isToggling }] =
     useTogglePermissionMutation();
+
+  // Resource icons mapping
+  const resourceIcons: { [key: string]: JSX.Element } = {
+    users: <Users className="h-4 w-4" />,
+    roles: <Shield className="h-4 w-4" />,
+    projects: <Folder className="h-4 w-4" />,
+    issues: <BarChart3 className="h-4 w-4" />,
+    system: <Settings className="h-4 w-4" />,
+  };
 
   // Calculate statistics
   const stats: PermissionStats = useMemo(
@@ -373,10 +354,6 @@ export default function PermissionList() {
         is_active: p.is_active ?? false,
       }));
       setPermissions(normalized);
-
-      // Expand all resources by default
-      const resources = new Set(normalized.map((p: Permission) => p.resource));
-      setExpandedResources(resources);
     }
   }, [data, isError, isLoading]);
 
@@ -394,26 +371,18 @@ export default function PermissionList() {
       const activeCount = permissions.filter((p) => p.is_active).length;
       return {
         resource,
+        icon: resourceIcons[resource] || <Shield className="h-4 w-4" />,
         permissions,
-        isExpanded: expandedResources.has(resource),
+        isExpanded: expandedResource === resource,
         activeCount,
         totalCount: permissions.length,
       };
     });
-  }, [permissions, expandedResources]);
+  }, [permissions, expandedResource]);
 
   // Filtered resource groups with search
   const filteredResourceGroups = useMemo(() => {
     let filtered = resourceGroups;
-
-    // Status filter
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((group) =>
-        statusFilter === "ACTIVE"
-          ? group.activeCount > 0
-          : group.activeCount < group.totalCount
-      );
-    }
 
     // Search filter
     if (searchQuery) {
@@ -426,46 +395,18 @@ export default function PermissionList() {
     }
 
     return filtered;
-  }, [resourceGroups, statusFilter, searchQuery]);
+  }, [resourceGroups, searchQuery]);
 
   const toggleResourceExpand = useCallback((resource: string) => {
-    setExpandedResources((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(resource)) {
-        newSet.delete(resource);
-      } else {
-        newSet.add(resource);
+    setExpandedResource((prev) => {
+      // If clicking the same resource, collapse it
+      if (prev === resource) {
+        return null;
       }
-      return newSet;
+      // Otherwise, expand the new resource (this automatically collapses the previous one)
+      return resource;
     });
   }, []);
-
-  const expandAll = useCallback(() => {
-    const allResources = new Set(permissions.map((p) => p.resource));
-    setExpandedResources(allResources);
-  }, [permissions]);
-
-  const collapseAll = useCallback(() => {
-    setExpandedResources(new Set());
-  }, []);
-
-  // Filter Fields
-  const filterFields: FilterField[] = [
-    {
-      key: "status",
-      label: "Status",
-      type: "multiselect",
-      options: [
-        { label: "All Status", value: "all" },
-        { label: "Has Active", value: "ACTIVE" },
-        { label: "All Inactive", value: "INACTIVE" },
-      ],
-      value: statusFilter,
-      onChange: (value: string | string[]) => {
-        setStatusFilter(Array.isArray(value) ? value[0] : value);
-      },
-    },
-  ];
 
   const handleRefresh = () => {
     refetch();
@@ -481,7 +422,7 @@ export default function PermissionList() {
 
   if (isError) {
     return (
-      <PageLayout>
+      <div className="w-full">
         <EmptyState
           title="Unable to load permissions"
           description="There was an error loading the permissions data. Please try again."
@@ -492,123 +433,90 @@ export default function PermissionList() {
             </Button>
           }
         />
-      </PageLayout>
+      </div>
     );
   }
 
   return (
-    <PageLayout
-      filters={filterFields}
-      filterColumnsPerRow={1}
-      actions={[
-        {
-          label: "Expand All",
-          icon: <ChevronDown className="h-4 w-4" />,
-          variant: "outline",
-          size: "default",
-          onClick: expandAll,
-        },
-        {
-          label: "Collapse All",
-          icon: <ChevronRight className="h-4 w-4" />,
-          variant: "outline",
-          size: "default",
-          onClick: collapseAll,
-        },
-        {
-          label: "Refresh",
-          icon: <RefreshCw className="h-4 w-4" />,
-          variant: "outline",
-          size: "default",
-          onClick: handleRefresh,
-        },
-      ]}
-    >
-      {/* Statistics Cards */}
-      <PermissionStats stats={stats} />
-
-      {/* Search and Filters */}
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm mb-6">
-        <div className="p-6">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <div className="flex-1 w-full sm:max-w-md">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search permissions by resource or action..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-                />
-              </div>
+    <div className="w-full flex items-center justify-center bg-white rounded-lg p-4">
+      <div className="w-full ">
+        {/* Header */}
+        <div className="flex mb-10 rounded-t-lg items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Shield className="h-6 w-6 text-blue-600" />
             </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <Filter className="h-4 w-4" />
-              <span>
-                {filteredResourceGroups.length} resource groups •{" "}
-                {permissions.length} total permissions
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Permissions Accordion */}
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Shield className="h-5 w-5 text-blue-600" />
-              <h2 className="text-lg font-semibold text-gray-900">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">
                 Permission Management
               </h2>
-            </div>
-            <div className="text-sm text-gray-500">
-              {filteredResourceGroups.length} of {resourceGroups.length}{" "}
-              resource groups
+              <p className="text-sm text-gray-600">
+                Manage and configure system permissions
+              </p>
             </div>
           </div>
         </div>
-
-        <div className="p-6">
-          {filteredResourceGroups.length === 0 ? (
-            <EmptyState
-              title="No permissions found"
-              description={
-                searchQuery || statusFilter !== "all"
-                  ? "Try adjusting your search or filter criteria."
-                  : "No permissions have been configured yet."
-              }
-              action={
-                (searchQuery || statusFilter !== "all") && (
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setSearchQuery("");
-                      setStatusFilter("all");
-                    }}
-                  >
-                    Clear filters
-                  </Button>
-                )
-              }
-            />
-          ) : (
-            <div className="space-y-4">
-              {filteredResourceGroups.map((group) => (
-                <ResourceGroup
-                  key={group.resource}
-                  group={group}
-                  onToggle={togglePermission}
-                  isToggling={isToggling}
-                  onToggleExpand={toggleResourceExpand}
-                />
-              ))}
+        {/* Permissions Accordion */}
+        <Card className="w-full">
+          <CardHeader className="pb-4 w-full">
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center space-x-2 w-full">
+                <CardTitle className="text-xl font-bold text-[#094C81]">
+                  Permissions List
+                </CardTitle>
+              </div>
+              <div className="flex flex-col w-full items-end">
+                <div className="relative ">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#094C81]" />
+                  <Input
+                    type="text"
+                    placeholder="Search permissions "
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 h-11 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#094C81] focus:border-[#094C81] outline-none transition-colors text-sm text-gray-700"
+                  />
+                </div>
+              </div>
             </div>
-          )}
-        </div>
+          </CardHeader>
+          <CardContent>
+            {filteredResourceGroups.length === 0 ? (
+              <EmptyState
+                title="No permissions found"
+                description={
+                  searchQuery
+                    ? "Try adjusting your search criteria."
+                    : "No permissions have been configured yet."
+                }
+                action={
+                  searchQuery && (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSearchQuery("");
+                      }}
+                    >
+                      Clear search
+                    </Button>
+                  )
+                }
+              />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                {filteredResourceGroups.map((group) => (
+                  <ResourceGroup
+                    key={group.resource}
+                    group={group}
+                    onToggle={togglePermission}
+                    isToggling={isToggling}
+                    onToggleExpand={toggleResourceExpand}
+                  />
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
-    </PageLayout>
+    </div>
   );
 }

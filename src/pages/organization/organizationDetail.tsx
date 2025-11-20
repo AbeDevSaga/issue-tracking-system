@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { useGetInstituteByIdQuery } from "../../redux/services/instituteApi";
+import { useDeleteInstituteMutation, useGetInstituteByIdQuery } from "../../redux/services/instituteApi";
 import PageMeta from "../../components/common/PageMeta";
 import Badge from "../../components/ui/badge/Badge";
 import { format } from "date-fns";
@@ -14,14 +14,31 @@ import { Card, CardTitle, CardContent } from "../../components/ui/cn/card";
 import ProjectList from "../../components/tables/lists/projectList";
 import DetailHeader from "../../components/common/DetailHeader";
 import { Edit, Trash2 } from "lucide-react";
-
+import { useState } from "react";
+import DeleteModal from "../../components/common/DeleteModal";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 const OrganizationDetail = () => {
+  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const {
     data: organizationDetail,
     isLoading,
     isError,
   } = useGetInstituteByIdQuery(id!);
+  const [deleteInstitute, { isLoading: isDeleteLoading }] = useDeleteInstituteMutation();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleDelete = async () => {
+    try {
+      await deleteInstitute(id!).unwrap();
+      setIsOpen(false);
+      toast.success("Institute deleted successfully");
+      navigate("/organization");
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to delete institute");
+    }
+  };
 
   const formatDateShort = (dateString?: string) => {
     if (!dateString) return "N/A";
@@ -82,6 +99,13 @@ const OrganizationDetail = () => {
 
   return (
     <>
+      <DeleteModal
+        message="Are you sure you want to delete this institute? This action cannot be undone."
+        onCancel={() => setIsOpen(false)}
+        onDelete={handleDelete}
+        open={isOpen}
+        isLoading={isDeleteLoading}
+      />
       <PageMeta
         title={`${organizationDetail.name} - Organization Details`}
         description={`View details for ${organizationDetail.name}`}
@@ -89,15 +113,15 @@ const OrganizationDetail = () => {
       <div className="min-h-screen bg-[#F9FBFC] p-6 pb-24">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex justify-between">
-          <DetailHeader breadcrumbs={[{ title: "Organization", link: "" }]} />
-          <div className="flex justify-center items-end gap-4">
-            <span>
-              <Edit className="h-5 w-5 text-[#094C81] hover:text-[#073954] cursor-pointer text-bold"/>
-            </span>
-            <span>
-              <Trash2 className="h-5 w-5 text-[#B91C1C] hover:text-[#991B1B] cursor-pointer text-bold"/>
-            </span>
-          </div>
+            <DetailHeader breadcrumbs={[{ title: "Organization", link: "" }]} />
+            <div className="flex justify-center items-end gap-4">
+              <span>
+                <Edit className="h-5 w-5 text-[#094C81] hover:text-[#073954] cursor-pointer text-bold" />
+              </span>
+              <span>
+                <Trash2 onClick={() => setIsOpen(true)} className="h-5 w-5 text-[#B91C1C] hover:text-[#991B1B] cursor-pointer text-bold" />
+              </span> 
+            </div>
           </div>
 
           {/* Organization Info Card - Compact Design */}

@@ -1,15 +1,16 @@
-import React from "react";
-
+import { Loader2 } from "lucide-react";
 const DeleteModal = ({
   message,
   onCancel,
   onDelete,
   open,
+  isLoading,
 }: {
   message: string;
   onCancel: () => void;
   onDelete: () => void;
   open: boolean;
+  isLoading: boolean;
 }) => {
   if (!open) return null;
 
@@ -25,14 +26,14 @@ const DeleteModal = ({
         onClick={(e) => e.stopPropagation()} // Prevent closing on inside click
       >
         {/* Header */}
-        <div className="px-4 flex items-center gap-2 mb-4 justify-between">
+        <div className="px-4  border-b pb-2 flex items-center gap-2 mb-4 justify-between">
           <h2 className="text-lg font-semibold text-gray-800">
             Confirm Delete
           </h2>
         </div>
 
         {/* Message */}
-        <div className="text-gray-700 rounded-lg px-4 py-3 text-base leading-relaxed">
+        <div className="text-[#094C81]  rounded-lg px-4 py-3 text-base leading-relaxed">
           {message}
         </div>
 
@@ -49,7 +50,7 @@ const DeleteModal = ({
             onClick={onDelete}
             className="px-6 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 font-medium transition"
           >
-            Delete
+            {isLoading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : "Delete"}
           </button>
         </div>
       </div>

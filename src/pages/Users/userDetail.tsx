@@ -16,13 +16,16 @@ import {
 } from "@heroicons/react/24/outline";
 import {
   Card,
-  CardHeader,
-  CardTitle,
   CardContent,
 } from "../../components/ui/cn/card";
 import { getFileUrl } from "../../utils/fileUrl";
 import DetailHeader from "../../components/common/DetailHeader";
-import { Edit, Trash2, User2, User2Icon } from "lucide-react";
+import { Edit, Trash2, User2Icon } from "lucide-react";
+import DeleteModal from "../../components/common/DeleteModal";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { useDeleteUserMutation } from "../../redux/services/userApi";
 
 // Type for wrapped API response
 interface UserApiResponse {
@@ -34,7 +37,20 @@ interface UserApiResponse {
 const UserDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { data: user, isLoading, isError } = useGetUserByIdQuery(id!);
-
+  const [deleteUser, { isLoading: deletingUserLoading }] = useDeleteUserMutation();
+  const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const handleDelete = async () => {
+    try {
+      await deleteUser(id!).unwrap();
+      setIsOpen(false);
+      toast.success("User deleted successfully");
+      navigate(-1);
+    }
+    catch (error: any) {
+      toast.error(error?.data?.message || "Failed to delete user");
+    }
+  }
   const formatDate = (dateString?: string | null) => {
     if (!dateString) return "N/A";
     try {
@@ -85,6 +101,13 @@ const UserDetail = () => {
 
   return (
     <>
+    <DeleteModal
+        message="Are you sure you want to delete this user? This action cannot be undone."
+        onCancel={() => setIsOpen(false)}
+        onDelete={handleDelete}
+        open={isOpen}
+        isLoading={deletingUserLoading}
+      />
       <PageMeta
         title={`${userData.full_name} - User Details`}
         description={`View details for ${userData.full_name}`}
@@ -104,7 +127,7 @@ const UserDetail = () => {
                 <Edit className="h-5 w-5 text-[#094C81] hover:text-[#073954] cursor-pointer text-bold" />
               </span>
               <span>
-                <Trash2 className="h-5 w-5 text-[#B91C1C] hover:text-[#991B1B] cursor-pointer text-bold" />
+                <Trash2 onClick={() => setIsOpen(true)} className="h-5 w-5 text-[#B91C1C] hover:text-[#991B1B] cursor-pointer text-bold" />
               </span>
             </div>
           </div>
