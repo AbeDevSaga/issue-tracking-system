@@ -20,14 +20,15 @@ import { getFileType, getFileUrl } from "../../utils/fileUrl";
 import { useGetCurrentUserQuery } from "../../redux/services/authApi";
 import { canConfirm } from "../../utils/taskHelper";
 import IssueHistoryLog from "../userTasks/IssueHistoryLog";
+import TimelineOpener from "../../components/common/TimelineOpener";
 
 export default function UserIssueDetail() {
   const { id } = useParams<{ id: string }>();
   const { data: issue, isLoading, isError } = useGetIssueByIdQuery(id!);
   const { t } = useTranslation();
-  const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [modalImageIndex, setModalImageIndex] = useState<number | null>(null);
   const [confirmIssue, setConfirmIssue] = useState(false);
+  const [openTimeline, setOpenTimeline] = useState(false);
 
   const [fileViewerUrl, setFileViewerUrl] = useState<string | null>(null);
 
@@ -132,7 +133,9 @@ export default function UserIssueDetail() {
           className={`w-full max-w-[1440px] mx-auto bg-white shadow-md rounded-xl border border-dashed border-[#BFD7EA] p-6 relative overflow-hidden`}
         >
           <div
-            className={`transition-all duration-500 ease-in-out lg:pr-[380px] `}
+            className={`w-full transition-all duration-500 ease-in-out  ${
+              openTimeline ? "lg:pr-[360px]" : ""
+            } `}
           >
             <div className="flex flex-col w-full">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
@@ -144,6 +147,9 @@ export default function UserIssueDetail() {
                     Review issue details and take appropriate action
                   </p>
                 </div>
+                {!openTimeline && (
+                  <TimelineOpener onOpen={() => setOpenTimeline(true)} />
+                )}
                 <AnimatePresence>
                   {alert && (
                     <motion.div
@@ -555,7 +561,12 @@ export default function UserIssueDetail() {
           )}
 
           <AnimatePresence>
-            <IssueHistoryLog logs={issue?.history || []} />
+            {openTimeline && (
+              <IssueHistoryLog
+                logs={issue?.history || []}
+                onClose={() => setOpenTimeline(false)}
+              />
+            )}
           </AnimatePresence>
         </div>
       </div>

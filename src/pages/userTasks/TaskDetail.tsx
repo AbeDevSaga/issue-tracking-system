@@ -31,6 +31,7 @@ import {
   canMarkInProgress,
   canResolve,
 } from "../../utils/taskHelper";
+import TimelineOpener from "../../components/common/TimelineOpener";
 
 export default function UserTaskDetail() {
   const { id } = useParams<{ id: string }>();
@@ -41,7 +42,8 @@ export default function UserTaskDetail() {
   const [acceptIssue, { isLoading: isAccepting }] = useAcceptIssueMutation();
   const [escalateIssue, setEscalateIssue] = useState(false);
   const [resolveIssue, setResolveIssue] = useState(false);
-  const [confirmIssue, setConfirmIssue] = useState(false);
+  const [markIssue, setMarkIssue] = useState(false);
+  const [openTimeline, setOpenTimeline] = useState(false);
 
   const [fileViewerUrl, setFileViewerUrl] = useState<string | null>(null);
   const [hierarchyStructure, setHierarchyStructure] = useState<any>(null);
@@ -58,12 +60,6 @@ export default function UserTaskDetail() {
     }
   }, [loggedUser?.user?.project_roles, issue?.project?.project_id]);
 
-  const markInProgress = canMarkInProgress(
-    userId,
-    issue?.status,
-    issue?.escalations
-  );
-
   useEffect(() => {
     setEscalateIssue(canEscalate(userId, issue?.status, issue));
   }, [userId, issue?.status, issue]);
@@ -73,7 +69,7 @@ export default function UserTaskDetail() {
   }, [userId, issue?.status, issue?.history]);
 
   useEffect(() => {
-    setConfirmIssue(canConfirm(userId, issue?.status, issue));
+    setMarkIssue(canMarkInProgress(userId, issue?.status, issue));
   }, [userId, issue?.status, issue]);
 
   // Map issue attachments to files array with proper URLs and file info
@@ -179,15 +175,15 @@ export default function UserTaskDetail() {
     {
       key: "mark_as_inprogress",
       label: "Mark as Inprogress",
-      desc: markInProgress
+      desc: markIssue
         ? 'Start working on this issue It will update the status to "In progress"'
         : "Cannot mark in progress - issue is already in progress or you have escalated it",
       color: "#c2b56cff",
       bg: "#E7F3FF",
       border: "#BFD7EA",
-      enabled: markInProgress,
+      enabled: markIssue,
       onClick: () => {
-        if (markInProgress) {
+        if (markIssue) {
           handleMarkAsInProgress();
           setSelectedAction("mark_as_inprogress");
         }
@@ -236,7 +232,7 @@ export default function UserTaskDetail() {
         >
           <div
             className={`w-full transition-all duration-500 ease-in-out  ${
-              selectedAction ? "lg:pr-[380px]" : ""
+              selectedAction || openTimeline ? "lg:pr-[360px]" : ""
             } `}
           >
             <div className="flex flex-col w-full">
@@ -249,9 +245,10 @@ export default function UserTaskDetail() {
                     Review issue details and take appropriate action
                   </p>
                 </div>
-                <div onClick={() => setSelectedAction("mark_as_inprogress")}>
-                  {"<--"}
-                </div>
+                {!openTimeline && (
+                  <TimelineOpener onOpen={() => setOpenTimeline(true)} />
+                )}
+
                 <AnimatePresence>
                   {alert && (
                     <motion.div
@@ -700,32 +697,30 @@ export default function UserTaskDetail() {
             </div>
           )}
 
-          {selectedAction && (
-            <AnimatePresence>
-              {selectedAction === "resolve" && (
-                <ResolutionPreview
-                  issue_id={id || ""}
-                  resolved_by={userId}
-                  onClose={() => setSelectedAction("")}
-                />
-              )}
-              {selectedAction === "escalate" && (
-                <EscalationPreview
-                  issue_id={id || ""}
-                  from_tier={hierarchyStructure?.hierarchy_node_id || ""}
-                  to_tier={hierarchyStructure?.parent_id || ""}
-                  onClose={() => setSelectedAction("")}
-                  escalated_by={userId}
-                />
-              )}{" "}
-              {selectedAction === "mark_as_inprogress" && (
-                <IssueHistoryLog
-                  logs={issue?.history || []}
-                  onClose={() => setSelectedAction("")}
-                />
-              )}
-            </AnimatePresence>
-          )}
+          <AnimatePresence>
+            {selectedAction === "resolve" && (
+              <ResolutionPreview
+                issue_id={id || ""}
+                resolved_by={userId}
+                onClose={() => setSelectedAction("")}
+              />
+            )}
+            {selectedAction === "escalate" && (
+              <EscalationPreview
+                issue_id={id || ""}
+                from_tier={hierarchyStructure?.hierarchy_node_id || ""}
+                to_tier={hierarchyStructure?.parent_id || ""}
+                onClose={() => setSelectedAction("")}
+                escalated_by={userId}
+              />
+            )}{" "}
+            {openTimeline && (
+              <IssueHistoryLog
+                logs={issue?.history || []}
+                onClose={() => setOpenTimeline(false)}
+              />
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </>

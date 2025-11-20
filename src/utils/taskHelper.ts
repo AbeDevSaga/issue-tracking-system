@@ -73,7 +73,7 @@ export const canEscalate = (
     return false;
   }
 
-  // console.log("esc object:", object);
+  console.log("esc object:", object);
 
   // Check if user_id exists in any escalation
   if (
@@ -86,7 +86,30 @@ export const canEscalate = (
     return false;
   }
 
-  // console.log("esc object?.escalations:", object?.escalations);
+  //  Filter only "accepted" actions and get the most recent one
+  const history = object?.history || [];
+  const acceptedActions = history
+    .filter((item: any) => item.action === "accepted")
+    .sort(
+      (a: any, b: any) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  console.log("acceptedActions:", acceptedActions);
+
+  // If there are no accepted actions, return false
+  if (acceptedActions.length === 0) {
+    return false;
+  }
+
+  // Get the most recent accepted action
+  const lastAccepted = acceptedActions[0];
+
+  // Check if the user_id matches the user who last accepted the issue
+  if (lastAccepted.user_id !== user_id) {
+    return false;
+  }
+
+  console.log("esc object?.escalations:", object?.escalations);
   return true;
 };
 // reporter

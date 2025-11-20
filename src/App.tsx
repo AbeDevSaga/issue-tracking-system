@@ -13,6 +13,7 @@ import AppLayout from "./layout/AppLayout";
 import Home from "./pages/Dashboard/Home";
 import NotFound from "./pages/OtherPage/NotFound";
 import Organization from "./pages/organization/organization";
+import BunchCreation from "./pages/BunchCreation/organization";
 import Branch from "./pages/branch/branch";
 import Region from "./pages/region/region";
 import Zone from "./pages/zone/zone";
@@ -116,6 +117,7 @@ function AppContent() {
           <Route path="/users" element={<Users />} />
           <Route path="/users/:id" element={<UserDetail />} />
           <Route path="/organization" element={<Organization />} />
+          <Route path="/bunch" element={<BunchCreation />} />
           <Route path="/organization/:id" element={<OrganizationDetail />} />
           <Route path="/branch" element={<Branch />} />
           <Route path="/region" element={<Region />} />
