@@ -147,7 +147,6 @@ export default function UserTaskDetail() {
         type: "success",
         message: res.message || "Status updated to In Progress!",
       });
-      setSelectedAction("mark_as_inprogress");
       setTimeout(() => setAlert(null), 2000);
     } catch (error: any) {
       setAlert({
@@ -157,6 +156,11 @@ export default function UserTaskDetail() {
       console.error(error);
       setTimeout(() => setAlert(null), 3000);
     }
+  };
+
+  const handleActions = async (value: string) => {
+    setOpenTimeline(false);
+    setSelectedAction(value);
   };
 
   // Format date for display
@@ -185,7 +189,7 @@ export default function UserTaskDetail() {
       onClick: () => {
         if (markIssue) {
           handleMarkAsInProgress();
-          setSelectedAction("mark_as_inprogress");
+          handleActions("mark_as_inprogress");
         }
       },
     },
@@ -199,7 +203,7 @@ export default function UserTaskDetail() {
       bg: "#E7F3FF",
       border: "#BFD7EA",
       enabled: resolveIssue,
-      onClick: () => resolveIssue && setSelectedAction("resolve"),
+      onClick: () => resolveIssue && handleActions("resolve"),
     },
     {
       key: "escalate",
@@ -211,7 +215,7 @@ export default function UserTaskDetail() {
       bg: "#F5F3FF",
       border: "#D9D3FA",
       enabled: escalateIssue,
-      onClick: () => escalateIssue && setSelectedAction("escalate"),
+      onClick: () => escalateIssue && handleActions("escalate"),
     },
   ];
 
@@ -245,7 +249,7 @@ export default function UserTaskDetail() {
                     Review issue details and take appropriate action
                   </p>
                 </div>
-                {!openTimeline && (
+                {!openTimeline && !selectedAction && (
                   <TimelineOpener onOpen={() => setOpenTimeline(true)} />
                 )}
 

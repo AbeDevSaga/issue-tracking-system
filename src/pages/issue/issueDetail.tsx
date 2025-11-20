@@ -14,13 +14,17 @@ import {
   Eye,
   Lock,
 } from "lucide-react";
-import { useGetIssueByIdQuery } from "../../redux/services/issueApi";
+import {
+  useConfirmIssueResolvedMutation,
+  useGetIssueByIdQuery,
+} from "../../redux/services/issueApi";
 import FileViewer from "../../components/common/FileView";
 import { getFileType, getFileUrl } from "../../utils/fileUrl";
 import { useGetCurrentUserQuery } from "../../redux/services/authApi";
 import { canConfirm } from "../../utils/taskHelper";
 import IssueHistoryLog from "../userTasks/IssueHistoryLog";
 import TimelineOpener from "../../components/common/TimelineOpener";
+import { Button } from "../../components/ui/cn/button";
 
 export default function UserIssueDetail() {
   const { id } = useParams<{ id: string }>();
@@ -29,6 +33,8 @@ export default function UserIssueDetail() {
   const [modalImageIndex, setModalImageIndex] = useState<number | null>(null);
   const [confirmIssue, setConfirmIssue] = useState(false);
   const [openTimeline, setOpenTimeline] = useState(false);
+  const [confirmIssueResolved, { isLoading: isConfirming }] =
+    useConfirmIssueResolvedMutation();
 
   const [fileViewerUrl, setFileViewerUrl] = useState<string | null>(null);
 
@@ -105,6 +111,26 @@ export default function UserIssueDetail() {
   const openFileViewer = (fileUrl: string) => setFileViewerUrl(fileUrl);
   const closeFileViewer = () => setFileViewerUrl(null);
   const closeModal = () => setModalImageIndex(null);
+
+  // useCondirmIssueResolovedMutation
+  const handleConfirmIssueSolved = async () => {
+    if (!id) return;
+    try {
+      const res = await confirmIssueResolved({ issue_id: id }).unwrap();
+      setAlert({
+        type: "success",
+        message: res.message || "Status updated to Closed!",
+      });
+      setTimeout(() => setAlert(null), 2000);
+    } catch (error: any) {
+      setAlert({
+        type: "error",
+        message: error?.data?.message || "Error updating status.",
+      });
+      console.error(error);
+      setTimeout(() => setAlert(null), 3000);
+    }
+  };
 
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -472,22 +498,12 @@ export default function UserIssueDetail() {
                   </h3>
 
                   <div className="flex flex-col md:flex-row gap-4 mb-6">
-                    <button
-                      onClick={() => console.log("confirm")}
-                      className={`flex-1 text-left border rounded-lg p-4 transition-all relative ${"border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"}`}
+                    <Button
+                      onClick={handleConfirmIssueSolved}
+                      disabled={isConfirming}
                     >
-                      <div className="flex items-center gap-2 mb-1">
-                        <div
-                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center 
-                            `}
-                        >
-                          <CheckCircle2 className="w-4 h-4 bg-primary" />
-                        </div>
-                        <p className={`font-semibold text-[#1E516A]`}>
-                          Confirm
-                        </p>
-                      </div>
-                    </button>
+                      {isConfirming ? "Confirming..." : "Confirm Resolved"}
+                    </Button>
                   </div>
                 </>
               )}
