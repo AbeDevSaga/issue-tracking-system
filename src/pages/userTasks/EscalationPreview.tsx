@@ -77,13 +77,20 @@ export default function EscalationPreview({
           onChange={(e) => setReason(e.target.value)}
         />
 
-        <div className="w-full flex justify-end mt-3">
+        <div className="w-full flex justify-around mt-3">
           <button
             onClick={handleSubmit}
             disabled={isLoading}
             className="px-4 py-2 rounded-md bg-[#1E516A] text-white font-semibold disabled:opacity-50"
           >
             {isLoading ? "Submitting..." : "Confirm"}
+          </button>
+          <button
+            onClick={onClose}
+            disabled={isLoading}
+            className="px-4 py-2 rounded-md bg-[#1E516A] text-white font-semibold disabled:opacity-50"
+          >
+            Cancel
           </button>
         </div>
       </div>

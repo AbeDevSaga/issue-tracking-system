@@ -4,7 +4,7 @@ export const canMarkInProgress = (
   object: any
 ): boolean => {
   // Check if status is "in progress"
-  if (issueStatus === "in_progress") {
+  if (issueStatus === "in_progress" || issueStatus === "resolved") {
     return false;
   }
 
@@ -39,12 +39,13 @@ export const canResolve = (
 
   console.log("object:", object);
   // Filter only "accepted" actions and get the most recent one
-  const acceptedActions = history
+  const acceptedActions = object
     .filter((item: any) => item.action === "accepted")
     .sort(
       (a: any, b: any) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
+  console.log("acceptedActions:", acceptedActions);
 
   // If there are no accepted actions, return false
   if (acceptedActions.length === 0) {
@@ -72,6 +73,8 @@ export const canEscalate = (
     return false;
   }
 
+  // console.log("esc object:", object);
+
   // Check if user_id exists in any escalation
   if (
     object?.escalations?.some(
@@ -83,5 +86,27 @@ export const canEscalate = (
     return false;
   }
 
+  // console.log("esc object?.escalations:", object?.escalations);
   return true;
+};
+// reporter
+
+export const canConfirm = (
+  user_id: string,
+  issueStatus: string,
+  object: any
+): boolean => {
+  // Check if status is not "in progress"
+  if (issueStatus !== "resolved") {
+    return false;
+  }
+
+  // console.log("esc object:", object);
+
+  // Check if user_id exists in any escalation
+  if (object?.reporter === user_id || object?.reporter?.user_id === user_id) {
+    return true;
+  }
+
+  return false;
 };

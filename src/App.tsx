@@ -45,6 +45,7 @@ import DeveloperTaskDetail from "./pages/DeveloperTaskList/DeveloperTaskDetail";
 import DeveloperTaskList from "./pages/DeveloperTaskList/DeveloperTaskList";
 import UserTaskList from "./pages/userTasks/TaskList";
 import UserTaskDetail from "./pages/userTasks/TaskDetail";
+import IssueDetail from "./pages/issue/issueDetail";
 import "./localization";
 import Users from "./pages/Users/users";
 import { Provider } from "react-redux";
@@ -110,6 +111,7 @@ function AppContent() {
 
           <Route path="/task" element={<UserTaskList />} />
           <Route path="/task/:id" element={<UserTaskDetail />} />
+          <Route path="/issue/:id" element={<IssueDetail />} />
 
           <Route path="/users" element={<Users />} />
           <Route path="/users/:id" element={<UserDetail />} />

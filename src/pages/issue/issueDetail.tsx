@@ -14,63 +14,25 @@ import {
   Eye,
   Lock,
 } from "lucide-react";
-import {
-  useAcceptIssueMutation,
-  useGetIssueByIdQuery,
-} from "../../redux/services/issueApi";
+import { useGetIssueByIdQuery } from "../../redux/services/issueApi";
 import FileViewer from "../../components/common/FileView";
 import { getFileType, getFileUrl } from "../../utils/fileUrl";
-import EscalationPreview from "./EscalationPreview";
 import { useGetCurrentUserQuery } from "../../redux/services/authApi";
-import { getHeirarchyStructure } from "../../utils/hierarchUtils";
-import ResolutionPreview from "./ResolutionPreview";
-import IssueHistoryLog from "./IssueHistoryLog";
-import {
-  canConfirm,
-  canEscalate,
-  canMarkInProgress,
-  canResolve,
-} from "../../utils/taskHelper";
+import { canConfirm } from "../../utils/taskHelper";
+import IssueHistoryLog from "../userTasks/IssueHistoryLog";
 
-export default function UserTaskDetail() {
+export default function UserIssueDetail() {
   const { id } = useParams<{ id: string }>();
   const { data: issue, isLoading, isError } = useGetIssueByIdQuery(id!);
   const { t } = useTranslation();
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [modalImageIndex, setModalImageIndex] = useState<number | null>(null);
-  const [acceptIssue, { isLoading: isAccepting }] = useAcceptIssueMutation();
-  const [escalateIssue, setEscalateIssue] = useState(false);
-  const [resolveIssue, setResolveIssue] = useState(false);
   const [confirmIssue, setConfirmIssue] = useState(false);
 
   const [fileViewerUrl, setFileViewerUrl] = useState<string | null>(null);
-  const [hierarchyStructure, setHierarchyStructure] = useState<any>(null);
 
   const { data: loggedUser, isLoading: userLoading } = useGetCurrentUserQuery();
   const userId = loggedUser?.user?.user_id || "";
-
-  useEffect(() => {
-    if (loggedUser?.user?.project_roles && issue?.project?.project_id) {
-      const hierarchy = getHeirarchyStructure(issue.project.project_id, {
-        project_roles: loggedUser.user.project_roles,
-      });
-      setHierarchyStructure(hierarchy);
-    }
-  }, [loggedUser?.user?.project_roles, issue?.project?.project_id]);
-
-  const markInProgress = canMarkInProgress(
-    userId,
-    issue?.status,
-    issue?.escalations
-  );
-
-  useEffect(() => {
-    setEscalateIssue(canEscalate(userId, issue?.status, issue));
-  }, [userId, issue?.status, issue]);
-
-  useEffect(() => {
-    setResolveIssue(canResolve(userId, issue?.status, issue?.history));
-  }, [userId, issue?.status, issue?.history]);
 
   useEffect(() => {
     setConfirmIssue(canConfirm(userId, issue?.status, issue));
@@ -143,26 +105,6 @@ export default function UserTaskDetail() {
   const closeFileViewer = () => setFileViewerUrl(null);
   const closeModal = () => setModalImageIndex(null);
 
-  const handleMarkAsInProgress = async () => {
-    if (!id) return;
-    try {
-      const res = await acceptIssue({ issue_id: id }).unwrap();
-      setAlert({
-        type: "success",
-        message: res.message || "Status updated to In Progress!",
-      });
-      setSelectedAction("mark_as_inprogress");
-      setTimeout(() => setAlert(null), 2000);
-    } catch (error: any) {
-      setAlert({
-        type: "error",
-        message: error?.data?.message || "Error updating status.",
-      });
-      console.error(error);
-      setTimeout(() => setAlert(null), 3000);
-    }
-  };
-
   // Format date for display
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -173,51 +115,6 @@ export default function UserTaskDetail() {
       minute: "2-digit",
     });
   };
-
-  // Action buttons configuration with permissions
-  const actionButtons = [
-    {
-      key: "mark_as_inprogress",
-      label: "Mark as Inprogress",
-      desc: markInProgress
-        ? 'Start working on this issue It will update the status to "In progress"'
-        : "Cannot mark in progress - issue is already in progress or you have escalated it",
-      color: "#c2b56cff",
-      bg: "#E7F3FF",
-      border: "#BFD7EA",
-      enabled: markInProgress,
-      onClick: () => {
-        if (markInProgress) {
-          handleMarkAsInProgress();
-          setSelectedAction("mark_as_inprogress");
-        }
-      },
-    },
-    {
-      key: "resolve",
-      label: "Resolve Issue",
-      desc: resolveIssue
-        ? "You have fixed the issue. Provide resolution detail to close the issue."
-        : "Cannot resolve - only the user who last accepted this issue can resolve it",
-      color: "#1E516A",
-      bg: "#E7F3FF",
-      border: "#BFD7EA",
-      enabled: resolveIssue,
-      onClick: () => resolveIssue && setSelectedAction("resolve"),
-    },
-    {
-      key: "escalate",
-      label: "Escalate Issue",
-      desc: escalateIssue
-        ? "This issue requires advanced debugging or specialized expertise from EAII."
-        : "Cannot escalate - issue is not in progress or you have already escalated it",
-      color: "#6D28D9",
-      bg: "#F5F3FF",
-      border: "#D9D3FA",
-      enabled: escalateIssue,
-      onClick: () => escalateIssue && setSelectedAction("escalate"),
-    },
-  ];
 
   if (isLoading) return <div>Loading...</div>;
   if (isError || !issue) return <div>Error loading issue details</div>;
@@ -232,12 +129,10 @@ export default function UserTaskDetail() {
       />
       <div className="min-h-screen bg-[#F9FBFC] p-6 pb-24 flex flex-col items-start">
         <div
-          className={`w-full  mx-auto bg-white shadow-md rounded-xl border border-dashed border-[#BFD7EA] p-6 relative overflow-hidden`}
+          className={`w-full max-w-[1440px] mx-auto bg-white shadow-md rounded-xl border border-dashed border-[#BFD7EA] p-6 relative overflow-hidden`}
         >
           <div
-            className={`w-full transition-all duration-500 ease-in-out  ${
-              selectedAction ? "lg:pr-[380px]" : ""
-            } `}
+            className={`transition-all duration-500 ease-in-out lg:pr-[380px] `}
           >
             <div className="flex flex-col w-full">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
@@ -248,9 +143,6 @@ export default function UserTaskDetail() {
                   <p className="text-gray-600">
                     Review issue details and take appropriate action
                   </p>
-                </div>
-                <div onClick={() => setSelectedAction("mark_as_inprogress")}>
-                  {"<--"}
                 </div>
                 <AnimatePresence>
                   {alert && (
@@ -567,67 +459,29 @@ export default function UserTaskDetail() {
                 </div>
               )}
 
-              {issue?.status !== "resolved" && (
+              {confirmIssue && (
                 <>
                   <h3 className="text-[#1E516A] font-semibold text-lg mt-4 mb-3 flex items-center gap-2">
-                    🎯 Select Action
+                    🎯 Confirm Issue is resolved
                   </h3>
 
                   <div className="flex flex-col md:flex-row gap-4 mb-6">
-                    {actionButtons.map((action) => (
-                      <button
-                        key={action.key}
-                        onClick={action.onClick}
-                        disabled={!action.enabled}
-                        className={`flex-1 text-left border rounded-lg p-4 transition-all relative ${
-                          selectedAction === action.key
-                            ? `border-[${action.border}] bg-[${action.bg}]`
-                            : action.enabled
-                            ? "border-[#D5E3EC] bg-white hover:bg-gray-50 cursor-pointer"
-                            : "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
-                        }`}
-                      >
-                        {!action.enabled && (
-                          <div className="absolute top-2 right-2">
-                            <Lock className="w-4 h-4 text-gray-400" />
-                          </div>
-                        )}
-                        <div className="flex items-center gap-2 mb-1">
-                          <div
-                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                              selectedAction === action.key
-                                ? `border-[${action.color}]`
-                                : action.enabled
-                                ? "border-gray-300"
-                                : "border-gray-200"
-                            }`}
-                          >
-                            {selectedAction === action.key && (
-                              <CheckCircle2
-                                className="w-4 h-4"
-                                style={{ color: action.color }}
-                              />
-                            )}
-                          </div>
-                          <p
-                            className={`font-semibold ${
-                              action.enabled
-                                ? "text-[#1E516A]"
-                                : "text-gray-500"
-                            }`}
-                          >
-                            {action.label}
-                          </p>
-                        </div>
-                        <p
-                          className={`text-sm ${
-                            action.enabled ? "text-gray-600" : "text-gray-400"
-                          }`}
+                    <button
+                      onClick={() => console.log("confirm")}
+                      className={`flex-1 text-left border rounded-lg p-4 transition-all relative ${"border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"}`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <div
+                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center 
+                            `}
                         >
-                          {action.desc}
+                          <CheckCircle2 className="w-4 h-4 bg-primary" />
+                        </div>
+                        <p className={`font-semibold text-[#1E516A]`}>
+                          Confirm
                         </p>
-                      </button>
-                    ))}
+                      </div>
+                    </button>
                   </div>
                 </>
               )}
@@ -700,32 +554,9 @@ export default function UserTaskDetail() {
             </div>
           )}
 
-          {selectedAction && (
-            <AnimatePresence>
-              {selectedAction === "resolve" && (
-                <ResolutionPreview
-                  issue_id={id || ""}
-                  resolved_by={userId}
-                  onClose={() => setSelectedAction("")}
-                />
-              )}
-              {selectedAction === "escalate" && (
-                <EscalationPreview
-                  issue_id={id || ""}
-                  from_tier={hierarchyStructure?.hierarchy_node_id || ""}
-                  to_tier={hierarchyStructure?.parent_id || ""}
-                  onClose={() => setSelectedAction("")}
-                  escalated_by={userId}
-                />
-              )}{" "}
-              {selectedAction === "mark_as_inprogress" && (
-                <IssueHistoryLog
-                  logs={issue?.history || []}
-                  onClose={() => setSelectedAction("")}
-                />
-              )}
-            </AnimatePresence>
-          )}
+          <AnimatePresence>
+            <IssueHistoryLog logs={issue?.history || []} />
+          </AnimatePresence>
         </div>
       </div>
     </>
