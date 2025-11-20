@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 
 import { useAssignUserToProjectMutation } from "../../redux/services/projectApi";
 
 import { useGetUsersQuery } from "../../redux/services/userApi";
 import { useGetRolesQuery } from "../../redux/services/roleApi";
-import { useGetParentNodesQuery } from "../../redux/services/hierarchyNodeApi";
 
 import {
   Dialog,
@@ -16,13 +15,17 @@ import {
 } from "../ui/cn/dialog";
 import { Button } from "../ui/cn/button";
 import { Label } from "../ui/cn/label";
-import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  CheckIcon,
-  GitForkIcon,
-} from "lucide-react";
+
 import { toast } from "sonner";
+
+// ⭐ shadcn Select
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "../ui/cn/select";
 
 interface AssignUserModalProps {
   inistitute_id?: string;
@@ -32,6 +35,7 @@ interface AssignUserModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
 export default function AssignUserModal({
   inistitute_id,
   project_id,
@@ -43,7 +47,6 @@ export default function AssignUserModal({
   const { data: usersResponse } = useGetUsersQuery(
     inistitute_id ? { institute_id: inistitute_id } : undefined
   );
-  //  inistitute_id ? { institute_id: inistitute_id } : undefined
   const { data: rolesResponse } = useGetRolesQuery(undefined);
 
   const [assignUserToProject] = useAssignUserToProjectMutation();
@@ -51,14 +54,9 @@ export default function AssignUserModal({
   const users = usersResponse?.data || [];
   const roles = rolesResponse?.data || [];
 
-  // structure tree from API
-
-  // selections
   const [selectedUser, setSelectedUser] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
   const [selectedSubRole, setSelectedSubRole] = useState("");
-
-  // navigation stack for structure tree
 
   const rolesMap = roles.map((r: any) => ({
     ...r,
@@ -85,6 +83,7 @@ export default function AssignUserModal({
       setSelectedUser("");
       setSelectedRole("");
       setSelectedSubRole("");
+
       onClose();
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to assign user");
@@ -102,46 +101,51 @@ export default function AssignUserModal({
 
         <div className="flex gap-10 mt-4">
           {/* LEFT SIDE — FORM */}
-          <div className="flex justify-between gap-4">
-            {/* user */}
+          <div className="flex justify-between w-full gap-4">
+            {/* USER */}
             <div className="w-1/2">
               <Label className="text-sm font-medium text-[#094C81]">
                 Select User
               </Label>
-              <select
-                className="w-full border p-2 rounded mt-1"
-                value={selectedUser}
-                onChange={(e) => setSelectedUser(e.target.value)}
-              >
-                <option value="">Select user</option>
-                {users.map((u) => (
-                  <option key={u.user_id} value={u.user_id}>
-                    {u.full_name} ({u.email})
-                  </option>
-                ))}
-              </select>
+
+              <Select value={selectedUser} onValueChange={setSelectedUser}>
+                <SelectTrigger className="w-full border p-2 rounded mt-1 text-[#094C81]">
+                  <SelectValue placeholder="Select user" />
+                </SelectTrigger>
+                <SelectContent className="text-[#094C81] *: bg-white">
+                  {users.map((u) => (
+                    <SelectItem key={u.user_id} value={u.user_id}>
+                      {u.full_name} ({u.email})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            {/* role */}
+            {/* ROLE */}
             <div className="w-1/2">
               <Label className="text-sm font-medium text-[#094C81]">
                 Select Role
               </Label>
-              <select
-                className="w-full border p-2 rounded mt-1"
+
+              <Select
                 value={selectedRole}
-                onChange={(e) => {
-                  setSelectedRole(e.target.value);
+                onValueChange={(value) => {
+                  setSelectedRole(value);
                   setSelectedSubRole("");
                 }}
               >
-                <option value="">Select role</option>
-                {rolesMap.map((r) => (
-                  <option key={r.role_id} value={r.role_id}>
-                    {r.name}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full border p-2 rounded mt-1 text-[#094C81]">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent className="text-[#094C81] bg-white">
+                  {rolesMap.map((r) => (
+                    <SelectItem key={r.role_id} value={r.role_id}>
+                      {r.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
@@ -150,7 +154,7 @@ export default function AssignUserModal({
         <div className="flex justify-end mt-4">
           <Button
             onClick={handleAssign}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-[#094C81] hover:bg-[#094C81]/90 text-white"
           >
             Assign User
           </Button>

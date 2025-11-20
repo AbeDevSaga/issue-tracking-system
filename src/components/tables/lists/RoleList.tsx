@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Plus, Eye, Edit, Trash2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Plus, Eye } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import {
@@ -13,7 +13,6 @@ import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
-import { CreateRoleModal } from "../../modals/CreateRoleModal";
 
 const RoleTableColumns = (handleDelete: (id: string) => void) => [
   {
@@ -79,7 +78,7 @@ export default function RoleList() {
   const [response, setResponse] = useState<any[]>([]);
   const [filteredResponse, setFilteredResponse] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [isModalOpen, setModalOpen] = useState(false);
+  const navigate = useNavigate();
   const [pageDetail, setPageDetail] = useState({
     pageIndex: 0,
     pageCount: 1,
@@ -104,7 +103,7 @@ export default function RoleList() {
       icon: <Plus className="h-4 w-4" />,
       variant: "default",
       size: "default",
-      onClick: () => setModalOpen(true),
+      onClick: () => {navigate("/role/create")},  
     },
   ];
 
@@ -168,10 +167,6 @@ export default function RoleList() {
         />
       </PageLayout>
 
-      <CreateRoleModal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-      />
     </>
   );
 }

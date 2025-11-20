@@ -39,7 +39,7 @@ export const permissionApi = baseApi.injectEndpoints({
     togglePermission: builder.mutation<PermissionToggleResponse, string>({
       query: (permission_id) => ({
         url: `/permissions/${permission_id}/toggle`,
-        method: "PATCH",
+        method: "PUT",
       }),
       invalidatesTags: ["Permission"],
     }),

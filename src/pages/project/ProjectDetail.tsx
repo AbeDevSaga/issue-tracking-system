@@ -4,7 +4,7 @@ import {
   CardTitle,
   CardContent,
 } from "../../components/ui/cn/card";
-import { useGetProjectByIdQuery } from "../../redux/services/projectApi";
+import { useDeleteProjectMutation, useGetProjectByIdQuery } from "../../redux/services/projectApi";
 import HierarchyNodeList from "../../components/tables/lists/hierarchyNodeList";
 import DetailHeader from "../../components/common/DetailHeader";
 import { Edit, Trash2 } from "lucide-react";
@@ -19,11 +19,28 @@ import {
   ArrowLeftIcon,
   BuildingOfficeIcon,
 } from "@heroicons/react/24/outline";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import DeleteModal from "../../components/common/DeleteModal";
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const { data: project, isLoading, isError } = useGetProjectByIdQuery(id!);
-
+  const [deleteProject,{ isLoading:deletingProjectLoading}]=useDeleteProjectMutation()
+  const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const handleDelete = async () => {
+    try {
+      await deleteProject(id!).unwrap();
+      setIsOpen(false);
+      toast.success("Project deleted successfully");
+      navigate(-1);
+    }
+    catch (error: any) {
+      toast.error(error?.data?.message || "Failed to delete project");
+    }
+  }
   const formatDateShort = (dateString?: string) => {
     if (!dateString) return "N/A";
     try {
@@ -82,6 +99,13 @@ export default function ProjectDetail() {
 
   return (
     <>
+    <DeleteModal
+        message="Are you sure you want to delete this project? This action cannot be undone."
+        onCancel={() => setIsOpen(false)}
+        onDelete={handleDelete}
+        open={isOpen}
+        isLoading={deletingProjectLoading}
+      />
       <PageMeta
         title={`${project.name} - Project Details`}
         description={`View details for ${project.name}`}
@@ -95,7 +119,7 @@ export default function ProjectDetail() {
                 <Edit className="h-5 w-5 text-[#094C81] hover:text-[#073954] cursor-pointer text-bold" />
               </span>
               <span>
-                <Trash2 className="h-5 w-5 text-[#B91C1C] hover:text-[#991B1B] cursor-pointer text-bold" />
+                <Trash2 onClick={() => setIsOpen(true)} className="h-5 w-5 text-[#B91C1C] hover:text-[#991B1B] cursor-pointer text-bold" />
               </span>
             </div>
           </div>

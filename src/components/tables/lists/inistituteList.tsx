@@ -25,22 +25,22 @@ const InstituteTableColumns = [
     header: "Description",
     cell: ({ row }: any) => <div>{row.getValue("description") || "N/A"}</div>,
   },
-  {
-    accessorKey: "has_branch",
-    header: "Type",
-    cell: ({ row }: any) => {
-      const hasBranch = row.getValue("has_branch");
-      return (
-        <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            hasBranch ? "bg-green-600 text-white" : "bg-red-600 text-white"
-          }`}
-        >
-          {hasBranch ? "Multi-Branch" : "Central Only"}
-        </span>
-      );
-    },
-  },
+  // {
+  //   accessorKey: "has_branch",
+  //   header: "Type",
+  //   cell: ({ row }: any) => {
+  //     const hasBranch = row.getValue("has_branch");
+  //     return (
+  //       <span
+  //         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+  //           hasBranch ? "bg-green-600 text-white" : "bg-red-600 text-white"
+  //         }`}
+  //       >
+  //         {hasBranch ? "Multi-Branch" : "Central Only"}
+  //       </span>
+  //     );
+  //   },
+  // },
   {
     accessorKey: "is_active",
     header: "Status",

@@ -3,58 +3,57 @@ import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import Avater from "../../assets/avater.jpg";
 import { useAuth } from "../../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, token, logout } = useAuth();
-
+  const { user,  logout } = useAuth();
+  const navigate = useNavigate();
   const toggleDropdown = () => setIsOpen(!isOpen);
   const closeDropdown = () => setIsOpen(false);
 
   if (!user) return null;
 
-  // Use first role as "user_type" display
   const userRole = user.roles?.[0]?.role?.name || "N/A";
 
   return (
     <div className="relative">
       <button
         onClick={toggleDropdown}
-        className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
+        className="flex items-center rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
       >
-        <span className="block mr-1 font-medium text-theme-sm">
-          {user.full_name}
-        </span>
-
-        <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <img src={user.profile_image || Avater} alt="User" />
+        <span className="overflow-hidden rounded-full h-11 w-11 border-2 border-gray-200 dark:border-gray-700">
+          <img
+            src={user.profile_image || Avater}
+            alt="User"
+            className="h-full w-full object-cover"
+          />
         </span>
       </button>
 
       <Dropdown
         isOpen={isOpen}
         onClose={closeDropdown}
-        className="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
+        className="absolute right-0 mt-2 w-40 rounded-2xl border border-gray-200 bg-white p-2 shadow-lg shadow-gray-300/30 dark:border-gray-800 dark:bg-gray-900 dark:shadow-black/30 transition-all"
       >
-        <div>
-          <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
+        {/* User Info */}
+        <div className="flex flex-col px-3 gap-1 pb-2 border-b border-gray-200 dark:border-gray-800">
+          <span className="text-gray-800 dark:text-gray-100 font-semibold text-sm">
             {user.full_name}
           </span>
-          <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            Role: {userRole}
-          </span>
-          <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400 break-all">
-            Token: {token}
+          <span className="text-gray-500 dark:text-gray-400 text-xs">
+            {user.email}
           </span>
         </div>
 
-        <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
+        {/* Dropdown Items */}
+        <ul className="flex flex-col pt-2">
           <li>
             <DropdownItem
               onItemClick={closeDropdown}
               tag="a"
               to="/profile"
-              className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5"
+              className="flex items-center gap-3 px-4 py-2 font-medium text-gray-700 rounded-lg hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 transition-colors text-sm"
             >
               Edit profile
             </DropdownItem>
@@ -64,9 +63,10 @@ export default function UserDropdown() {
               onItemClick={() => {
                 logout();
                 closeDropdown();
+                navigate("/login");
               }}
               tag="button"
-              className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5"
+              className="flex items-center gap-3 px-4 py-2 font-medium text-gray-700 rounded-lg hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 transition-colors text-sm"
             >
               Sign out
             </DropdownItem>
@@ -76,3 +76,4 @@ export default function UserDropdown() {
     </div>
   );
 }
+

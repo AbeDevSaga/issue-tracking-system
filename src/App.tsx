@@ -56,7 +56,8 @@ import UserDetail from "./pages/Users/userDetail";
 import OrganizationDetail from "./pages/organization/organizationDetail";
 import OrgStructureDetail from "./pages/org_structure/org_structureDetail";
 import IssueCategoryDetail from "./pages/issueCategory/issueCategoryDetail";
-import RoleDetail from "./pages/role/roleDetail";
+import CreateRole from "./pages/role/createRole";
+import Profile from "./pages/profile/profile";
 const AuthLoader = () => {
   return (
     <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">
@@ -113,6 +114,7 @@ function AppContent() {
           <Route path="/task/:id" element={<UserTaskDetail />} />
           <Route path="/issue/:id" element={<IssueDetail />} />
 
+          <Route path="/profile" element={<Profile />} />
           <Route path="/users" element={<Users />} />
           <Route path="/users/:id" element={<UserDetail />} />
           <Route path="/organization" element={<Organization />} />
@@ -129,7 +131,8 @@ function AppContent() {
           <Route path="/priority_level" element={<ProjectLevel />} />
           <Route path="/permission" element={<Permission />} />
           <Route path="/role" element={<Roles />} />
-          <Route path="/role/:id" element={<RoleDetail />} />
+          <Route path="/role/:id" element={<CreateRole />} />
+          <Route path="/role/create" element={<CreateRole />} />
           <Route path="/issue_category" element={<IssueCategory />} />
           <Route path="/issue_category/:id" element={<IssueCategoryDetail />} />
           <Route path="/my_issue" element={<MyIssue />} />
