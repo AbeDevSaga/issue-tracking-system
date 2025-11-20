@@ -65,7 +65,7 @@ const CategoryTableColumns = [
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
-          <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
+          {/* <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
             <Link to={`/issue_category/${category.category_id}`}>
               <Edit className="h-4 w-4" />
             </Link>
@@ -77,7 +77,7 @@ const CategoryTableColumns = [
             onClick={() => deleteCategory(category.category_id)}
           >
             <Trash2 className="h-4 w-4" />
-          </Button>
+          </Button> */}
         </div>
       );
     },

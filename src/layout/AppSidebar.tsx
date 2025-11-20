@@ -422,7 +422,7 @@ const AppSidebar: React.FC = () => {
   return (
     <aside
       // className={`fixed mt-16 flex flex-col lg:mt-10 top-0 px-5 left-0 bg-white dark:bg-gray-900 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 dark:border-gray-800
-      className={`fixed mt-16 flex flex-col lg:mt-10 top-0 px-5 left-0 bg-white dark:bg-gray-900 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 dark:border-gray-800 rounded-r-2xl
+      className={`fixed mt-5 flex flex-col  top-0 px-5 left-0 bg-white dark:bg-gray-900 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 dark:border-gray-800 rounded-r-2xl
 
         ${
           isExpanded || isMobileOpen
@@ -451,7 +451,7 @@ const AppSidebar: React.FC = () => {
                 src={Logo}
                 alt="Logo"
                 className={
-                  isExpanded || isHovered || isMobileOpen ? "w-40" : "w-12"
+                  isExpanded || isHovered || isMobileOpen ? "w-40" : "w-40"
                 }
               />
               <h2 className="mt-2 text-xs uppercase text-center leading-[20px] text-[#094C81] dark:text-[#094C81] font-bold">
@@ -466,9 +466,7 @@ const AppSidebar: React.FC = () => {
               <img
                 src={Logo}
                 alt="Logo"
-                className={
-                  isExpanded || isHovered || isMobileOpen ? "w-40" : "w-12"
-                }
+                className="w-40"
               />
             </>
           )}

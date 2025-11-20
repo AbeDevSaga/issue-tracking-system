@@ -1,7 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import {
   useGetHierarchyNodeByIdQuery,
-  HierarchyNode,
 } from "../../redux/services/hierarchyNodeApi";
 import PageMeta from "../../components/common/PageMeta";
 import Badge from "../../components/ui/badge/Badge";
@@ -14,15 +13,16 @@ import {
   ArrowLeftIcon,
   FolderIcon,
   ArrowUpIcon,
-  ArrowDownIcon,
+  BuildingOfficeIcon,
 } from "@heroicons/react/24/outline";
 import {
   Card,
-  CardHeader,
   CardTitle,
   CardContent,
 } from "../../components/ui/cn/card";
 import ProjectUserRolesTable from "../../components/tables/lists/ProjectUserRolesTable";
+import DetailHeader from "../../components/common/DetailHeader";
+import { Edit, Trash2 } from "lucide-react";
 
 const OrgStructureDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,10 +32,19 @@ const OrgStructureDetail = () => {
     isError,
   } = useGetHierarchyNodeByIdQuery(id!);
 
-  const formatDate = (dateString?: string) => {
+  const formatDateShort = (dateString?: string) => {
     if (!dateString) return "N/A";
     try {
-      return format(new Date(dateString), "PPP p");
+      return format(new Date(dateString), "MMM dd, yyyy");
+    } catch {
+      return dateString;
+    }
+  };
+
+  const formatDateWithTime = (dateString?: string) => {
+    if (!dateString) return "N/A";
+    try {
+      return format(new Date(dateString), "MMM dd, yyyy 'at' h:mm a");
     } catch {
       return dateString;
     }
@@ -91,131 +100,125 @@ const OrgStructureDetail = () => {
       <div className="min-h-screen bg-[#F9FBFC] p-6 pb-24">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header Section */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <Link
-                to="/org_structure"
-                className="inline-flex items-center gap-2 text-[#094C81] hover:text-[#073954] transition-colors"
-              >
-                <ArrowLeftIcon className="h-5 w-5" />
-                <span className="font-medium">
-                  Back to Organization Structures
-                </span>
-              </Link>
+          <div className="flex justify-between">
+            <DetailHeader breadcrumbs={[{ title: "Organization", link: "" },{title:"Project",link:""},{ title: "Organization Structure", link: "" }]} />
+            <div className="flex justify-center items-end gap-4">
+              <span>
+                <Edit className="h-5 w-5 text-[#094C81] hover:text-[#073954] cursor-pointer text-bold" />
+              </span>
+              <span>
+                <Trash2 className="h-5 w-5 text-[#B91C1C] hover:text-[#991B1B] cursor-pointer text-bold" />
+              </span>
             </div>
           </div>
 
-          {/* Organization Structure Info Card */}
-          <Card className="bg-white rounded-xl shadow-md border border-dashed border-[#BFD7EA]">
-            <CardHeader className="flex flex-row items-center border w-full justify-between text-[#094C81] rounded-t-xl">
-              <div className="flex items-start gap-3">
-                <RectangleStackIcon className="h-6 w-6" />
-                <CardTitle className="text-[#094C81] text-xl">
-                  {orgStructure.name}
-                </CardTitle>
-              </div>
-              {/* Status Badge */}
-              <div className="">
+          {/* Organization Structure Info Card - Compact Design */}
+          <Card className="bg-white rounded-lg shadow-sm border border-[#BFD7EA] overflow-hidden">
+            <CardContent className="p-4">
+              {/* Header Row - Compact */}
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 bg-[#094C81]/10 rounded-lg">
+                    <RectangleStackIcon className="h-5 w-5 text-[#094C81]" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-[#094C81] text-lg font-semibold m-0">
+                      {orgStructure.name}
+                    </CardTitle>
+                    {orgStructure.description && (
+                      <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">
+                        {orgStructure.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
                 <Badge
                   variant="light"
                   color={orgStructure.is_active ? "success" : "error"}
-                  size="md"
-                  className="text-sm"
+                  size="sm"
+                  className="text-xs shrink-0"
                 >
                   {orgStructure.is_active ? (
                     <>
-                      <CheckCircleIcon className="h-4 w-4" />
+                      <CheckCircleIcon className="h-3 w-3" />
                       Active
                     </>
                   ) : (
                     <>
-                      <XCircleIcon className="h-4 w-4" />
+                      <XCircleIcon className="h-3 w-3" />
                       Inactive
                     </>
                   )}
                 </Badge>
               </div>
-            </CardHeader>
-            <CardContent className="p-6">
-              {/* Description */}
-              {orgStructure.description && (
-                <div className="mb-6">
-                  <h3 className="text-sm font-semibold text-[#1E516A] mb-2">
-                    Description
-                  </h3>
-                  <p className="text-gray-700 leading-relaxed">
-                    {orgStructure.description}
-                  </p>
-                </div>
-              )}
 
-              {/* Details Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-xs font-semibold text-[#1E516A] uppercase tracking-wide mb-1">
-                    Level
-                  </p>
-                  <p className="text-gray-700 font-medium">
-                    {orgStructure.level !== undefined
-                      ? `Level ${orgStructure.level}`
-                      : "N/A"}
-                  </p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-xs font-semibold text-[#1E516A] uppercase tracking-wide mb-1 flex items-center gap-1">
-                    <FolderIcon className="h-3 w-3" />
-                    Project
-                  </p>
-                  <p className="text-gray-700 font-medium">
-                    {orgStructure.project?.name || "N/A"}
-                  </p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-xs font-semibold text-[#1E516A] uppercase tracking-wide mb-1 flex items-center gap-1">
-                    <ArrowUpIcon className="h-3 w-3" />
-                    Parent Node
-                  </p>
-                  <p className="text-gray-700 font-medium">
-                    {orgStructure.parent?.name || "Root Node"}
-                  </p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-xs font-semibold text-[#1E516A] uppercase tracking-wide mb-1 flex items-center gap-1">
-                    <CalendarIcon className="h-3 w-3" />
-                    Created At
-                  </p>
-                  <p className="text-gray-700 font-medium">
-                    {formatDate(orgStructure.created_at)}
-                  </p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-xs font-semibold text-[#1E516A] uppercase tracking-wide mb-1 flex items-center gap-1">
-                    <CalendarIcon className="h-3 w-3" />
-                    Updated At
-                  </p>
-                  <p className="text-gray-700 font-medium">
-                    {formatDate(orgStructure.updated_at)}
-                  </p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-xs font-semibold text-[#1E516A] uppercase tracking-wide mb-1">
-                    Node ID
-                  </p>
-                  <p className="text-gray-700 font-medium text-xs break-all">
-                    {orgStructure.hierarchy_node_id}
-                  </p>
-                </div>
+              {/* Details - Horizontal Compact Layout */}
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+                {orgStructure.project?.institutes?.[0]?.name && (
+                  <div className="flex items-center gap-1.5">
+                    <BuildingOfficeIcon className="h-3.5 w-3.5 text-[#1E516A]" />
+                    <span className="text-xs font-medium text-[#1E516A]">
+                      Organization:
+                    </span>
+                    <span className="text-gray-600 text-sm">
+                      {orgStructure.project.institutes[0].name}
+                    </span>
+                  </div>
+                )}
+                {orgStructure.project?.name && (
+                  <div className="flex items-center gap-1.5">
+                    <FolderIcon className="h-3.5 w-3.5 text-[#1E516A]" />
+                    <span className="text-xs font-medium text-[#1E516A]">
+                      Project:
+                    </span>
+                    <span className="text-gray-600 text-sm">
+                      {orgStructure.project.name}
+                    </span>
+                  </div>
+                )}
+                {orgStructure.parent?.name && (
+                  <div className="flex items-center gap-1.5">
+                    <ArrowUpIcon className="h-3.5 w-3.5 text-[#1E516A]" />
+                    <span className="text-xs font-medium text-[#1E516A]">
+                      Parent:
+                    </span>
+                    <span className="text-gray-600 text-sm">
+                      {orgStructure.parent.name}
+                    </span>
+                  </div>
+                )}
+                {!orgStructure.parent?.name && (
+                  <div className="flex items-center gap-1.5">
+                    <ArrowUpIcon className="h-3.5 w-3.5 text-[#1E516A]" />
+                    <span className="text-xs font-medium text-[#1E516A]">
+                      Parent:
+                    </span>
+                    <span className="text-gray-400 text-sm">Root Node</span>
+                  </div>
+                )}
+                {orgStructure.created_at && (
+                  <div className="flex items-center gap-1.5">
+                    <CalendarIcon className="h-3.5 w-3.5 text-[#1E516A]" />
+                    <span className="text-xs font-medium text-[#1E516A]">
+                      Created:
+                    </span>
+                    <span className="text-gray-600 text-sm">
+                      {formatDateShort(orgStructure.created_at)}
+                    </span>
+                  </div>
+                )}
               </div>
 
-              {/* Deleted At (if applicable) */}
+              {/* Deleted At - Compact Alert */}
               {orgStructure.deleted_at && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-xs font-semibold text-red-700 uppercase tracking-wide mb-1">
-                    Deleted At
-                  </p>
-                  <p className="text-red-600 font-medium">
-                    {formatDate(orgStructure.deleted_at)}
-                  </p>
+                <div className="mt-3 pt-3 border-t border-red-200">
+                  <div className="flex items-center gap-2 text-xs">
+                    <XCircleIcon className="h-4 w-4 text-red-600" />
+                    <span className="font-medium text-red-700">Deleted:</span>
+                    <span className="text-red-600">
+                      {formatDateWithTime(orgStructure.deleted_at)}
+                    </span>
+                  </div>
                 </div>
               )}
             </CardContent>
