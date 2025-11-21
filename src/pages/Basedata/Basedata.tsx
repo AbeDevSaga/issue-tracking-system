@@ -3,10 +3,10 @@ import { useNavigate } from "react-router-dom";
 import PageMeta from "../../components/common/PageMeta";
 import InfoCard from "../../components/Basedata/card";
 import {
-  FaProjectDiagram,
   FaExclamationTriangle,
   FaFlag,
-  FaBuilding,
+  FaUserTie,
+  FaLock,
 } from "react-icons/fa";
 
 export default function Basedata() {
@@ -19,7 +19,7 @@ export default function Basedata() {
     //   description: t("basedata.subtitle", {
     //     title: t("basedata.organization"),
     //   }),
-    //   icon: <FaBuilding size={24} color={"#094C81"} />,
+    //   icon: <FaBuilding size={26} color={"#094C81"} />,
     //   route: "/organization",
     // },
     // {
@@ -55,7 +55,7 @@ export default function Basedata() {
       description: t("basedata.subtitle", {
         title: t("basedata.priority_level"),
       }),
-      icon: <FaFlag size={24} color={"#094C81"} />,
+      icon: <FaFlag size={26} color={"#094C81"} />,
       route: "/priority_level",
     },
 
@@ -64,23 +64,23 @@ export default function Basedata() {
       description: t("basedata.subtitle", {
         title: t("basedata.issue_category"),
       }),
-      icon: <FaExclamationTriangle size={24} color={"#094C81"} />,
+      icon: <FaExclamationTriangle size={26} color={"#094C81"} />,
       route: "/issue_category",
     },
     {
-      title: t("basedata.role"),
+        title: t("basedata.role_management"),
       description: t("basedata.subtitle", {
         title: t("basedata.role"),
       }),
-      icon: <FaExclamationTriangle size={24} />,
+      icon: <FaUserTie size={26} color={"#094C81"} />,
       route: "/role",
     },
-    {
-      title: t("basedata.permission"),
+    { 
+      title: t("basedata.permission_management"),
       description: t("basedata.subtitle", {
         title: t("basedata.permission"),
       }),
-      icon: <FaExclamationTriangle size={24} />,
+      icon: <FaLock size={26} color={"#094C81"} />,
       route: "/permission",
     },
   ];
@@ -88,7 +88,7 @@ export default function Basedata() {
   return (
     <>
       <PageMeta title={t("basedata.title")} description="" />
-      <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-5">
+      <div className="rounded-xl border min-h-[80vh] border-gray-200 bg-white dark:border-gray-800  p-5">
         <h3 className="text-xl lg:text-2xl font-bold text-[#11255A] dark:text-white/90">
           {t("basedata.title")}
         </h3>
@@ -96,7 +96,7 @@ export default function Basedata() {
           {t("basedata.first_subtitle")}
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-10">
           {cards.map((card, index) => (
             <InfoCard
               key={index}
