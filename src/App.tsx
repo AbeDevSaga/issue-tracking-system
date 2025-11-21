@@ -59,6 +59,7 @@ import OrgStructureDetail from "./pages/org_structure/org_structureDetail";
 import IssueCategoryDetail from "./pages/issueCategory/issueCategoryDetail";
 import CreateRole from "./pages/role/createRole";
 import Profile from "./pages/profile/profile";
+import PriorityLevelDetail from "./pages/priorityLevel/priorityLevelDetail";
 const AuthLoader = () => {
   return (
     <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">
@@ -131,6 +132,7 @@ function AppContent() {
           <Route path="/project" element={<Project />} />
           <Route path="/project/:id" element={<ProjectDetail />} />
           <Route path="/priority_level" element={<ProjectLevel />} />
+          <Route path="/priority_level/:id" element={<PriorityLevelDetail />} />
           <Route path="/permission" element={<Permission />} />
           <Route path="/role" element={<Roles />} />
           <Route path="/role/:id" element={<CreateRole />} />
