@@ -1,10 +1,18 @@
 import React, { useState } from "react";
 import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
-import Select from "../../components/form/Select";
+// import Select from "../../components/form/Select";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import Alert from "../../components/ui/alert/Alert";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "../../components/ui/cn/select";
+
 import {
   useCreateIssueMutation,
   useUpdateIssueMutation,
@@ -15,6 +23,9 @@ import { useGetIssuePrioritiesQuery } from "../../redux/services/issuePriorityAp
 import { useGetCurrentUserQuery } from "../../redux/services/authApi";
 import { useGetProjectsByUserIdQuery } from "../../redux/services/projectApi";
 import { FileUploadField } from "../../components/common/FileUploadField";
+import DetailHeader from "../../components/common/DetailHeader";
+import TextArea from "../../components/form/input/TextArea";
+import { format } from "date-fns";
 
 export default function AddIssue() {
   const { t } = useTranslation();
@@ -149,7 +160,7 @@ export default function AddIssue() {
     { id: "priority_id", label: "Priority Level", type: "select" },
     {
       id: "issue_occured_time",
-      label: "When did the issue occur?",
+      label: "Date and Time Issue Happened",
       type: "datetime",
     },
     { id: "action_taken", label: "Action Taken", type: "textarea" },
@@ -183,56 +194,30 @@ export default function AddIssue() {
 
   return (
     <div className="w-full p-6 bg-gray-50 dark:bg-gray-900">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-[#094C81]">
-            {editData ? t("Edit Issue") : t("Add New Issue")}
-          </h2>
-          <p className="text-sm text-gray-500">
-            Please fill in the details below.
-          </p>
-        </div>
-        <button
-          onClick={() => navigate(-1)}
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-        >
-          Back
-        </button>
+      <div className="mb-5">
+        <h2 className="text-xl font-bold text-[#094C81]">Add New Issue</h2>
+        <DetailHeader breadcrumbs={[]} />
       </div>
-
-      {alert && (
-        <div className="fixed top-4 right-4 w-full max-w-xs z-50">
-          <Alert
-            variant={alert.type === "danger" ? "error" : alert.type}
-            title={alert.type === "danger" ? "Error" : alert.type}
-            message={alert.message}
-            showLink={false}
-          />
-        </div>
-      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* FORM */}
         <form
           onSubmit={handleSubmit}
-          className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg"
+          className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 h-fit bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg"
         >
           {/* Dynamic Fields */}
           {fields
             .filter((f) => f.id !== "action_taken")
             .map((field) => (
-              <div key={field.id} className="flex flex-col">
-                <Label>{field.label}</Label>
-
+              <div key={field.id} className="flex h-fit flex-col w-full">
+                <Label className="text-sm font-medium text-[#094C81]">
+                  {field.label}
+                </Label>
+                
                 {field.type === "select" && field.id === "project_id" && (
                   <Select
-                    id="project_id"
                     value={formValues.project_id}
-                    options={userProjects.map((p) => ({
-                      value: p.project_id,
-                      label: p.name,
-                    }))}
-                    onChange={(selectedProjectId) => {
+                    onValueChange={(selectedProjectId) => {
                       const selectedProject = userProjects.find(
                         (p) => p.project_id === selectedProjectId
                       );
@@ -244,38 +229,68 @@ export default function AddIssue() {
                           null
                       );
                     }}
-                  />
+                  >
+                    <SelectTrigger className="w-full border h-10 border-gray-300 bg-white p-2 rounded mt-1 text-[#094C81]">
+                      <SelectValue placeholder="Select Project" />
+                    </SelectTrigger>
+
+                    <SelectContent className="text-[#094C81] *: bg-white">
+                      {userProjects.map((p) => (
+                        <SelectItem key={p.project_id} value={p.project_id}>
+                          {p.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 )}
 
                 {field.type === "select" &&
                   field.id === "issue_category_id" && (
                     <Select
-                      id="issue_category_id"
                       value={formValues.issue_category_id}
-                      options={categories.map((c) => ({
-                        value: c.category_id,
-                        label: c.name,
-                      }))}
-                      onChange={(v) => handleChange("issue_category_id", v)}
-                    />
+                      onValueChange={(v) =>
+                        handleChange("issue_category_id", v)
+                      }
+                    >
+                      <SelectTrigger className="w-full h-10 border border-gray-300 bg-white p-2 rounded mt-1 text-[#094C81]">
+                        <SelectValue placeholder="Select Category" />
+                      </SelectTrigger>
+
+                      <SelectContent className="text-[#094C81] *: bg-white">
+                        {categories.map((c) => (
+                          <SelectItem key={c.category_id} value={c.category_id}>
+                            {c.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   )}
 
                 {field.type === "select" && field.id === "priority_id" && (
                   <Select
-                    id="priority_id"
                     value={formValues.priority_id}
-                    options={priorities.map((p) => ({
-                      value: p.priority_id,
-                      label: p.name,
-                    }))}
-                    onChange={(v) => handleChange("priority_id", v)}
-                  />
+                    onValueChange={(v) => handleChange("priority_id", v)}
+                  >
+                    <SelectTrigger className="w-full h-10 border border-gray-300 bg-white p-2 rounded mt-1 text-[#094C81]">
+                      <SelectValue placeholder="Select Priority" />
+                    </SelectTrigger>
+
+                    <SelectContent className="text-[#094C81] *: bg-white">
+                      {priorities.map((p) => (
+                        <SelectItem key={p.priority_id} value={p.priority_id}>
+                          {p.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 )}
 
                 {field.type === "datetime" && (
-                  <input
+                  <Input
+                    id="issue_occured_time"
+                    defaultValue={format(new Date(), "yyyy-MM-dd'T'HH:mm")}
                     type="datetime-local"
-                    className="border rounded px-2 py-2"
+                    className="border text-[#094C81] h-10 max-w-[350px] rounded px-2 py-2"
                     value={formValues.issue_occured_time}
                     onChange={(e) =>
                       handleChange("issue_occured_time", e.target.value)
@@ -284,10 +299,11 @@ export default function AddIssue() {
                 )}
 
                 {field.type === "textarea" && (
-                  <textarea
-                    className="border rounded px-2 py-2"
+                  <TextArea
+                    rows={2}
+                    placeholder="Enter your action taken"
+                    className="border max-w-[350px] rounded px-2 py-2"
                     value={formValues[field.id]}
-                    placeholder={field.placeholder}
                     onChange={(e) => handleChange(field.id, e.target.value)}
                   />
                 )}
@@ -295,45 +311,60 @@ export default function AddIssue() {
                 {field.type === "url" && (
                   <Input
                     type="url"
-                    value={formValues.url_path}
                     placeholder="Paste the URL"
+                    value={formValues.url_path}
                     onChange={(e) => handleChange("url_path", e.target.value)}
+                    className="border h-10 max-w-[350px] rounded px-2 py-2 text-[#094C81]"
                   />
                 )}
               </div>
             ))}
 
           {/* Action Taken */}
-          <div className="md:col-span-2 flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={formValues.action_taken_checkbox}
-              onChange={(e) =>
-                handleChange("action_taken_checkbox", e.target.checked)
-              }
-            />
-            <Label>Was any action taken?</Label>
-          </div>
+          <div className=" w-full col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex w-full grid-cols-1 flex-col gap-4">
+              <div className="flex w-fit gap-2 ">
+                <input
+                  type="checkbox"
+                  className="border border-gray-300 bg-white rounded px-2 py-2 text-[#094C81] h-5 w-5"
+                  checked={formValues.action_taken_checkbox}
+                  onChange={(e) =>
+                    handleChange("action_taken_checkbox", e.target.checked)
+                  }
+                />
+                <Label className="text-sm text-start w-fit font-medium text-[#094C81]">
+                  Was any action taken?
+                </Label>
+              </div>
 
-          {formValues.action_taken_checkbox && (
-            <div className="md:col-span-2">
-              <Label>Action Taken</Label>
-              <textarea
-                className="border rounded px-3 py-2 w-full"
-                value={formValues.action_taken}
-                onChange={(e) => handleChange("action_taken", e.target.value)}
+              {formValues.action_taken_checkbox && (
+                <div className="w-full flex flex-col gap-2">
+                  <Label className="text-sm  text-start font-medium text-[#094C81]">
+                    Action Taken
+                  </Label>
+                  <TextArea
+                    rows={3}
+                    placeholder="Enter your action taken"
+                    className="border w-full max-w-[350px] rounded px-2 py-2"
+                    value={formValues.action_taken}
+                    onChange={(e) =>
+                      handleChange("action_taken", e.target.value)
+                    }
+                  />
+                </div>
+              )}
+            </div>
+            {/* File Upload */}
+            <div className="w-full grid-cols-1 max-w-[350px]">
+              <FileUploadField
+                className=""
+                labelClass="text-sm  text-start w-fit font-medium text-[#094C81]"
+                id="attachment"
+                label="Attach File"
+                value={formValues.attachment_id}
+                onChange={(val) => handleChange("attachment_id", val)}
               />
             </div>
-          )}
-
-          {/* File Upload */}
-          <div className="md:col-span-2">
-            <FileUploadField
-              id="attachment"
-              label="Attach File"
-              value={formValues.attachment_id}
-              onChange={(val) => handleChange("attachment_id", val)}
-            />
           </div>
 
           {/* Buttons */}
@@ -341,7 +372,7 @@ export default function AddIssue() {
             <button
               type="button"
               onClick={handleReset}
-              className="px-6 py-2 bg-gray-300 rounded"
+              className="px-6 py-2 bg-gray-300 text-gray-700 rounded"
             >
               Reset
             </button>
@@ -355,20 +386,37 @@ export default function AddIssue() {
         </form>
 
         {/* GUIDELINES */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
-          <h3 className="text-xl font-bold text-[#094C81] mb-3">
-            Issue Reporting Guidelines
-          </h3>
-          <ul className="space-y-4">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+          <div className="mb-6">
+            <h3 className="text-2xl font-bold text-[#094C81] mb-2">
+              Issue Reporting Guidelines
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Follow these tips to help us resolve your issue faster
+            </p>
+          </div>
+          <div className="space-y-4">
             {guidelines.map((g, i) => (
-              <li key={i} className="flex gap-3">
-                <span className="text-[#094C81] font-bold">{g.title}</span>
-                <span className="text-gray-700 dark:text-gray-200">
-                  {g.description}
-                </span>
-              </li>
+              <div
+                key={i}
+                className="flex gap-4 p-4 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-700 border-l-4 border-[#094C81] hover:shadow-md transition-shadow"
+              >
+                <div className="flex-shrink-0 mt-0.5">
+                  <div className="w-8 h-8 rounded-full bg-[#094C81] flex items-center justify-center text-white font-bold text-sm">
+                    {i + 1}
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-base font-semibold text-[#094C81] mb-1.5">
+                    {g.title}
+                  </h4>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                    {g.description}
+                  </p>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       </div>
     </div>

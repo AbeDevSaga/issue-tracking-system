@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, Eye } from "lucide-react";
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
@@ -36,6 +36,15 @@ const PriorityTableColumns = [
 
       return (
         <div className="flex items-center space-x-2">
+          {/* show button to view priority */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 w-8 p-0"
+            // onClick={() => openViewModal(priority)}
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
           {/* Edit button - can implement edit modal if needed */}
           <Button
             variant="outline"
@@ -54,6 +63,7 @@ const PriorityTableColumns = [
           >
             <Trash2 className="h-4 w-4" />
           </Button>
+
         </div>
       );
     },
