@@ -535,7 +535,7 @@ export default function UserIssueDetail() {
           {/* Image Gallery Modal */}
           {modalImageIndex !== null && issueFiles.length > 0 && (
             <div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
               onClick={closeModal}
             >
               <div
@@ -548,7 +548,7 @@ export default function UserIssueDetail() {
                   className="max-w-full max-h-full object-contain"
                 />
                 <button
-                  className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70"
+                  className="absolute top-4 right-4 text-white bg-black/50 rounded-full p-2 hover:bg-opacity-70"
                   onClick={closeModal}
                 >
                   <X className="w-5 h-5" />
@@ -556,20 +556,20 @@ export default function UserIssueDetail() {
                 {issueFiles.length > 1 && (
                   <>
                     <button
-                      className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70"
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white bg-black/50 rounded-full p-2 hover:bg-opacity-70"
                       onClick={prevImage}
                     >
                       <ChevronLeft className="w-6 h-6" />
                     </button>
                     <button
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70"
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white bg-black/50  rounded-full p-2 hover:bg-opacity-70"
                       onClick={nextImage}
                     >
                       <ChevronRight className="w-6 h-6" />
                     </button>
                   </>
                 )}
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-50 rounded-full px-3 py-1 text-sm">
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black/50  rounded-full px-3 py-1 text-sm">
                   {modalImageIndex + 1} / {issueFiles.length}
                 </div>
               </div>

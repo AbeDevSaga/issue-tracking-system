@@ -1,6 +1,9 @@
 export const getFileUrl = (filePath: string) => {
-  const apiBase =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api";
+  // const apiBase =
+  //   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api";
+
+  const apiBase = import.meta.env.VITE_API_PUBLIC_BASE_URL;
+
   const serverBase = apiBase.replace(/\/api\/?$/, "");
 
   return `${serverBase}/${filePath.replace(/\\/g, "/")}`;
