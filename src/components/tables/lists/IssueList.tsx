@@ -62,7 +62,7 @@ const IssueTableColumns = [
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
-          <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
+          {/* <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
             <Link to={`/issues/edit/${issue.issue_id}`}>
               <Edit className="h-4 w-4" />
             </Link>
@@ -74,7 +74,7 @@ const IssueTableColumns = [
             onClick={() => console.log("Delete issue:", issue.issue_id)}
           >
             <Trash2 className="h-4 w-4" />
-          </Button>
+          </Button> */}
         </div>
       );
     },

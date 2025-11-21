@@ -14,12 +14,12 @@ import {
   BuildingOfficeIcon,
 } from "@heroicons/react/24/outline";
 import { Card, CardTitle, CardContent } from "../../components/ui/cn/card";
-import ProjectUserRolesTable from "../../components/tables/lists/ProjectUserRolesTable";
 import DetailHeader from "../../components/common/DetailHeader";
 import { Edit, Plus, Trash2 } from "lucide-react";
 import { Button } from "../../components/ui/cn/button";
 import { useState } from "react";
 import { CreateChildHierarchyNodeModal } from "../../components/modals/CreateChildHierarchyNodeModal";
+import HierarchyUsersList from "../../components/tables/lists/HierarchyUsersList";
 
 const OrgStructureDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -231,7 +231,7 @@ const OrgStructureDetail = () => {
             onClose={() => setModalOpen(false)}
           />
           {/* Assigned Users */}
-          <ProjectUserRolesTable
+          <HierarchyUsersList
             projectId={orgStructure.project_id || ""}
             inistitute_id={
               orgStructure.project.institutes[0]?.institute_id || ""

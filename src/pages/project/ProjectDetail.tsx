@@ -1,13 +1,12 @@
 import { useParams, Link } from "react-router-dom";
+import { Card, CardTitle, CardContent } from "../../components/ui/cn/card";
 import {
-  Card,
-  CardTitle,
-  CardContent,
-} from "../../components/ui/cn/card";
-import { useDeleteProjectMutation, useGetProjectByIdQuery } from "../../redux/services/projectApi";
+  useDeleteProjectMutation,
+  useGetProjectByIdQuery,
+} from "../../redux/services/projectApi";
 import HierarchyNodeList from "../../components/tables/lists/hierarchyNodeList";
 import DetailHeader from "../../components/common/DetailHeader";
-import { Edit, Trash2 } from "lucide-react";
+import { ArrowRight, Edit, Trash2 } from "lucide-react";
 import PageMeta from "../../components/common/PageMeta";
 import Badge from "../../components/ui/badge/Badge";
 import { format } from "date-fns";
@@ -27,7 +26,8 @@ import DeleteModal from "../../components/common/DeleteModal";
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const { data: project, isLoading, isError } = useGetProjectByIdQuery(id!);
-  const [deleteProject,{ isLoading:deletingProjectLoading}]=useDeleteProjectMutation()
+  const [deleteProject, { isLoading: deletingProjectLoading }] =
+    useDeleteProjectMutation();
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const handleDelete = async () => {
@@ -36,11 +36,10 @@ export default function ProjectDetail() {
       setIsOpen(false);
       toast.success("Project deleted successfully");
       navigate(-1);
-    }
-    catch (error: any) {
+    } catch (error: any) {
       toast.error(error?.data?.message || "Failed to delete project");
     }
-  }
+  };
   const formatDateShort = (dateString?: string) => {
     if (!dateString) return "N/A";
     try {
@@ -64,9 +63,7 @@ export default function ProjectDetail() {
       <div className="min-h-screen bg-[#F9FBFC] p-6 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#094C81] mx-auto mb-4"></div>
-          <p className="text-[#1E516A] text-lg">
-            Loading project details...
-          </p>
+          <p className="text-[#1E516A] text-lg">Loading project details...</p>
         </div>
       </div>
     );
@@ -99,7 +96,7 @@ export default function ProjectDetail() {
 
   return (
     <>
-    <DeleteModal
+      <DeleteModal
         message="Are you sure you want to delete this project? This action cannot be undone."
         onCancel={() => setIsOpen(false)}
         onDelete={handleDelete}
@@ -113,13 +110,21 @@ export default function ProjectDetail() {
       <div className="min-h-screen bg-[#F9FBFC] p-6 pb-24">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex justify-between">
-            <DetailHeader breadcrumbs={[{ title: "Organization", link: "" },{ title: "Project", link: "" }]} />
+            <DetailHeader
+              breadcrumbs={[
+                { title: "Organization", link: "" },
+                { title: "Project", link: "" },
+              ]}
+            />
             <div className="flex justify-center items-end gap-4">
               <span>
                 <Edit className="h-5 w-5 text-[#094C81] hover:text-[#073954] cursor-pointer text-bold" />
               </span>
               <span>
-                <Trash2 onClick={() => setIsOpen(true)} className="h-5 w-5 text-[#B91C1C] hover:text-[#991B1B] cursor-pointer text-bold" />
+                <Trash2
+                  onClick={() => setIsOpen(true)}
+                  className="h-5 w-5 text-[#B91C1C] hover:text-[#991B1B] cursor-pointer text-bold"
+                />
               </span>
             </div>
           </div>
@@ -192,10 +197,14 @@ export default function ProjectDetail() {
                   <div className="flex items-center gap-1.5">
                     <CalendarIcon className="h-3.5 w-3.5 text-[#1E516A]" />
                     <span className="text-xs font-medium text-[#1E516A]">
-                      Support Date End:
+                      Maintenance Support Date:
                     </span>
-                    <span className="text-gray-600 text-sm">
-                      {formatDateShort(project.support_date_end) } 
+                    <span className="text-gray-600 text-sm flex items-center gap-1">
+                      {project.maintenances?.[0]?.start_date &&
+                        formatDateShort(project.maintenances[0].start_date)}
+                      <ArrowRight className="w-4 h-4 text-gray-400 mx-1" />
+                      {project.maintenances?.[0]?.end_date &&
+                        formatDateShort(project.maintenances[0].end_date)}
                     </span>
                   </div>
                 )}

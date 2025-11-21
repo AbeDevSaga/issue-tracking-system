@@ -105,6 +105,16 @@ export const userApi = baseApi.injectEndpoints({
       providesTags: ["User"],
     }),
 
+    // Get users by project + hierarchy node
+    getUsersByHierarchyNodeId: builder.query<
+      any,
+      { project_id: string; hierarchy_node_id: string }
+    >({
+      query: ({ project_id, hierarchy_node_id }) =>
+        `/users/project/${project_id}/node/${hierarchy_node_id}`,
+      providesTags: ["User"],
+    }),
+
     // Get user by ID
     getUserById: builder.query<User, string>({
       query: (user_id) => `/users/${user_id}`,
@@ -188,6 +198,7 @@ export const userApi = baseApi.injectEndpoints({
 export const {
   useGetUsersQuery,
   useGetUsersByInstituteIdQuery,
+  useGetUsersByHierarchyNodeIdQuery,
   useGetUserByIdQuery,
   useCreateUserMutation,
   useUpdateUserMutation,
