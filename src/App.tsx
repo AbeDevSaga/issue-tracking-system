@@ -26,6 +26,7 @@ import Woreda from "./pages/woreda/woreda";
 import ProjectLevel from "./pages/priorityLevel/priorityLevel";
 import IssueCategory from "./pages/issueCategory/issueCategory";
 import MyIssue from "./pages/issue/my_issue";
+import IssueFlowConfig from "./pages/IssueFlowConfiguration/IssueFlowConfiguration";
 import Roles from "./pages/role/role";
 import Subroles from "./pages/subRole/subRole";
 // import Users from "./pages/Tables/Users";
@@ -140,6 +141,8 @@ function AppContent() {
           <Route path="/issue_category" element={<IssueCategory />} />
           <Route path="/issue_category/:id" element={<IssueCategoryDetail />} />
           <Route path="/my_issue" element={<MyIssue />} />
+          <Route path="/issue_configuration" element={<IssueFlowConfig />} />
+          {/* IssueFlowConfig */}
           <Route path="/add_issue" element={<MyissueForm />} />
           <Route path="/qa_tasks" element={<QATask />} />
           <Route path="/qa_tasks_detail" element={<QATaskDetail />} />

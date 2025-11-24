@@ -4,7 +4,7 @@ import {
   useDeleteProjectMutation,
   useGetProjectByIdQuery,
 } from "../../redux/services/projectApi";
-import HierarchyNodeList from "../../components/tables/lists/hierarchyNodeList";
+import HierarchyNodeList from "../../components/tables/lists/issueFlowList";
 import DetailHeader from "../../components/common/DetailHeader";
 import { ArrowRight, Edit, Trash2, Users } from "lucide-react";
 import PageMeta from "../../components/common/PageMeta";

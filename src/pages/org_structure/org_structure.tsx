@@ -2,7 +2,7 @@
 // import PageMeta from "../../components/common/PageMeta";
 // import OrgStructureTable from "../../components/tables/BasicTables/orgStructureTable";
 // import { useTranslation } from "react-i18next";
-import HierarchyNodeList from "../../components/tables/lists/hierarchyNodeList";
+import HierarchyNodeList from "../../components/tables/lists/issueFlowList";
 export default function Branch() {
   // const { t } = useTranslation();
 

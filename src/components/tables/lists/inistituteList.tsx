@@ -20,11 +20,11 @@ const InstituteTableColumns = [
       <div className="font-medium text-blue-600">{row.getValue("name")}</div>
     ),
   },
-  {
-    accessorKey: "description",
-    header: "Description",
-    cell: ({ row }: any) => <div>{row.getValue("description") || "N/A"}</div>,
-  },
+  // {
+  //   accessorKey: "description",
+  //   header: "Description",
+  //   cell: ({ row }: any) => <div>{row.getValue("description") || "N/A"}</div>,
+  // },
   // {
   //   accessorKey: "has_branch",
   //   header: "Type",

@@ -5,10 +5,7 @@ import { toast } from "sonner";
 import { Button } from "../ui/cn/button";
 import { Input } from "../ui/cn/input";
 import { Label } from "../ui/cn/label";
-import {
-  useCreateHierarchyNodeMutation,
-  useGetParentNodesQuery,
-} from "../../redux/services/hierarchyNodeApi";
+
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -17,17 +14,17 @@ import {
   XIcon,
 } from "lucide-react";
 import { Textarea } from "../ui/cn/textarea";
+import {
+  useCreateInternalNodeMutation,
+  useGetInternalNodesQuery,
+} from "../../redux/services/internalNodeApi";
 
 interface HierarchyCreateionProps {
-  project_id: string;
-  parent_hierarchy_node_id?: string | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export function CreateHierarchyNodeModal({
-  parent_hierarchy_node_id,
-  project_id,
+export function CreateInternalNodeModal({
   isOpen,
   onClose,
 }: HierarchyCreateionProps) {
@@ -40,20 +37,13 @@ export function CreateHierarchyNodeModal({
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  
-  // Track if parent is selected (for showing fields with animation)
-  const isParentSelected = parent_hierarchy_node_id !== null && parent_hierarchy_node_id !== undefined 
-    ? true 
-    : hasSelectedParent;
 
   // Fetch all nodes of a project - skip if parent_hierarchy_node_id is provided
   const { data: parentNodesData, isFetching: isFetchingParents } =
-    useGetParentNodesQuery(project_id, {
-      skip: !project_id || !!parent_hierarchy_node_id,
-    });
+    useGetInternalNodesQuery();
 
   const [createNode, { isLoading: isCreatingNode }] =
-    useCreateHierarchyNodeMutation();
+    useCreateInternalNodeMutation();
 
   if (!isOpen) return null;
 
@@ -140,8 +130,7 @@ export function CreateHierarchyNodeModal({
 
     try {
       await createNode({
-        project_id: project_id,
-        parent_id: parent_hierarchy_node_id || selectedParentNode || null,
+        parent_id: selectedParentNode || null,
         name,
         description,
         is_active: true,
@@ -185,17 +174,23 @@ export function CreateHierarchyNodeModal({
         </button>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className={`flex gap-10 ${parent_hierarchy_node_id ? '' : ''}`}>
-          {!parent_hierarchy_node_id && (
-              <div className={`flex flex-col transition-all duration-500 ${isParentSelected ? 'w-1/2' : 'w-full'}`}>
+          <div className={`flex gap-10`}>
+            {
+              <div
+                className={`flex flex-col transition-all duration-500 ${
+                  hasSelectedParent ? "w-1/2" : "w-full"
+                }`}
+              >
                 {/* Structure Selection */}
                 <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                  Select Parent Structure {!isParentSelected && '(required)'}
+                  Select Parent Structure {!hasSelectedParent && "(required)"}
                 </Label>
 
                 <div className="border p-3 rounded-lg">
                   {isFetchingParents ? (
-                    <p className="text-sm text-gray-500">Loading structures...</p>
+                    <p className="text-sm text-gray-500">
+                      Loading structures...
+                    </p>
                   ) : (
                     <>
                       {/* Back Button */}
@@ -277,7 +272,9 @@ export function CreateHierarchyNodeModal({
                                     <GitForkIcon className="w-4 h-4" />
                                   </span>
                                   <div className="flex-1">
-                                    <div className="font-medium">{node.name}</div>
+                                    <div className="font-medium">
+                                      {node.name}
+                                    </div>
                                     {node.description && (
                                       <div className="text-sm text-gray-600 truncate">
                                         {node.description}
@@ -331,13 +328,13 @@ export function CreateHierarchyNodeModal({
                   )}
                 </div>
               </div>
-            )}
+            }
             {/* Name and Description Fields - Show with animation when parent is selected */}
-            {!parent_hierarchy_node_id && (
-              <div 
+            {
+              <div
                 className={`flex flex-col gap-4 transition-all duration-500 ease-in-out overflow-hidden ${
-                  isParentSelected 
-                    ? `w-1/2 opacity-100 max-h-[500px] translate-x-0` 
+                  hasSelectedParent
+                    ? `w-1/2 opacity-100 max-h-[500px] translate-x-0`
                     : `w-0 opacity-0 max-h-0 translate-x-[-20px] pointer-events-none`
                 }`}
               >
@@ -373,53 +370,15 @@ export function CreateHierarchyNodeModal({
                   />
                 </div>
               </div>
-            )}
-            
-            {/* Show fields immediately if parent_hierarchy_node_id is provided */}
-            {parent_hierarchy_node_id && (
-              <div className="flex gap-4 w-full">
-                {/* Node Name */}
-                <div className="flex-1 w-1/2">
-                  <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                    Structure Name *
-                  </Label>
-                  <Input
-                    id="structure-name"
-                    placeholder="Enter structure name"
-                    value={name}
-                    className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
-                </div>
-
-                {/* Description */}
-                <div className="flex-1 w-1/2">
-                  <Label
-                    htmlFor="structure-description"
-                    className="block text-sm text-[#094C81] font-medium mb-2"
-                  >
-                    Description
-                  </Label>
-                  <Textarea
-                    id="structure-description"
-                    placeholder="Enter structure description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
-                  />
-                </div>
-              </div>
-            )}
-            
+            }
           </div>
 
           {/* Buttons */}
-          <div 
+          <div
             className={`flex justify-end space-x-2 pt-4 transition-all duration-500 ease-in-out ${
-              (parent_hierarchy_node_id || isParentSelected)
-                ? 'opacity-100 max-h-[100px] translate-y-0' 
-                : 'opacity-0 max-h-0 translate-y-[-10px] overflow-hidden pointer-events-none'
+              hasSelectedParent
+                ? "opacity-100 max-h-[100px] translate-y-0"
+                : "opacity-0 max-h-0 translate-y-[-10px] overflow-hidden pointer-events-none"
             }`}
           >
             <Button

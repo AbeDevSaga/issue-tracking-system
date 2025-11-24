@@ -26,7 +26,7 @@ export const CreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
     try {
       await createInstitute({
         name,
-        description,
+        // description,
         is_active: isActive,
       }).unwrap();
       onClose();
@@ -54,7 +54,9 @@ export const CreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
       <div className="bg-white p-6 rounded-2xl w-full max-w-[700px] shadow-2xl transform transition-all duration-200 scale-100">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-[20px] font-bold text-[#094C81]">Add New Organization</h2>
+          <h2 className="text-[20px] font-bold text-[#094C81]">
+            Add New Organization
+          </h2>
           <button
             onClick={onClose}
             className="text-[#094C81] hover:text-gray-600 transition-colors duration-200"
@@ -78,7 +80,7 @@ export const CreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
             />
           </div>
 
-          {/* Description Field */}
+          {/* Description Field
           <div className="w-1/2">
             <label className="block text-sm text-[#094C81] font-medium mb-2">
               Description
@@ -90,7 +92,7 @@ export const CreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
-          </div>
+          </div> */}
         </div>
         {/* Active Toggle */}
         {/* <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">

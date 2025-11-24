@@ -62,7 +62,7 @@ export default function ResolutionPreview({
           multiple={true}
         />
 
-        <h4 className="font-semibold text-[#1E516A] mt-4">Resolution Reason</h4>
+        <h4 className="font-semibold text-[#1E516A] mt-4">Summary</h4>
         <textarea
           className="w-full border border-[#BFD7EA] rounded-lg p-3 text-sm h-32 focus:outline-none focus:ring-2 focus:ring-[#1E516A]"
           placeholder="Explain how this issue was resolved"
