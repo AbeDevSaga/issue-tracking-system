@@ -140,7 +140,6 @@ const CustomNode: React.FC<CustomNodeProps> = ({
       >
         <div
           className="w-full h-full bg-white rounded-2xl border border-gray-200 shadow-lg hover:border-[#094C81] hover:shadow-xl transition-all duration-200 cursor-pointer p-5 flex flex-col"
-          onClick={toggleNode}
         >
           {/* Header Row: Title and Status Badge */}
           <div className="flex items-start justify-between mb-3">
@@ -175,7 +174,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({
           )}
 
           {/* Buttons Container */}
-          <div className="mt-auto space-y-2">
+          <div className="flex flex-row justify-center gap-3">
             {/* Details Button */}
             <button
               onClick={handleViewDetailsClick}

@@ -12,6 +12,7 @@ import {
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
+  CheckCircleIcon,
   CheckIcon,
   GitForkIcon,
   XIcon,
@@ -193,7 +194,7 @@ export function CreateHierarchyNodeModal({
                   Select Parent Structure {!isParentSelected && '(required)'}
                 </Label>
 
-                <div className="border p-3 rounded-lg">
+                <div className=" px-3 rounded-lg">
                   {isFetchingParents ? (
                     <p className="text-sm text-gray-500">Loading structures...</p>
                   ) : (
@@ -219,7 +220,8 @@ export function CreateHierarchyNodeModal({
                       )}
 
                       {/* Root Option - Only show at root level */}
-                      {navigationStack.length === 0 && (
+                      {/* if currentLevelNodes  */}
+                      {currentLevelNodes.length === 0 && (
                         <button
                           type="button"
                           className={`block border text-left w-full py-2 px-3 rounded-md mb-2 transition-colors ${
@@ -244,53 +246,49 @@ export function CreateHierarchyNodeModal({
                       )}
 
                       {/* Structure Tree */}
-                      <div className="mt-2 space-y-1 max-h-60 overflow-y-auto">
+                      <div className="flex flex-col gap-2 space-y-1 max-h-60 overflow-y-auto">
                         {currentLevelNodes?.length === 0 ? (
                           <p className="text-sm text-center py-4 text-[#094C81] font-medium">
                             No structures found at this level
                           </p>
                         ) : (
+
                           currentLevelNodes?.map((node: any) => (
                             <div
                               key={node.hierarchy_node_id}
-                              className={`flex border items-center
-                                hover:bg-gray-100 
-                                ${
-                                  selectedParentNode === node.hierarchy_node_id
-                                    ? "bg-blue-100 border border-blue-300 text-blue-800"
-                                    : "hover:bg-gray-100 border rounded-md"
-                                }`}
+                              className={`flex border border-gray-300 rounded-md items-center
+                                hover:bg-blue-100 
+                                ${selectedParentNode === node.hierarchy_node_id ? "bg-blue-200 border border-[#094C81] text-blue-800 " : ""}`}
                             >
                               <button
                                 type="button"
-                                onClick={() =>
-                                  handleNodeSelect(node.hierarchy_node_id)
-                                }
+                                onClick={() => handleNodeSelect(node.hierarchy_node_id)}
                                 className={`block text-left w-full py-2 px-3 rounded-md mb-2 transition-colors ${
-                                  selectedParentNode === node.hierarchy_node_id
-                                    ? "    text-blue-800"
-                                    : "hover:bg-gray-100 "
+                                  selectedParentNode === node.hierarchy_node_id ? "text-blue-800" : ""
                                 }`}
                               >
-                                <div className="flex  w-full items-center text-sm text-[#094C81] font-medium">
+                                <div className="flex w-full items-center text-sm text-[#094C81] font-medium">
                                   <span className="mr-2 mt-0.5">
                                     <GitForkIcon className="w-4 h-4" />
                                   </span>
+                          
                                   <div className="flex-1">
                                     <div className="font-medium">{node.name}</div>
                                     {node.description && (
-                                      <div className="text-sm text-gray-600 truncate">
-                                        {node.description}
-                                      </div>
+                                      <div className="text-sm text-gray-600 truncate">{node.description}</div>
                                     )}
                                     <div className="text-xs text-gray-500 mt-1">
-                                      Level {node.level} •{" "}
-                                      {node.children?.length || 0} children
+                                      Level {node.level} • {node.children?.length || 0} children
                                     </div>
                                   </div>
+                          
+                                  {/* ✅ Show check icon if selected */}
+                                  {selectedParentNode === node.hierarchy_node_id && (
+                                    <CheckCircleIcon className="w-5 h-5 text-green-500 ml-2" />
+                                  )}
                                 </div>
                               </button>
-
+                          
                               {node.children && node.children.length > 0 && (
                                 <Button
                                   type="button"
@@ -305,11 +303,12 @@ export function CreateHierarchyNodeModal({
                               )}
                             </div>
                           ))
+                          
                         )}
                       </div>
 
                       {/* Selected parent info */}
-                      {selectedParentNode && (
+                      {/* {selectedParentNode && (
                         <div className="mt-3 p-2 bg-blue-50 rounded-md text-sm border border-blue-200">
                           <div className="flex items-center text-[#094C81] font-medium">
                             <span className="mr-2">
@@ -326,7 +325,7 @@ export function CreateHierarchyNodeModal({
                             </div>
                           </div>
                         </div>
-                      )}
+                      )} */}
                     </>
                   )}
                 </div>
@@ -335,7 +334,7 @@ export function CreateHierarchyNodeModal({
             {/* Name and Description Fields - Show with animation when parent is selected */}
             {!parent_hierarchy_node_id && (
               <div 
-                className={`flex flex-col gap-4 transition-all duration-500 ease-in-out overflow-hidden ${
+                className={`flex flex-col gap-4 px-3 transition-all duration-500 ease-in-out overflow-hidden ${
                   isParentSelected 
                     ? `w-1/2 opacity-100 max-h-[500px] translate-x-0` 
                     : `w-0 opacity-0 max-h-0 translate-x-[-20px] pointer-events-none`
