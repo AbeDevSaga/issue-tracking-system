@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
 // import Select from "../../components/form/Select";
@@ -26,6 +26,7 @@ import { FileUploadField } from "../../components/common/FileUploadField";
 import DetailHeader from "../../components/common/DetailHeader";
 import TextArea from "../../components/form/input/TextArea";
 import { format } from "date-fns";
+import { FaChevronDown, FaChevronRight } from "react-icons/fa";
 
 export default function AddIssue() {
   const { t } = useTranslation();
@@ -97,7 +98,29 @@ export default function AddIssue() {
   const handleChange = (id: string, value: any) => {
     setFormValues((prev) => ({ ...prev, [id]: value }));
   };
-
+  useEffect(() => {
+    // Auto-select project if only one available
+    if (userProjects.length === 1 && !formValues.project_id) {
+      const singleProject = userProjects[0];
+      handleChange("project_id", singleProject.project_id);
+      handleChange(
+        "hierarchy_node_id",
+        singleProject.hierarchyNode?.hierarchy_node_id ?? null
+      );
+    }
+  
+    // Auto-select category if only one available
+    if (categories.length === 1 && !formValues.issue_category_id) {
+      handleChange("issue_category_id", categories[0].category_id);
+    }
+  
+    // Auto-select priority if only one available
+    if (priorities.length === 1 && !formValues.priority_id) {
+      handleChange("priority_id", priorities[0].priority_id);
+    }
+  }, [userProjects, categories, priorities ]);
+  
+  
   // Submit form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -191,6 +214,7 @@ export default function AddIssue() {
         "Critical = system down, High = major functionality broken, Medium = partial functionality affected, Low = minor issue.",
     },
   ];
+  const maxDateTime = format(new Date(), "yyyy-MM-dd'T'HH:mm");
 
   return (
     <div className="w-full p-6 bg-gray-50 dark:bg-gray-900">
@@ -246,6 +270,7 @@ export default function AddIssue() {
 
                 {field.type === "select" &&
                   field.id === "issue_category_id" && (
+                    // if the category list is
                     <Select
                       value={formValues.issue_category_id}
                       onValueChange={(v) =>
@@ -288,8 +313,8 @@ export default function AddIssue() {
                 {field.type === "datetime" && (
                   <Input
                     id="issue_occured_time"
-                    defaultValue={format(new Date(), "yyyy-MM-dd'T'HH:mm")}
                     type="datetime-local"
+                    max={maxDateTime}
                     className="border text-[#094C81] h-10 max-w-[350px] rounded px-2 py-2"
                     value={formValues.issue_occured_time}
                     onChange={(e) =>
@@ -380,45 +405,71 @@ export default function AddIssue() {
               type="submit"
               className="px-6 py-2 bg-[#094C81] text-white rounded"
             >
-              {editData ? "Update Issue" : "Submit Issue"}
+              {editData ? "Update  " : "Submit  "}
             </button>
           </div>
         </form>
 
         {/* GUIDELINES */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-          <div className="mb-6">
-            <h3 className="text-2xl font-bold text-[#094C81] mb-2">
-              Issue Reporting Guidelines
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Follow these tips to help us resolve your issue faster
-            </p>
-          </div>
-          <div className="space-y-4">
-            {guidelines.map((g, i) => (
-              <div
-                key={i}
-                className="flex gap-4 p-4 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-700 border-l-4 border-[#094C81] hover:shadow-md transition-shadow"
-              >
-                <div className="flex-shrink-0 mt-0.5">
-                  <div className="w-8 h-8 rounded-full bg-[#094C81] flex items-center justify-center text-white font-bold text-sm">
-                    {i + 1}
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <h4 className="text-base font-semibold text-[#094C81] mb-1.5">
-                    {g.title}
-                  </h4>
-                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                    {g.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <GuidelinesAccordion guidelines={guidelines} />
       </div>
     </div>
   );
 }
+
+function GuidelinesAccordion({ guidelines }: { guidelines: { title: string; description: string }[] }) {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const contentRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const toggle = (index: number) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
+
+  return (
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+      <div className="mb-6">
+        <h3 className="text-2xl font-bold text-[#094C81] mb-2">Issue Reporting Guidelines</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Follow these tips to help us resolve your issue faster
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        {guidelines.map((g, i) => (
+          <div key={i} className="border rounded-lg overflow-hidden">
+            <button
+              className="w-full flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-700 border-l-4 border-[#094C81] hover:shadow-md transition-shadow"
+              onClick={() => toggle(i)}
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-8 h-8 rounded-full bg-[#094C81] flex items-center justify-center text-white font-bold text-sm">
+                  {i + 1}
+                </div>
+                <h4 className="text-base font-semibold text-[#094C81]">{g.title}</h4>
+              </div>
+              <span className="text-[#094C81] font-bold">
+                {openIndex === i ? <FaChevronDown /> : <FaChevronRight />}
+              </span>
+            </button>
+
+            <div
+              ref={(el) => (contentRefs.current[i] = el)}
+              className="overflow-hidden transition-all duration-300 ease-in-out"
+              style={{
+                maxHeight:
+                  openIndex === i && contentRefs.current[i]
+                    ? contentRefs.current[i].scrollHeight
+                    : 0,
+              }}
+            >
+              <div className="p-4 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                {g.description}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+

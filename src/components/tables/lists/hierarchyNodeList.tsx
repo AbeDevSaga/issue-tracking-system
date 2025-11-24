@@ -141,7 +141,7 @@ export default function HierarchyNodeList({
   const [toggleHierarchyNode, setToggleHierarchyNode] = useState("table");
   const actions: ActionButton[] = [
     {
-      label: "Add Node",
+      label: "Add Structure",
       icon: <Plus className="h-4 w-4" />,
       variant: "default",
       size: "default",

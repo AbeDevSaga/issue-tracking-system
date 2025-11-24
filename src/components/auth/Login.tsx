@@ -1,6 +1,6 @@
 // src/components/auth/SignInForm.tsx
 import { ChangeEvent, FormEvent, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
@@ -8,6 +8,8 @@ import Button from "../ui/button/Button";
 import { useTranslation } from "react-i18next";
 import Login_bg from "../../assets/login_bg.png";
 import { useLoginMutation } from "../../redux/services/authApi";
+import { EyeOffIcon } from "lucide-react";
+import { EyeOpenIcon } from "@radix-ui/react-icons";
 
 interface FormData {
   email: string;
@@ -74,37 +76,35 @@ export default function Login() {
       className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat relative"
       style={{ backgroundImage: `url(${Login_bg})` }}
     >
-      <div
-        className="relative bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden"
-        style={{ width: "448px", height: "508px" }}
-      >
-        <div className="p-6 pb-4">
-          <div className="flex items-center space-x-4">
-            <div className="text-center w-full">
+      <div className="relative w-full max-w-md min-h-[550px] flex flex-col justify-center items-center bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden">
+        <div className="p-6 pb-4 w-full ">
+          <div className="flex items-center justify-center gap-4 flex-col space-x-4">
+            <div className="text-center w-full flex justify-center items-center gap-2 flex-col">
               <img
                 src="/logo.jpeg"
                 alt="Ethiopian Artificial Intelligence Institute"
                 className="h-30 mx-auto mb-1"
               />
-              <p className="text-[10px] text-orange-500 uppercase tracking-wide">
+              <p className="text-[12px] text-[#0C4A6E] font-bold text-center uppercase tracking-wide">
                 {t("login.title")}
               </p>
             </div>
-          </div>
+            {/* Error */}
+            {error && (
+              <div className="rounded-md  w-full text-center ">
+                <div className="text-sm text-red-700">{error}</div>
+              </div>
+            )}
 
-          <div className="w-full mt-3 flex items-center">
-            <div className="h-0.5 bg-blue-800 flex-grow"></div>
-            <div className="h-0.5 bg-orange-500 w-6 mx-1"></div>
-            <div className="h-0.5 bg-blue-800 flex-grow"></div>
           </div>
         </div>
 
-        <div className="p-6 pt-4 space-y-4">
+        <div className="p-6 pt-4 space-y-4 w-full">
           {/* Email */}
           <div>
             <Label
               htmlFor="email"
-              className="block text-xs font-medium text-blue-800 mb-1"
+              className="block text-base font-medium text-[#0C4A6E] mb-1"
             >
               {t("login.email_phone_number")}
             </Label>
@@ -112,7 +112,6 @@ export default function Login() {
               id="email"
               name="email"
               type="email"
-              autoComplete="email"
               required
               value={formData.email}
               onChange={handleChange}
@@ -125,7 +124,7 @@ export default function Login() {
           <div>
             <Label
               htmlFor="password"
-              className="block text-xs font-medium text-blue-800 mb-1"
+              className="block text-base font-medium text-[#0C4A6E] mb-1"
             >
               {t("login.password")}
             </Label>
@@ -134,7 +133,6 @@ export default function Login() {
                 id="password"
                 name="password"
                 type={showPassword ? "text" : "password"}
-                autoComplete="current-password"
                 required
                 value={formData.password}
                 onChange={handleChange}
@@ -143,34 +141,27 @@ export default function Login() {
               />
               <button
                 type="button"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                className="absolute top-1/2 -translate-y-1/2 inset-y-0 right-0 pr-3 flex items-center"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? (
-                  <EyeCloseIcon className="h-4 w-4 text-gray-400" />
+                  <EyeOpenIcon className="h-5 w-5 text-[#0C4A6E]" />
                 ) : (
-                  <EyeIcon className="h-4 w-4 text-gray-400" />
+                  <EyeOffIcon className="h-5 w-5 text-[#0C4A6E]" />
                 )}
               </button>
             </div>
           </div>
 
           {/* Forgot Password */}
-          <div className="flex items-center justify-between text-xs">
-            <a
-              href="/forgot-password"
-              className="text-red-500 hover:text-red-700 underline"
+          <div className="flex items-center w-full text-right justify-end text-sm">
+            <Link
+              to="/forgot-password"
+              className="text-[#0C4A6E] hover:text-[#083b56]  hover:font-medium hover:cursor-pointer "
             >
               {t("login.forgot_password")}
-            </a>
+            </Link>
           </div>
-
-          {/* Error */}
-          {error && (
-            <div className="rounded-md bg-red-50 p-2">
-              <div className="text-xs text-red-700">{error}</div>
-            </div>
-          )}
 
           {/* Submit */}
           <div>
