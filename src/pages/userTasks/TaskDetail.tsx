@@ -65,8 +65,8 @@ export default function UserTaskDetail() {
   }, [userId, issue?.status, issue]);
 
   useEffect(() => {
-    setResolveIssue(canResolve(userId, issue?.status, issue?.history));
-  }, [userId, issue?.status, issue?.history]);
+    setResolveIssue(canResolve(userId, issue?.status, issue));
+  }, [userId, issue?.status, issue]);
 
   useEffect(() => {
     setMarkIssue(canMarkInProgress(userId, issue?.status, issue));
@@ -189,7 +189,6 @@ export default function UserTaskDetail() {
       onClick: () => {
         if (markIssue) {
           handleMarkAsInProgress();
-          handleActions("mark_as_inprogress");
         }
       },
     },

@@ -31,21 +31,21 @@ const HierarchyNodeTableColumns = (deleteNode: any) => [
     header: "Description",
     cell: ({ row }: any) => <div>{row.getValue("description") || "N/A"}</div>,
   },
-  {
-    accessorKey: "project",
-    header: "Project",
-    cell: ({ row }: any) => {
-      const project = row.original.project;
-      return (
-        <div className="font-medium text-gray-700">
-          {project?.name ||
-            project?.project_name ||
-            project?.project_id ||
-            "N/A"}
-        </div>
-      );
-    },
-  },
+  // {
+  //   accessorKey: "project",
+  //   header: "Project",
+  //   cell: ({ row }: any) => {
+  //     const project = row.original.project;
+  //     return (
+  //       <div className="font-medium text-gray-700">
+  //         {project?.name ||
+  //           project?.project_name ||
+  //           project?.project_id ||
+  //           "N/A"}
+  //       </div>
+  //     );
+  //   },
+  // },
   {
     accessorKey: "parent",
     header: "Parent Node",
@@ -115,11 +115,13 @@ const HierarchyNodeTableColumns = (deleteNode: any) => [
 
 interface HierarchyNodeListProps {
   project_id: string;
+  toggleActions?: ActionButton[];
 }
 
 // ------------------- Component -------------------
 export default function HierarchyNodeList({
   project_id,
+  toggleActions,
 }: HierarchyNodeListProps) {
   const [nodes, setNodes] = useState<any[]>([]);
   const [filteredNodes, setFilteredNodes] = useState<any[]>([]);
@@ -192,6 +194,7 @@ export default function HierarchyNodeList({
       <PageLayout
         filters={filterFields}
         filterColumnsPerRow={1}
+        toggleActions={toggleActions}
         actions={actions}
         showtoggle={true}
         toggle={toggleHierarchyNode}

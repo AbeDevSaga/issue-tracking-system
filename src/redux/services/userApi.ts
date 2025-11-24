@@ -115,6 +115,12 @@ export const userApi = baseApi.injectEndpoints({
       providesTags: ["User"],
     }),
 
+    // Get all users assigned to a project
+    getUsersAssignedToProject: builder.query<any, string>({
+      query: (project_id) => `/users/project/${project_id}`,
+      providesTags: ["User"],
+    }),
+
     // Get user by ID
     getUserById: builder.query<User, string>({
       query: (user_id) => `/users/${user_id}`,
@@ -199,6 +205,7 @@ export const {
   useGetUsersQuery,
   useGetUsersByInstituteIdQuery,
   useGetUsersByHierarchyNodeIdQuery,
+  useGetUsersAssignedToProjectQuery,
   useGetUserByIdQuery,
   useCreateUserMutation,
   useUpdateUserMutation,

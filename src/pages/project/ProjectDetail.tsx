@@ -6,7 +6,7 @@ import {
 } from "../../redux/services/projectApi";
 import HierarchyNodeList from "../../components/tables/lists/hierarchyNodeList";
 import DetailHeader from "../../components/common/DetailHeader";
-import { ArrowRight, Edit, Trash2 } from "lucide-react";
+import { ArrowRight, Edit, Trash2, Users } from "lucide-react";
 import PageMeta from "../../components/common/PageMeta";
 import Badge from "../../components/ui/badge/Badge";
 import { format } from "date-fns";
@@ -22,6 +22,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import DeleteModal from "../../components/common/DeleteModal";
+import ProjectUserList from "../../components/tables/lists/projectUserList";
+import { ActionButton } from "../../types/layout";
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
@@ -30,6 +32,27 @@ export default function ProjectDetail() {
     useDeleteProjectMutation();
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<"hierarchy" | "users">(
+    "hierarchy"
+  );
+
+  const actions: ActionButton[] = [
+    {
+      label: "Hierarchy",
+      icon: <FolderIcon className="h-4 w-4" />,
+      variant: activeTab === "hierarchy" ? "default" : "outline",
+      size: "default",
+      onClick: () => setActiveTab("hierarchy"),
+    },
+    {
+      label: "Project Users",
+      icon: <Users className="h-4 w-4" />,
+      variant: activeTab === "users" ? "default" : "outline",
+      size: "default",
+      onClick: () => setActiveTab("users"),
+    },
+  ];
+
   const handleDelete = async () => {
     try {
       await deleteProject(id!).unwrap();
@@ -226,7 +249,13 @@ export default function ProjectDetail() {
           </Card>
 
           {/* Project Hierarchy */}
-          <HierarchyNodeList project_id={id || ""} />
+          {activeTab === "hierarchy" && (
+            <HierarchyNodeList project_id={id || ""} toggleActions={actions} />
+          )}
+
+          {activeTab === "users" && (
+            <ProjectUserList project_id={id || ""} toggleActions={actions} />
+          )}
         </div>
       </div>
     </>
