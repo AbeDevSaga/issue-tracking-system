@@ -39,7 +39,7 @@ export const canResolve = (
 
   console.log("object:", object);
   // Filter only "accepted" actions and get the most recent one
-  const acceptedActions = object
+  const acceptedActions = history
     .filter((item: any) => item.action === "accepted")
     .sort(
       (a: any, b: any) =>
@@ -57,6 +57,18 @@ export const canResolve = (
 
   // Check if the user_id matches the user who last accepted the issue
   if (lastAccepted.user_id !== user_id) {
+    return false;
+  }
+
+  // Check if user_id exists in any escalation
+  if (
+    object?.escalations?.some(
+      (escalation: any) =>
+        escalation.escalated_by === user_id ||
+        escalation.escalator?.user_id === user_id
+    )
+  ) {
+    console.log("escalationobject: ", object?.escalations);
     return false;
   }
 
@@ -94,7 +106,7 @@ export const canEscalate = (
       (a: any, b: any) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
-  console.log("acceptedActions:", acceptedActions);
+  // console.log("acceptedActions:", acceptedActions);
 
   // If there are no accepted actions, return false
   if (acceptedActions.length === 0) {
@@ -109,7 +121,7 @@ export const canEscalate = (
     return false;
   }
 
-  console.log("esc object?.escalations:", object?.escalations);
+  // console.log("esc object?.escalations:", object?.escalations);
   return true;
 };
 // reporter

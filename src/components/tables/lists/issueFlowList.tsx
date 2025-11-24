@@ -1,24 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Eye, Edit, Trash2 } from "lucide-react";
+import { Plus, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 import {
-  useDeleteHierarchyNodeMutation,
-  useGetHierarchyNodesByProjectIdQuery,
-} from "../../../redux/services/hierarchyNodeApi";
+  useDeleteInternalNodeMutation,
+  useGetInternalNodesQuery,
+} from "../../../redux/services/internalNodeApi";
 
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
-import { CreateHierarchyNodeModal } from "../../modals/CreateHierarchyNodeModal";
+// import { CreateInternalNodeModal } from "../../modals/CreateInternalNodeModal";
 import HierarchyD3Tree from "./HierarchyD3Tree";
+import { CreateInternalNodeModal } from "../../modals/CreateInternalNodeModal";
 
 // ------------------- Table Columns -------------------
-const HierarchyNodeTableColumns = (deleteNode: any) => [
+const InternalNodeTableColumns = (deleteNode: any) => [
   {
     accessorKey: "name",
     header: "Node Name",
@@ -31,21 +32,6 @@ const HierarchyNodeTableColumns = (deleteNode: any) => [
     header: "Description",
     cell: ({ row }: any) => <div>{row.getValue("description") || "N/A"}</div>,
   },
-  // {
-  //   accessorKey: "project",
-  //   header: "Project",
-  //   cell: ({ row }: any) => {
-  //     const project = row.original.project;
-  //     return (
-  //       <div className="font-medium text-gray-700">
-  //         {project?.name ||
-  //           project?.project_name ||
-  //           project?.project_id ||
-  //           "N/A"}
-  //       </div>
-  //     );
-  //   },
-  // },
   {
     accessorKey: "parent",
     header: "Parent Node",
@@ -79,8 +65,8 @@ const HierarchyNodeTableColumns = (deleteNode: any) => [
       const handleDelete = async () => {
         if (confirm(`Delete node "${node.name}"?`)) {
           try {
-            await deleteNode(node.hierarchy_node_id).unwrap();
-            toast.success("Hierarchy node deleted successfully");
+            await deleteNode(node.internal_node_id).unwrap();
+            toast.success("Internal node deleted successfully");
           } catch (err: any) {
             toast.error(err?.data?.message || "Error deleting node");
           }
@@ -90,14 +76,13 @@ const HierarchyNodeTableColumns = (deleteNode: any) => [
       return (
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/org_structure/${node.hierarchy_node_id}`}>
+            <Link to={`/issue_flow/${node.internal_node_id}`}>
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
-          {/* <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/org_structure/${node.hierarchy_node_id}`}>
-              <Edit className="h-4 w-4" />
-            </Link>
+          {/* Uncomment if edit/delete actions are needed */}
+          {/* <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+            <Edit className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
@@ -113,37 +98,29 @@ const HierarchyNodeTableColumns = (deleteNode: any) => [
   },
 ];
 
-interface HierarchyNodeListProps {
-  project_id: string;
+interface IssueFlowListProps {
   toggleActions?: ActionButton[];
 }
 
 // ------------------- Component -------------------
-export default function HierarchyNodeList({
-  project_id,
-  toggleActions,
-}: HierarchyNodeListProps) {
+export default function IssueFlowList({ toggleActions }: IssueFlowListProps) {
+  const { data, isLoading, isError } = useGetInternalNodesQuery();
+  const [deleteNode] = useDeleteInternalNodeMutation();
+
   const [nodes, setNodes] = useState<any[]>([]);
   const [filteredNodes, setFilteredNodes] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isModalOpen, setModalOpen] = useState(false);
+  const [toggleView, setToggleView] = useState("table");
   const [pageDetail, setPageDetail] = useState({
     pageIndex: 0,
     pageCount: 1,
     pageSize: 10,
   });
 
-  const { data, isLoading, isError } = useGetHierarchyNodesByProjectIdQuery(
-    project_id,
-    {
-      skip: !project_id,
-    }
-  );
-  const [deleteNode] = useDeleteHierarchyNodeMutation();
-  const [toggleHierarchyNode, setToggleHierarchyNode] = useState("table");
   const actions: ActionButton[] = [
     {
-      label: "Add Structure",
+      label: "Add Issue Flow",
       icon: <Plus className="h-4 w-4" />,
       variant: "default",
       size: "default",
@@ -188,7 +165,7 @@ export default function HierarchyNodeList({
   const handlePagination = (index: number, size: number) => {
     setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
   };
-  console.log("toggleHierarchyNode: ", toggleHierarchyNode);
+
   return (
     <>
       <PageLayout
@@ -197,12 +174,12 @@ export default function HierarchyNodeList({
         toggleActions={toggleActions}
         actions={actions}
         showtoggle={true}
-        toggle={toggleHierarchyNode}
-        onToggle={(value: string) => setToggleHierarchyNode(value)}
+        toggle={toggleView}
+        onToggle={(value: string) => setToggleView(value)}
       >
-        {toggleHierarchyNode === "table" ? (
+        {toggleView === "table" ? (
           <DataTable
-            columns={HierarchyNodeTableColumns(deleteNode)}
+            columns={InternalNodeTableColumns(deleteNode)}
             data={filteredNodes}
             handlePagination={handlePagination}
             tablePageSize={pageDetail.pageSize}
@@ -214,8 +191,7 @@ export default function HierarchyNodeList({
         )}
       </PageLayout>
 
-      <CreateHierarchyNodeModal
-        project_id={project_id}
+      <CreateInternalNodeModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
       />

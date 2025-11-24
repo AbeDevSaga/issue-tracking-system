@@ -4,7 +4,10 @@ import { useState } from "react";
 
 import { useAssignUserToProjectMutation } from "../../redux/services/projectApi";
 
-import { useGetUsersQuery } from "../../redux/services/userApi";
+import {
+  useGetUsersNotAssignedToProjectQuery,
+  useGetUsersQuery,
+} from "../../redux/services/userApi";
 import { useGetRolesQuery } from "../../redux/services/roleApi";
 
 import {
@@ -26,6 +29,7 @@ import {
   SelectContent,
   SelectItem,
 } from "../ui/cn/select";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 interface AssignUserModalProps {
   inistitute_id?: string;
@@ -44,9 +48,17 @@ export default function AssignUserModal({
   isOpen,
   onClose,
 }: AssignUserModalProps) {
-  const { data: usersResponse } = useGetUsersQuery(
-    inistitute_id ? { institute_id: inistitute_id } : undefined
-  );
+  // const { data: usersResponse } = useGetUsersQuery(
+  //   inistitute_id ? { institute_id: inistitute_id } : undefined
+  // );
+
+  const { data: usersResponse, isLoading } =
+    useGetUsersNotAssignedToProjectQuery(
+      inistitute_id && project_id
+        ? { institute_id: inistitute_id, project_id }
+        : skipToken
+    );
+
   const { data: rolesResponse } = useGetRolesQuery(undefined);
 
   const [assignUserToProject] = useAssignUserToProjectMutation();

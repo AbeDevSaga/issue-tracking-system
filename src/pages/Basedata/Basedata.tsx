@@ -7,6 +7,7 @@ import {
   FaFlag,
   FaUserTie,
   FaLock,
+  FaProjectDiagram,
 } from "react-icons/fa";
 
 export default function Basedata() {
@@ -19,8 +20,8 @@ export default function Basedata() {
     //   description: t("basedata.subtitle", {
     //     title: t("basedata.organization"),
     //   }),
-    //   icon: <FaBuilding size={24} color={"#094C81"} />,
-    //   route: "/bunch",
+    //   icon: <FaBuilding size={26} color={"#094C81"} />,
+    //   route: "/organization",
     // },
     // {
     //   title: t("basedata.org_structure_management"),
@@ -44,12 +45,12 @@ export default function Basedata() {
     //   route: "/branch",
     // },
 
-    // {
-    //   title: t("basedata.project_management"),
-    //   description: t("basedata.subtitle", { title: t("basedata.project") }),
-    //   icon: <FaProjectDiagram size={24} color={"#094C81"} />,
-    //   route: "/project",
-    // },
+    {
+      title: t("basedata.issue_flow"),
+      description: t("basedata.subtitle", { title: t("basedata.issue_flow") }),
+      icon: <FaProjectDiagram size={24} color={"#094C81"} />,
+      route: "/issue_configuration",
+    },
     {
       title: t("basedata.priority_level_management"),
       description: t("basedata.subtitle", {
@@ -68,14 +69,14 @@ export default function Basedata() {
       route: "/issue_category",
     },
     {
-        title: t("basedata.role_management"),
+      title: t("basedata.role_management"),
       description: t("basedata.subtitle", {
         title: t("basedata.role"),
       }),
       icon: <FaUserTie size={26} color={"#094C81"} />,
       route: "/role",
     },
-    { 
+    {
       title: t("basedata.permission_management"),
       description: t("basedata.subtitle", {
         title: t("basedata.permission"),

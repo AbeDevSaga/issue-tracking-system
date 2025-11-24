@@ -1,8 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import {
-  useDeleteInstituteMutation,
-  useGetInstituteByIdQuery,
-} from "../../redux/services/instituteApi";
+import { useDeleteInstituteMutation, useGetInstituteByIdQuery } from "../../redux/services/instituteApi";
 import PageMeta from "../../components/common/PageMeta";
 import Badge from "../../components/ui/badge/Badge";
 import { format } from "date-fns";
@@ -29,8 +26,7 @@ const OrganizationDetail = () => {
     isLoading,
     isError,
   } = useGetInstituteByIdQuery(id!);
-  const [deleteInstitute, { isLoading: isDeleteLoading }] =
-    useDeleteInstituteMutation();
+  const [deleteInstitute, { isLoading: isDeleteLoading }] = useDeleteInstituteMutation();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleDelete = async () => {
@@ -123,11 +119,8 @@ const OrganizationDetail = () => {
                 <Edit className="h-5 w-5 text-[#094C81] hover:text-[#073954] cursor-pointer text-bold" />
               </span>
               <span>
-                <Trash2
-                  onClick={() => setIsOpen(true)}
-                  className="h-5 w-5 text-[#B91C1C] hover:text-[#991B1B] cursor-pointer text-bold"
-                />
-              </span>
+                <Trash2 onClick={() => setIsOpen(true)} className="h-5 w-5 text-[#B91C1C] hover:text-[#991B1B] cursor-pointer text-bold" />
+              </span> 
             </div>
           </div>
 
@@ -200,7 +193,7 @@ const OrganizationDetail = () => {
           </Card>
 
           {/* Projects Section */}
-          <ProjectList insistitute_id={id || ""} userType="external_user" />
+          <ProjectList insistitute_id={id || ""} userType="internal_user"/>
         </div>
       </div>
     </>

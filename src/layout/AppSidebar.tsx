@@ -168,6 +168,11 @@ const AppSidebar: React.FC = () => {
     },
     {
       icon: <GroupIcon />,
+      name: "Inistitute Management",
+      path: "/inistitutes",
+    },
+    {
+      icon: <GroupIcon />,
       name: "Organization Management",
       path: "/organization",
     },
@@ -463,11 +468,7 @@ const AppSidebar: React.FC = () => {
             </>
           ) : (
             <>
-              <img
-                src={Logo}
-                alt="Logo"
-                className="w-40"
-              />
+              <img src={Logo} alt="Logo" className="w-40" />
             </>
           )}
         </Link>

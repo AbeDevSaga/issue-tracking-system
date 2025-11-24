@@ -13,6 +13,7 @@ import AppLayout from "./layout/AppLayout";
 import Home from "./pages/Dashboard/Home";
 import NotFound from "./pages/OtherPage/NotFound";
 import Organization from "./pages/organization/organization";
+import Inistitutes from "./InternalPages/Organization/organization";
 import BunchCreation from "./pages/BunchCreation/organization";
 import Branch from "./pages/branch/branch";
 import Region from "./pages/region/region";
@@ -26,6 +27,7 @@ import Woreda from "./pages/woreda/woreda";
 import ProjectLevel from "./pages/priorityLevel/priorityLevel";
 import IssueCategory from "./pages/issueCategory/issueCategory";
 import MyIssue from "./pages/issue/my_issue";
+import IssueFlowConfig from "./pages/IssueFlowConfiguration/IssueFlowConfiguration";
 import Roles from "./pages/role/role";
 import Subroles from "./pages/subRole/subRole";
 // import Users from "./pages/Tables/Users";
@@ -52,9 +54,11 @@ import Users from "./pages/Users/users";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import ProjectDetail from "./pages/project/ProjectDetail";
+import InternalProjectDetail from "./InternalPages/Project/ProjectDetail";
 import { Toaster } from "sonner";
 import UserDetail from "./pages/Users/userDetail";
 import OrganizationDetail from "./pages/organization/organizationDetail";
+import InistituteDetail from "./InternalPages/Organization/organizationDetail";
 import OrgStructureDetail from "./pages/org_structure/org_structureDetail";
 import IssueCategoryDetail from "./pages/issueCategory/issueCategoryDetail";
 import CreateRole from "./pages/role/createRole";
@@ -120,8 +124,10 @@ function AppContent() {
           <Route path="/users" element={<Users />} />
           <Route path="/users/:id" element={<UserDetail />} />
           <Route path="/organization" element={<Organization />} />
+          <Route path="/inistitutes" element={<Inistitutes />} />
           <Route path="/bunch" element={<BunchCreation />} />
           <Route path="/organization/:id" element={<OrganizationDetail />} />
+          <Route path="/inistitutes/:id" element={<InistituteDetail />} />
           <Route path="/branch" element={<Branch />} />
           <Route path="/region" element={<Region />} />
           <Route path="/zone" element={<Zone />} />
@@ -131,6 +137,7 @@ function AppContent() {
           <Route path="/woreda" element={<Woreda />} />
           <Route path="/project" element={<Project />} />
           <Route path="/project/:id" element={<ProjectDetail />} />
+          <Route path="/inistitutes/project/:id" element={<InternalProjectDetail />} />
           <Route path="/priority_level" element={<ProjectLevel />} />
           <Route path="/priority_level/:id" element={<PriorityLevelDetail />} />
           <Route path="/permission" element={<Permission />} />
@@ -140,6 +147,8 @@ function AppContent() {
           <Route path="/issue_category" element={<IssueCategory />} />
           <Route path="/issue_category/:id" element={<IssueCategoryDetail />} />
           <Route path="/my_issue" element={<MyIssue />} />
+          <Route path="/issue_configuration" element={<IssueFlowConfig />} />
+          {/* IssueFlowConfig */}
           <Route path="/add_issue" element={<MyissueForm />} />
           <Route path="/qa_tasks" element={<QATask />} />
           <Route path="/qa_tasks_detail" element={<QATaskDetail />} />

@@ -114,7 +114,7 @@ export function DataTable<TData, TValue>({
                                            `}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="px-4 py-3">
+                  <TableCell key={cell.id} className="px-4 py-3.5">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}

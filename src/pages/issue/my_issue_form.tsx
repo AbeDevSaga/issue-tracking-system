@@ -237,7 +237,7 @@ export default function AddIssue() {
                 <Label className="text-sm font-medium text-[#094C81]">
                   {field.label}
                 </Label>
-                
+
                 {field.type === "select" && field.id === "project_id" && (
                   <Select
                     value={formValues.project_id}
@@ -330,6 +330,7 @@ export default function AddIssue() {
                     className="border max-w-[350px] rounded px-2 py-2"
                     value={formValues[field.id]}
                     onChange={(e) => handleChange(field.id, e)}
+                    onChange={(e) => handleChange(field.id, e)}
                   />
                 )}
 
@@ -372,9 +373,7 @@ export default function AddIssue() {
                     placeholder="Enter your action taken"
                     className="border w-full max-w-[350px] rounded px-2 py-2"
                     value={formValues.action_taken}
-                    onChange={(e) =>
-                      handleChange("action_taken", e)
-                    }
+                    onChange={(e) => handleChange("action_taken", e)}
                   />
                 </div>
               )}

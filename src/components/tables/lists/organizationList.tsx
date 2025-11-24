@@ -65,7 +65,7 @@ const InstituteTableColumns = [
       return (
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/inistitutes/${institute.institute_id}`}>
+            <Link to={`/organization/${institute.institute_id}`}>
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
@@ -90,7 +90,7 @@ const InstituteTableColumns = [
   },
 ];
 
-export default function InstituteList() {
+export default function OrganizationList() {
   const [response, setResponse] = useState<any[]>([]);
   const [filteredResponse, setFilteredResponse] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
