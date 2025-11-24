@@ -16,7 +16,7 @@ import {
 import { Textarea } from "../ui/cn/textarea";
 import {
   useCreateInternalNodeMutation,
-  useGetInternalNodesQuery,
+  useGetInternalTreeQuery,
 } from "../../redux/services/internalNodeApi";
 
 interface HierarchyCreateionProps {
@@ -40,15 +40,17 @@ export function CreateInternalNodeModal({
 
   // Fetch all nodes of a project - skip if parent_hierarchy_node_id is provided
   const { data: parentNodesData, isFetching: isFetchingParents } =
-    useGetInternalNodesQuery();
+    useGetInternalTreeQuery();
 
   const [createNode, { isLoading: isCreatingNode }] =
     useCreateInternalNodeMutation();
 
   if (!isOpen) return null;
 
-  // Get the tree from API response - FIXED: Use 'nodes' instead of 'parentNodes'
+  // Get the tree from API response - CORRECTED: Extract nodes from response
   const tree = parentNodesData?.nodes || [];
+  console.log("parentNodesData: ", parentNodesData);
+  console.log("Tree data: ", tree);
 
   // Get current level nodes based on navigation stack
   const getCurrentLevelNodes = () => {
@@ -60,7 +62,7 @@ export function CreateInternalNodeModal({
     let currentNode = tree;
     for (const stackItem of navigationStack) {
       const foundNode = currentNode.find(
-        (node: any) => node.hierarchy_node_id === stackItem.hierarchy_node_id
+        (node: any) => node.internal_node_id === stackItem.internal_node_id
       );
       if (foundNode && foundNode.children) {
         currentNode = foundNode.children;
@@ -77,9 +79,6 @@ export function CreateInternalNodeModal({
   const enterStructure = (node: any) => {
     if (node.children && node.children.length > 0) {
       setNavigationStack((prev) => [...prev, node]);
-      // Clear selection when navigating deeper
-      setSelectedParentNode(null);
-      setHasSelectedParent(false);
     }
   };
 
@@ -87,9 +86,11 @@ export function CreateInternalNodeModal({
   const goBack = () => {
     setNavigationStack((prev) => {
       const newStack = prev.slice(0, -1);
-      // Clear selection when going back
-      setSelectedParentNode(null);
-      setHasSelectedParent(false);
+      // Only clear selection if we're going back from the root level
+      if (newStack.length === 0) {
+        setSelectedParentNode(null);
+        setHasSelectedParent(false);
+      }
       return newStack;
     });
   };
@@ -112,12 +113,41 @@ export function CreateInternalNodeModal({
     return navigationStack.map((node) => node.name).join(" → ");
   };
 
+  // Get the full selected node object including from nested structures
+  const getSelectedNode = () => {
+    if (!selectedParentNode) return null;
+
+    // First check current level
+    const currentNode = currentLevelNodes?.find(
+      (node: any) => node.internal_node_id === selectedParentNode
+    );
+    if (currentNode) return currentNode;
+
+    // If not found in current level, search through the entire tree
+    const searchInTree = (nodes: any[]): any => {
+      for (const node of nodes) {
+        if (node.internal_node_id === selectedParentNode) {
+          return node;
+        }
+        if (node.children && node.children.length > 0) {
+          const found = searchInTree(node.children);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+
+    return searchInTree(tree);
+  };
+
   // Debug function to check the data
   const debugData = () => {
+    console.log("Full API response:", parentNodesData);
     console.log("Tree data:", tree);
     console.log("Current level nodes:", currentLevelNodes);
     console.log("Navigation stack:", navigationStack);
     console.log("Selected parent:", selectedParentNode);
+    console.log("Selected node object:", getSelectedNode());
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -130,7 +160,7 @@ export function CreateInternalNodeModal({
 
     try {
       await createNode({
-        parent_id: selectedParentNode || null,
+        parent_id: selectedParentNode, // This will be passed correctly now
         name,
         description,
         is_active: true,
@@ -247,11 +277,11 @@ export function CreateInternalNodeModal({
                         ) : (
                           currentLevelNodes?.map((node: any) => (
                             <div
-                              key={node.hierarchy_node_id}
+                              key={node.internal_node_id}
                               className={`flex border items-center
                                 hover:bg-gray-100 
                                 ${
-                                  selectedParentNode === node.hierarchy_node_id
+                                  selectedParentNode === node.internal_node_id
                                     ? "bg-blue-100 border border-blue-300 text-blue-800"
                                     : "hover:bg-gray-100 border rounded-md"
                                 }`}
@@ -259,10 +289,10 @@ export function CreateInternalNodeModal({
                               <button
                                 type="button"
                                 onClick={() =>
-                                  handleNodeSelect(node.hierarchy_node_id)
+                                  handleNodeSelect(node.internal_node_id)
                                 }
                                 className={`block text-left w-full py-2 px-3 rounded-md mb-2 transition-colors ${
-                                  selectedParentNode === node.hierarchy_node_id
+                                  selectedParentNode === node.internal_node_id
                                     ? "    text-blue-800"
                                     : "hover:bg-gray-100 "
                                 }`}
@@ -314,12 +344,7 @@ export function CreateInternalNodeModal({
                             </span>
                             <div>
                               <strong>Selected Parent:</strong>{" "}
-                              {
-                                currentLevelNodes?.find(
-                                  (n: any) =>
-                                    n.hierarchy_node_id === selectedParentNode
-                                )?.name
-                              }
+                              {getSelectedNode()?.name || "Unknown"}
                             </div>
                           </div>
                         </div>

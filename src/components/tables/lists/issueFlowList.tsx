@@ -120,7 +120,7 @@ export default function IssueFlowList({ toggleActions }: IssueFlowListProps) {
 
   const actions: ActionButton[] = [
     {
-      label: "Add Node",
+      label: "Add Issue Flow",
       icon: <Plus className="h-4 w-4" />,
       variant: "default",
       size: "default",

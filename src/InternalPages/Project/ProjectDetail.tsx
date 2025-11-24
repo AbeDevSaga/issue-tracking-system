@@ -24,6 +24,8 @@ import DeleteModal from "../../components/common/DeleteModal";
 import ProjectUserList from "../../components/tables/lists/projectUserList";
 import { ActionButton } from "../../types/layout";
 import HierarchyNodeList from "../../components/tables/lists/hierarchyNodeList";
+import IssueFlowList from "../../components/tables/lists/issueFlowList";
+import ProjectAssignedUsers from "../../components/tables/lists/projectAssignedUsers";
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
@@ -32,20 +34,20 @@ export default function ProjectDetail() {
     useDeleteProjectMutation();
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"hierarchy" | "users">(
-    "hierarchy"
+  const [activeTab, setActiveTab] = useState<"issueFlow" | "users">(
+    "issueFlow"
   );
 
   const actions: ActionButton[] = [
     {
-      label: "Hierarchy",
+      label: "Issue Flow",
       icon: <FolderIcon className="h-4 w-4" />,
-      variant: activeTab === "hierarchy" ? "default" : "outline",
+      variant: activeTab === "issueFlow" ? "default" : "outline",
       size: "default",
-      onClick: () => setActiveTab("hierarchy"),
+      onClick: () => setActiveTab("issueFlow"),
     },
     {
-      label: "Project Users",
+      label: "Assigned Users",
       icon: <Users className="h-4 w-4" />,
       variant: activeTab === "users" ? "default" : "outline",
       size: "default",
@@ -249,12 +251,15 @@ export default function ProjectDetail() {
           </Card>
 
           {/* Project Hierarchy */}
-          {activeTab === "hierarchy" && (
-            <HierarchyNodeList project_id={id || ""} toggleActions={actions} />
+          {activeTab === "issueFlow" && (
+            <IssueFlowList toggleActions={actions} />
           )}
 
           {activeTab === "users" && (
-            <ProjectUserList project_id={id || ""} toggleActions={actions} />
+            <ProjectAssignedUsers
+              project_id={id || ""}
+              toggleActions={actions}
+            />
           )}
         </div>
       </div>
