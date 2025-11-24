@@ -14,20 +14,27 @@ import {
   Eye,
   Lock,
 } from "lucide-react";
-import { useGetIssueByIdQuery } from "../../redux/services/issueApi";
+import {
+  useConfirmIssueResolvedMutation,
+  useGetIssueByIdQuery,
+} from "../../redux/services/issueApi";
 import FileViewer from "../../components/common/FileView";
 import { getFileType, getFileUrl } from "../../utils/fileUrl";
 import { useGetCurrentUserQuery } from "../../redux/services/authApi";
 import { canConfirm } from "../../utils/taskHelper";
 import IssueHistoryLog from "../userTasks/IssueHistoryLog";
+import TimelineOpener from "../../components/common/TimelineOpener";
+import { Button } from "../../components/ui/cn/button";
 
 export default function UserIssueDetail() {
   const { id } = useParams<{ id: string }>();
   const { data: issue, isLoading, isError } = useGetIssueByIdQuery(id!);
   const { t } = useTranslation();
-  const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [modalImageIndex, setModalImageIndex] = useState<number | null>(null);
   const [confirmIssue, setConfirmIssue] = useState(false);
+  const [openTimeline, setOpenTimeline] = useState(false);
+  const [confirmIssueResolved, { isLoading: isConfirming }] =
+    useConfirmIssueResolvedMutation();
 
   const [fileViewerUrl, setFileViewerUrl] = useState<string | null>(null);
 
@@ -105,6 +112,26 @@ export default function UserIssueDetail() {
   const closeFileViewer = () => setFileViewerUrl(null);
   const closeModal = () => setModalImageIndex(null);
 
+  // useCondirmIssueResolovedMutation
+  const handleConfirmIssueSolved = async () => {
+    if (!id) return;
+    try {
+      const res = await confirmIssueResolved({ issue_id: id }).unwrap();
+      setAlert({
+        type: "success",
+        message: res.message || "Status updated to Closed!",
+      });
+      setTimeout(() => setAlert(null), 2000);
+    } catch (error: any) {
+      setAlert({
+        type: "error",
+        message: error?.data?.message || "Error updating status.",
+      });
+      console.error(error);
+      setTimeout(() => setAlert(null), 3000);
+    }
+  };
+
   // Format date for display
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -132,7 +159,9 @@ export default function UserIssueDetail() {
           className={`w-full max-w-[1440px] mx-auto bg-white shadow-md rounded-xl border border-dashed border-[#BFD7EA] p-6 relative overflow-hidden`}
         >
           <div
-            className={`transition-all duration-500 ease-in-out lg:pr-[380px] `}
+            className={`w-full transition-all duration-500 ease-in-out  ${
+              openTimeline ? "lg:pr-[360px]" : ""
+            } `}
           >
             <div className="flex flex-col w-full">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
@@ -144,6 +173,9 @@ export default function UserIssueDetail() {
                     Review issue details and take appropriate action
                   </p>
                 </div>
+                {!openTimeline && (
+                  <TimelineOpener onOpen={() => setOpenTimeline(true)} />
+                )}
                 <AnimatePresence>
                   {alert && (
                     <motion.div
@@ -466,22 +498,12 @@ export default function UserIssueDetail() {
                   </h3>
 
                   <div className="flex flex-col md:flex-row gap-4 mb-6">
-                    <button
-                      onClick={() => console.log("confirm")}
-                      className={`flex-1 text-left border rounded-lg p-4 transition-all relative ${"border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"}`}
+                    <Button
+                      onClick={handleConfirmIssueSolved}
+                      disabled={isConfirming}
                     >
-                      <div className="flex items-center gap-2 mb-1">
-                        <div
-                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center 
-                            `}
-                        >
-                          <CheckCircle2 className="w-4 h-4 bg-primary" />
-                        </div>
-                        <p className={`font-semibold text-[#1E516A]`}>
-                          Confirm
-                        </p>
-                      </div>
-                    </button>
+                      {isConfirming ? "Confirming..." : "Confirm Resolved"}
+                    </Button>
                   </div>
                 </>
               )}
@@ -513,7 +535,7 @@ export default function UserIssueDetail() {
           {/* Image Gallery Modal */}
           {modalImageIndex !== null && issueFiles.length > 0 && (
             <div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
               onClick={closeModal}
             >
               <div
@@ -526,7 +548,7 @@ export default function UserIssueDetail() {
                   className="max-w-full max-h-full object-contain"
                 />
                 <button
-                  className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70"
+                  className="absolute top-4 right-4 text-white bg-black/50 rounded-full p-2 hover:bg-opacity-70"
                   onClick={closeModal}
                 >
                   <X className="w-5 h-5" />
@@ -534,20 +556,20 @@ export default function UserIssueDetail() {
                 {issueFiles.length > 1 && (
                   <>
                     <button
-                      className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70"
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white bg-black/50 rounded-full p-2 hover:bg-opacity-70"
                       onClick={prevImage}
                     >
                       <ChevronLeft className="w-6 h-6" />
                     </button>
                     <button
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70"
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white bg-black/50  rounded-full p-2 hover:bg-opacity-70"
                       onClick={nextImage}
                     >
                       <ChevronRight className="w-6 h-6" />
                     </button>
                   </>
                 )}
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-50 rounded-full px-3 py-1 text-sm">
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black/50  rounded-full px-3 py-1 text-sm">
                   {modalImageIndex + 1} / {issueFiles.length}
                 </div>
               </div>
@@ -555,7 +577,12 @@ export default function UserIssueDetail() {
           )}
 
           <AnimatePresence>
-            <IssueHistoryLog logs={issue?.history || []} />
+            {openTimeline && (
+              <IssueHistoryLog
+                logs={issue?.history || []}
+                onClose={() => setOpenTimeline(false)}
+              />
+            )}
           </AnimatePresence>
         </div>
       </div>

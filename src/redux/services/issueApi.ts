@@ -48,6 +48,10 @@ export interface AcceptIssueDto {
   issue_id: string;
 }
 
+export interface ConfirmIssueDto {
+  issue_id: string;
+}
+
 // DTO for creating/updating an Issue
 export interface CreateIssueDto {
   institute_project_id?: string;
@@ -129,6 +133,18 @@ export const issueApi = baseApi.injectEndpoints({
       invalidatesTags: ["Issue"], // invalidate issues to refresh queries
     }),
 
+    confirmIssueResolved: builder.mutation<
+      { success: boolean; message: string },
+      ConfirmIssueDto
+    >({
+      query: (data) => ({
+        url: `/issues/confirm`, // ensure this matches your backend route
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Issue"], // refresh related queries
+    }),
+
     updateIssue: builder.mutation<
       Issue,
       { id: string; data: Partial<CreateIssueDto> }
@@ -158,6 +174,7 @@ export const {
   useGetEscalatedIssuesWithNullTierQuery,
   useCreateIssueMutation,
   useAcceptIssueMutation,
+  useConfirmIssueResolvedMutation,
   useUpdateIssueMutation,
   useDeleteIssueMutation,
   useGetIssuesByHierarchyAndProjectQuery,

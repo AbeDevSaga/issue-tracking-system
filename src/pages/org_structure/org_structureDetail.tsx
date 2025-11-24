@@ -1,7 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import {
-  useGetHierarchyNodeByIdQuery,
-} from "../../redux/services/hierarchyNodeApi";
+import { useGetHierarchyNodeByIdQuery } from "../../redux/services/hierarchyNodeApi";
 import PageMeta from "../../components/common/PageMeta";
 import Badge from "../../components/ui/badge/Badge";
 import { format } from "date-fns";
@@ -15,17 +13,17 @@ import {
   ArrowUpIcon,
   BuildingOfficeIcon,
 } from "@heroicons/react/24/outline";
-import {
-  Card,
-  CardTitle,
-  CardContent,
-} from "../../components/ui/cn/card";
-import ProjectUserRolesTable from "../../components/tables/lists/ProjectUserRolesTable";
+import { Card, CardTitle, CardContent } from "../../components/ui/cn/card";
 import DetailHeader from "../../components/common/DetailHeader";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Plus, Trash2 } from "lucide-react";
+import { Button } from "../../components/ui/cn/button";
+import { useState } from "react";
+import { CreateChildHierarchyNodeModal } from "../../components/modals/CreateChildHierarchyNodeModal";
+import HierarchyUsersList from "../../components/tables/lists/HierarchyUsersList";
 
 const OrgStructureDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const [isModalOpen, setModalOpen] = useState(false);
   const {
     data: orgStructure,
     isLoading,
@@ -101,7 +99,13 @@ const OrgStructureDetail = () => {
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header Section */}
           <div className="flex justify-between">
-            <DetailHeader breadcrumbs={[{ title: "Organization", link: "" },{title:"Project",link:""},{ title: "Organization Structure", link: "" }]} />
+            <DetailHeader
+              breadcrumbs={[
+                { title: "Organization", link: "" },
+                { title: "Project", link: "" },
+                { title: "Organization Structure", link: "" },
+              ]}
+            />
             <div className="flex justify-center items-end gap-4">
               <span>
                 <Edit className="h-5 w-5 text-[#094C81] hover:text-[#073954] cursor-pointer text-bold" />
@@ -117,39 +121,53 @@ const OrgStructureDetail = () => {
             <CardContent className="p-4">
               {/* Header Row - Compact */}
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 bg-[#094C81]/10 rounded-lg">
-                    <RectangleStackIcon className="h-5 w-5 text-[#094C81]" />
+                <>
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 bg-[#094C81]/10 rounded-lg">
+                      <RectangleStackIcon className="h-5 w-5 text-[#094C81]" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-[#094C81] text-lg font-semibold m-0">
+                        {orgStructure.name}
+                      </CardTitle>
+                      {orgStructure.description && (
+                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-1 space-x-3 flex items-center">
+                          {orgStructure.description}
+                          <Badge
+                            variant="light"
+                            color={orgStructure.is_active ? "success" : "error"}
+                            size="sm"
+                            className="text-xs shrink-0 ml-3"
+                          >
+                            {orgStructure.is_active ? (
+                              <>
+                                <CheckCircleIcon className="h-3 w-3" />
+                                Active
+                              </>
+                            ) : (
+                              <>
+                                <XCircleIcon className="h-3 w-3" />
+                                Inactive
+                              </>
+                            )}
+                          </Badge>
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <CardTitle className="text-[#094C81] text-lg font-semibold m-0">
-                      {orgStructure.name}
-                    </CardTitle>
-                    {orgStructure.description && (
-                      <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">
-                        {orgStructure.description}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <Badge
-                  variant="light"
-                  color={orgStructure.is_active ? "success" : "error"}
-                  size="sm"
-                  className="text-xs shrink-0"
+                </>
+
+                <Button
+                  variant="default"
+                  size="default"
+                  onClick={() => setModalOpen(true)}
+                  className="flex items-center space-x-2"
                 >
-                  {orgStructure.is_active ? (
-                    <>
-                      <CheckCircleIcon className="h-3 w-3" />
-                      Active
-                    </>
-                  ) : (
-                    <>
-                      <XCircleIcon className="h-3 w-3" />
-                      Inactive
-                    </>
-                  )}
-                </Badge>
+                  <span className="h-4 w-4">
+                    <Plus className="h-4 w-4" />
+                  </span>
+                  <span>Add Child Node</span>
+                </Button>
               </div>
 
               {/* Details - Horizontal Compact Layout */}
@@ -176,26 +194,7 @@ const OrgStructureDetail = () => {
                     </span>
                   </div>
                 )}
-                {orgStructure.parent?.name && (
-                  <div className="flex items-center gap-1.5">
-                    <ArrowUpIcon className="h-3.5 w-3.5 text-[#1E516A]" />
-                    <span className="text-xs font-medium text-[#1E516A]">
-                      Parent:
-                    </span>
-                    <span className="text-gray-600 text-sm">
-                      {orgStructure.parent.name}
-                    </span>
-                  </div>
-                )}
-                {!orgStructure.parent?.name && (
-                  <div className="flex items-center gap-1.5">
-                    <ArrowUpIcon className="h-3.5 w-3.5 text-[#1E516A]" />
-                    <span className="text-xs font-medium text-[#1E516A]">
-                      Parent:
-                    </span>
-                    <span className="text-gray-400 text-sm">Root Node</span>
-                  </div>
-                )}
+
                 {orgStructure.created_at && (
                   <div className="flex items-center gap-1.5">
                     <CalendarIcon className="h-3.5 w-3.5 text-[#1E516A]" />
@@ -224,10 +223,19 @@ const OrgStructureDetail = () => {
             </CardContent>
           </Card>
 
+          {/* Create Child Modal */}
+          <CreateChildHierarchyNodeModal
+            parentHierarchyId={id || ""}
+            project_id={orgStructure.project_id}
+            isOpen={isModalOpen}
+            onClose={() => setModalOpen(false)}
+          />
           {/* Assigned Users */}
-          <ProjectUserRolesTable
+          <HierarchyUsersList
             projectId={orgStructure.project_id || ""}
-            inistitute_id={orgStructure.project.institutes[0]?.institute_id || ""}
+            inistitute_id={
+              orgStructure.project.institutes[0]?.institute_id || ""
+            }
             hierarchy_node_id={id || ""}
             hierarchy_node_name={orgStructure.name || ""}
           />

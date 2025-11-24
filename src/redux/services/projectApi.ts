@@ -93,6 +93,27 @@ export const projectApi = baseApi.injectEndpoints({
       invalidatesTags: ["Project"],
     }),
 
+    // Update project maintenance (timeline)
+    updateProjectMaintenance: builder.mutation<
+      {
+        message: string;
+        maintenance: { start_date: string; end_date: string };
+      },
+      {
+        project_id: string;
+        data: { maintenance_start?: string; maintenance_end?: string };
+      }
+    >({
+      query: ({ project_id, data }) => ({
+        url: `/projects/${project_id}/maintenance`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { project_id }) => [
+        { type: "Project", id: project_id },
+      ],
+    }),
+
     // Remove user from project
     removeUserFromProject: builder.mutation<
       any,
@@ -125,6 +146,7 @@ export const {
   useGetProjectByIdQuery,
   useCreateProjectMutation,
   useUpdateProjectMutation,
+  useUpdateProjectMaintenanceMutation,
   useGetProjectsByInstituteIdQuery,
   useDeleteProjectMutation,
   useAssignUserToProjectMutation,

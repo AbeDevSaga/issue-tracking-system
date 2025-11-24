@@ -5,10 +5,13 @@ import { toast } from "sonner";
 import { Input } from "../ui/cn/input";
 import { Label } from "../ui/cn/label";
 import { Button } from "../ui/cn/button";
-
+import DatePicker from "react-datepicker";
 import { useCreateProjectMutation } from "../../redux/services/projectApi";
-import { XIcon } from "lucide-react";
+import { XIcon, CalendarIcon } from "lucide-react";
 import { Textarea } from "../ui/cn/textarea";
+
+// Import react-datepicker styles
+import "react-datepicker/dist/react-datepicker.css";
 
 interface CreateProjectModalProps {
   instituteId: string;
@@ -24,6 +27,8 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [maintenanceStart, setMaintenanceStart] = useState<Date | null>(null);
+  const [maintenanceEnd, setMaintenanceEnd] = useState<Date | null>(null);
 
   const [createProject, { isLoading }] = useCreateProjectMutation();
 
@@ -33,28 +38,67 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       return;
     }
 
+    if (
+      maintenanceStart &&
+      maintenanceEnd &&
+      maintenanceStart > maintenanceEnd
+    ) {
+      toast.error("Maintenance start date cannot be later than end date");
+      return;
+    }
+
     const payload = {
       name,
       description: description || undefined,
       is_active: isActive,
       institute_id: instituteId || undefined,
+      maintenance_start: maintenanceStart
+        ? maintenanceStart.toISOString().split("T")[0]
+        : undefined,
+      maintenance_end: maintenanceEnd
+        ? maintenanceEnd.toISOString().split("T")[0]
+        : undefined,
     };
 
     try {
       await createProject(payload).unwrap();
       toast.success("Project created successfully!");
       onClose();
-      setName("");
-      setDescription("");
-      setIsActive(true);
+      resetForm();
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to create project");
     }
   };
 
+  const resetForm = () => {
+    setName("");
+    setDescription("");
+    setMaintenanceStart(null);
+    setMaintenanceEnd(null);
+    setIsActive(true);
+  };
+
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) onClose();
   };
+
+  // Custom input component for DatePicker to match your design
+  const CustomDateInput = React.forwardRef<HTMLButtonElement, any>(
+    ({ value, onClick }, ref) => (
+      <button
+        type="button"
+        className="w-full min-w-[330px] h-10 border border-gray-300 px-4 py-2 rounded-md shadow-sm focus:ring-2 focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none flex items-center justify-between bg-white text-left"
+        onClick={onClick}
+        ref={ref}
+      >
+        <span className={value ? "text-gray-900" : "text-gray-500"}>
+          {value || "Select date"}
+        </span>
+        <CalendarIcon className="w-4 h-4 text-gray-500" />
+      </button>
+    )
+  );
+  CustomDateInput.displayName = "CustomDateInput";
 
   if (!isOpen) return null;
 
@@ -63,7 +107,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-200"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white p-6 rounded-2xl w-full max-w-[700px] shadow-2xl transform transition-all duration-200">
+      <div className="bg-white p-6 rounded-2xl w-full max-w-[800px] shadow-2xl transform transition-all duration-200">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-[20px] font-bold text-[#094C81]">
             Create Project
@@ -76,17 +120,18 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
           </button>
         </div>
 
-        <div className="space-y-4 mt-2 flex w-full gap-10">
-          <div className="w-full flex justify-between gap-4">
+        <div className="flex w-full gap-4">
+          {/* Project Name and Description Row */}
+          <div className="w-1/2 flex flex-col gap-6 p-4 shadow-md rounded-md">
             <div className="w-full">
               <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                Project Name
+                Project Name *
               </Label>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter project name"
-                className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring-2 focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+                className="w-full h-10 border border-gray-300 px-4 rounded-md focus:ring-2 focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
               />
             </div>
 
@@ -95,11 +140,46 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                 Description
               </Label>
               <Textarea
-                rows={4}
-                className="max-w-[300px] h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring-2 focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Project description"
+                className="w-full min-h-[40px] max-w-[350px] border border-gray-300 px-4 py-2 rounded-md focus:ring-2 focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Maintenance Timeline Row */}
+          <div className="w-1/2 flex flex-col gap-6 p-4 shadow-md rounded-md">
+            <div className="w-full ">
+              <Label className="block text-sm text-[#094C81] font-medium mb-2">
+                Maintenance Start Date
+              </Label>
+              <DatePicker
+                selected={maintenanceStart}
+                onChange={(date) => setMaintenanceStart(date)}
+                selectsStart
+                startDate={maintenanceStart}
+                endDate={maintenanceEnd}
+                customInput={<CustomDateInput />}
+                placeholderText="Select start date"
+                dateFormat="MMMM d, yyyy"
+              />
+            </div>
+
+            <div className="w-full">
+              <Label className="block text-sm text-[#094C81] font-medium mb-2">
+                Maintenance End Date
+              </Label>
+              <DatePicker
+                selected={maintenanceEnd}
+                onChange={(date) => setMaintenanceEnd(date)}
+                selectsEnd
+                startDate={maintenanceStart}
+                endDate={maintenanceEnd}
+                minDate={maintenanceStart || new Date()}
+                customInput={<CustomDateInput />}
+                placeholderText="Select end date"
+                dateFormat="MMMM d, yyyy"
               />
             </div>
           </div>

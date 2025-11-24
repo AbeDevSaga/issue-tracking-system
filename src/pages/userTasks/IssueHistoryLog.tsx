@@ -66,7 +66,7 @@ export default function IssueHistoryLog({ logs, onClose }: LogsPreviewProps) {
     >
       <div className="flex items-center justify-between mb-2">
         <h4 className="font-bold text-[#1E516A] text-base flex items-center gap-1">
-          <Clock className="w-4 h-4" />
+          {/* <Clock className="w-4 h-4" /> */}
           Issue Timeline
         </h4>
         {onClose && (

@@ -19,8 +19,8 @@ export default function Basedata() {
     //   description: t("basedata.subtitle", {
     //     title: t("basedata.organization"),
     //   }),
-    //   icon: <FaBuilding size={26} color={"#094C81"} />,
-    //   route: "/organization",
+    //   icon: <FaBuilding size={24} color={"#094C81"} />,
+    //   route: "/bunch",
     // },
     // {
     //   title: t("basedata.org_structure_management"),
