@@ -305,6 +305,7 @@ export default function AddIssue() {
                     className="border max-w-[350px] rounded px-2 py-2"
                     value={formValues[field.id]}
                     onChange={(e) => handleChange(field.id, e)}
+                    onChange={(e) => handleChange(field.id, e)}
                   />
                 )}
 

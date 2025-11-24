@@ -3,6 +3,8 @@ import Tree from 'react-d3-tree';
 import Label from '../../form/Label';
 import { Select, SelectTrigger } from '../../ui/cn/select';
 import { SelectItem, SelectContent, SelectValue } from '../../ui/cn/select';
+import { CreateHierarchyNodeModal } from '../../modals/CreateHierarchyNodeModal';
+import { useParams } from 'react-router-dom';
 
 // ---------------------------
 // Types
@@ -66,11 +68,15 @@ function convertToD3Tree(nodes: TreeNode[]): D3TreeNode[] {
 interface CustomNodeProps {
   nodeDatum: D3TreeNode & { __rd3t?: { collapsed?: boolean } };
   toggleNode: () => void;
+  setModalOpen: (open: boolean) => void;
+  setSelectedParentNodeId: (id: string) => void;
 }
 
 const CustomNode: React.FC<CustomNodeProps> = ({
   nodeDatum,
   toggleNode,
+  setModalOpen,
+  setSelectedParentNodeId,
 }) => {
   const hasChildren = nodeDatum.children && nodeDatum.children.length > 0;
   const isActive = nodeDatum.attributes.is_active;
@@ -85,17 +91,18 @@ const CustomNode: React.FC<CustomNodeProps> = ({
 
   // Card dimensions
   const cardWidth = 300; // Between 220-260px
-  const padding = 20;
+  const padding = 40;
   const titleHeight = 20;
   const statusBadgeHeight = 10;
   const projectHeight = project ? 18 : 10;
   const buttonHeight = 26;
-  const spacing = 12;
+  const buttonSpacing = 8; // Spacing between buttons
+  const spacing =0;
   
-  // Calculate card height: padding + title row + spacing + project + spacing + button + padding
+  // Calculate card height: padding + title row + spacing + project + spacing + button1 + buttonSpacing + button2 + padding
   const cardHeight = padding + Math.max(titleHeight, statusBadgeHeight) + 
                       (project ? spacing + projectHeight : 0) + 
-                      spacing + buttonHeight + padding;
+                      spacing + buttonHeight + buttonSpacing + buttonHeight + padding;
 
   return (
     <g>
@@ -167,13 +174,26 @@ const CustomNode: React.FC<CustomNodeProps> = ({
             </div>
           )}
 
-          {/* Details Button - Centered at Bottom */}
-          <button
-            onClick={handleViewDetailsClick}
-            className="w-full bg-[#094C81] hover:bg-[#073954] text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 text-xs mt-auto"
-          >
-            Details
-          </button>
+          {/* Buttons Container */}
+          <div className="mt-auto space-y-2">
+            {/* Details Button */}
+            <button
+              onClick={handleViewDetailsClick}
+              className="w-full bg-[#094C81] hover:bg-[#073954] text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 text-xs"
+            >
+              Details
+            </button>
+            {/* Add Child Node Button */}
+            <button
+              onClick={() => {
+                setSelectedParentNodeId(nodeDatum.attributes.hierarchy_node_id);
+                setModalOpen(true);
+              }}
+              className="w-full bg-[#094C81] hover:bg-[#073954] text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 text-xs"
+            >
+              Add Child Node
+            </button>
+          </div>
         </div>
       </foreignObject>
     </g>
@@ -192,7 +212,13 @@ const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [selectedRootNodeId, setSelectedRootNodeId] = useState<string>('');
-
+  const [selectedParentNodeId, setSelectedParentNodeId] = useState<string | null>(null);
+  // params id
+  const { id:project_id } = useParams<{ id: string }>();
+  if (!project_id) {
+    throw new Error('Project ID is required');
+  }
+  const [isModalOpen, setModalOpen] = useState(false);
   // Build tree from flat list using the simple technique
   const buildTree = (nodes: TreeNode[]): TreeNode[] => {
     if (!nodes || nodes.length === 0) return [];
@@ -405,8 +431,8 @@ const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({
                 translate={translate}
                 orientation="vertical"
                 pathFunc="straight"
-                separation={{ siblings: 2, nonSiblings: 2.5 }}
-                nodeSize={{ x: 280, y: 200 }}
+                separation={{ siblings: 2.5, nonSiblings: 2 }}
+                nodeSize={{ x: 220, y: 250 }}
                 zoom={0.75}
                 scaleExtent={{ min: 0.1, max: 2 }}
                 enableLegacyTransitions={true}
@@ -418,6 +444,8 @@ const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({
                   const nodeDatum = rd3tProps.nodeDatum as D3TreeNode & { __rd3t?: { collapsed?: boolean } };
                   return (
                     <CustomNode
+                      setSelectedParentNodeId={setSelectedParentNodeId}
+                      setModalOpen={setModalOpen}
                       nodeDatum={nodeDatum}
                       toggleNode={rd3tProps.toggleNode}
                     />
@@ -447,6 +475,15 @@ const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({
           </div>
         )}
       </div>
+      <CreateHierarchyNodeModal
+        parent_hierarchy_node_id={selectedParentNodeId}
+        project_id={project_id }
+        isOpen={isModalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setSelectedParentNodeId(null);
+        }}
+      />
     </div>
   );
 };

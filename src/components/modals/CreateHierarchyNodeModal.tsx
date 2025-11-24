@@ -6,15 +6,6 @@ import { Button } from "../ui/cn/button";
 import { Input } from "../ui/cn/input";
 import { Label } from "../ui/cn/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/cn/select";
-
-import { useGetProjectsQuery } from "../../redux/services/projectApi";
-import {
   useCreateHierarchyNodeMutation,
   useGetParentNodesQuery,
 } from "../../redux/services/hierarchyNodeApi";
@@ -29,11 +20,13 @@ import { Textarea } from "../ui/cn/textarea";
 
 interface HierarchyCreateionProps {
   project_id: string;
+  parent_hierarchy_node_id?: string | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
 export function CreateHierarchyNodeModal({
+  parent_hierarchy_node_id,
   project_id,
   isOpen,
   onClose,
@@ -41,16 +34,22 @@ export function CreateHierarchyNodeModal({
   const [selectedParentNode, setSelectedParentNode] = useState<string | null>(
     null
   );
+  const [hasSelectedParent, setHasSelectedParent] = useState(false);
 
   const [navigationStack, setNavigationStack] = useState<any[]>([]);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  
+  // Track if parent is selected (for showing fields with animation)
+  const isParentSelected = parent_hierarchy_node_id !== null && parent_hierarchy_node_id !== undefined 
+    ? true 
+    : hasSelectedParent;
 
-  // Fetch all nodes of a project
+  // Fetch all nodes of a project - skip if parent_hierarchy_node_id is provided
   const { data: parentNodesData, isFetching: isFetchingParents } =
     useGetParentNodesQuery(project_id, {
-      skip: !project_id,
+      skip: !project_id || !!parent_hierarchy_node_id,
     });
 
   const [createNode, { isLoading: isCreatingNode }] =
@@ -90,6 +89,7 @@ export function CreateHierarchyNodeModal({
       setNavigationStack((prev) => [...prev, node]);
       // Clear selection when navigating deeper
       setSelectedParentNode(null);
+      setHasSelectedParent(false);
     }
   };
 
@@ -99,6 +99,7 @@ export function CreateHierarchyNodeModal({
       const newStack = prev.slice(0, -1);
       // Clear selection when going back
       setSelectedParentNode(null);
+      setHasSelectedParent(false);
       return newStack;
     });
   };
@@ -106,11 +107,13 @@ export function CreateHierarchyNodeModal({
   const resetNavigation = () => {
     setNavigationStack([]);
     setSelectedParentNode(null);
+    setHasSelectedParent(false);
   };
 
   // Handle node selection
   const handleNodeSelect = (nodeId: string | null) => {
     setSelectedParentNode(nodeId);
+    setHasSelectedParent(true);
   };
 
   // Get current path display - for better UX
@@ -138,7 +141,7 @@ export function CreateHierarchyNodeModal({
     try {
       await createNode({
         project_id: project_id,
-        parent_id: selectedParentNode || null,
+        parent_id: parent_hierarchy_node_id || selectedParentNode || null,
         name,
         description,
         is_active: true,
@@ -149,6 +152,7 @@ export function CreateHierarchyNodeModal({
       setName("");
       setDescription("");
       resetNavigation();
+      setHasSelectedParent(false);
       onClose();
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to create structure");
@@ -180,189 +184,244 @@ export function CreateHierarchyNodeModal({
           Debug Data
         </button>
 
-        <form onSubmit={handleSubmit} className="space-y-4  ">
-          <div className="flex gap-10">
-            <div className="w-1/2 flex flex-col gap-4">
-              {/* Node Name */}
-              <div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className={`flex gap-10 ${parent_hierarchy_node_id ? '' : ''}`}>
+          {!parent_hierarchy_node_id && (
+              <div className={`flex flex-col transition-all duration-500 ${isParentSelected ? 'w-1/2' : 'w-full'}`}>
+                {/* Structure Selection */}
                 <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                  Structure Name *
+                  Select Parent Structure {!isParentSelected && '(required)'}
                 </Label>
-                <Input
-                  id="structure-name"
-                  placeholder="Enter structure name"
-                  value={name}
-                  className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </div>
 
-              {/* Description */}
-              <div>
-                <Label
-                  htmlFor="structure-description"
-                  className="block text-sm text-[#094C81] font-medium mb-2"
-                >
-                  Description
-                </Label>
-                <Textarea
-                  id="structure-description"
-                  placeholder="Enter structure description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
-                />
-              </div>
-            </div>
-            <div className="w-1/2 flex flex-col">
-              {/* Structure Selection */}
-              <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                Select Parent Structure (optional)
-              </Label>
-
-              <div className="border p-3 rounded-lg">
-                {isFetchingParents ? (
-                  <p className="text-sm text-gray-500">Loading structures...</p>
-                ) : (
-                  <>
-                    {/* Back Button */}
-                    {navigationStack.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={goBack}
-                        className="mb-2 flex items-center hover:bg-gray-100 rounded-md p-2 border-none outline-none shadow-none text-sm"
-                      >
-                        <ArrowLeftIcon className="w-4 h-4 mr-2 text-[#094C81]" />
-                        <span className="text-sm text-[#094C81] font-medium">
-                          Back{" "}
-                        </span>
-                      </button>
-                    )}
-                    {/* Current Path Display */}
-                    {navigationStack.length > 0 && (
-                      <div className="text-sm text-[#094C81] font-medium mb-2">
-                        Current: {getCurrentPath()}
-                      </div>
-                    )}
-
-                    {/* Root Option - Only show at root level */}
-                    {navigationStack.length === 0 && (
-                      <button
-                        type="button"
-                        className={`block border text-left w-full py-2 px-3 rounded-md mb-2 transition-colors ${
-                          selectedParentNode === null
-                            ? "bg-blue-100 border border-blue-300 text-blue-800"
-                            : "hover:bg-gray-100 border"
-                        }`}
-                        onClick={() => handleNodeSelect(null)}
-                      >
-                        <div className="flex items-center text-sm text-[#094C81] font-medium">
-                          <span className="mr-2">
-                            <GitForkIcon className="w-4 h-4" />
+                <div className="border p-3 rounded-lg">
+                  {isFetchingParents ? (
+                    <p className="text-sm text-gray-500">Loading structures...</p>
+                  ) : (
+                    <>
+                      {/* Back Button */}
+                      {navigationStack.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={goBack}
+                          className="mb-2 flex items-center hover:bg-gray-100 rounded-md p-2 border-none outline-none shadow-none text-sm"
+                        >
+                          <ArrowLeftIcon className="w-4 h-4 mr-2 text-[#094C81]" />
+                          <span className="text-sm text-[#094C81] font-medium">
+                            Back{" "}
                           </span>
-                          <div>
-                            <div className="font-medium">Root Structure</div>
-                            <div className="text-sm text-gray-600">
-                              Create at project root level
+                        </button>
+                      )}
+                      {/* Current Path Display */}
+                      {navigationStack.length > 0 && (
+                        <div className="text-sm text-[#094C81] font-medium mb-2">
+                          Current: {getCurrentPath()}
+                        </div>
+                      )}
+
+                      {/* Root Option - Only show at root level */}
+                      {navigationStack.length === 0 && (
+                        <button
+                          type="button"
+                          className={`block border text-left w-full py-2 px-3 rounded-md mb-2 transition-colors ${
+                            selectedParentNode === null
+                              ? "bg-blue-100 border border-blue-300 text-blue-800"
+                              : "hover:bg-gray-100 border"
+                          }`}
+                          onClick={() => handleNodeSelect(null)}
+                        >
+                          <div className="flex items-center text-sm text-[#094C81] font-medium">
+                            <span className="mr-2">
+                              <GitForkIcon className="w-4 h-4" />
+                            </span>
+                            <div>
+                              <div className="font-medium">Root Structure</div>
+                              <div className="text-sm text-gray-600">
+                                Create at project root level
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      )}
+
+                      {/* Structure Tree */}
+                      <div className="mt-2 space-y-1 max-h-60 overflow-y-auto">
+                        {currentLevelNodes?.length === 0 ? (
+                          <p className="text-sm text-center py-4 text-[#094C81] font-medium">
+                            No structures found at this level
+                          </p>
+                        ) : (
+                          currentLevelNodes?.map((node: any) => (
+                            <div
+                              key={node.hierarchy_node_id}
+                              className={`flex border items-center
+                                hover:bg-gray-100 
+                                ${
+                                  selectedParentNode === node.hierarchy_node_id
+                                    ? "bg-blue-100 border border-blue-300 text-blue-800"
+                                    : "hover:bg-gray-100 border rounded-md"
+                                }`}
+                            >
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleNodeSelect(node.hierarchy_node_id)
+                                }
+                                className={`block text-left w-full py-2 px-3 rounded-md mb-2 transition-colors ${
+                                  selectedParentNode === node.hierarchy_node_id
+                                    ? "    text-blue-800"
+                                    : "hover:bg-gray-100 "
+                                }`}
+                              >
+                                <div className="flex  w-full items-center text-sm text-[#094C81] font-medium">
+                                  <span className="mr-2 mt-0.5">
+                                    <GitForkIcon className="w-4 h-4" />
+                                  </span>
+                                  <div className="flex-1">
+                                    <div className="font-medium">{node.name}</div>
+                                    {node.description && (
+                                      <div className="text-sm text-gray-600 truncate">
+                                        {node.description}
+                                      </div>
+                                    )}
+                                    <div className="text-xs text-gray-500 mt-1">
+                                      Level {node.level} •{" "}
+                                      {node.children?.length || 0} children
+                                    </div>
+                                  </div>
+                                </div>
+                              </button>
+
+                              {node.children && node.children.length > 0 && (
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => enterStructure(node)}
+                                  className="bg-transparent border-none opacity-70 group-hover:opacity-100 transition-opacity ml-2"
+                                  title={`Explore ${node.name} structure`}
+                                >
+                                  <ArrowRightIcon className="w-6 h-6 hover:text-[#094C81]" />
+                                </Button>
+                              )}
+                            </div>
+                          ))
+                        )}
+                      </div>
+
+                      {/* Selected parent info */}
+                      {selectedParentNode && (
+                        <div className="mt-3 p-2 bg-blue-50 rounded-md text-sm border border-blue-200">
+                          <div className="flex items-center text-[#094C81] font-medium">
+                            <span className="mr-2">
+                              <CheckIcon className="w-4 h-4" />
+                            </span>
+                            <div>
+                              <strong>Selected Parent:</strong>{" "}
+                              {
+                                currentLevelNodes?.find(
+                                  (n: any) =>
+                                    n.hierarchy_node_id === selectedParentNode
+                                )?.name
+                              }
                             </div>
                           </div>
                         </div>
-                      </button>
-                    )}
-
-                    {/* Structure Tree */}
-                    <div className="mt-2 space-y-1 max-h-60 overflow-y-auto">
-                      {currentLevelNodes?.length === 0 ? (
-                        <p className="text-sm text-center py-4 text-[#094C81] font-medium">
-                          No structures found at this level
-                        </p>
-                      ) : (
-                        currentLevelNodes?.map((node: any) => (
-                          <div
-                            key={node.hierarchy_node_id}
-                            className={`flex border items-center
-                              hover:bg-gray-100 
-                              ${
-                                selectedParentNode === node.hierarchy_node_id
-                                  ? "bg-blue-100 border border-blue-300 text-blue-800"
-                                  : "hover:bg-gray-100 border rounded-md"
-                              }`}
-                          >
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleNodeSelect(node.hierarchy_node_id)
-                              }
-                              className={`block text-left w-full py-2 px-3 rounded-md mb-2 transition-colors ${
-                                selectedParentNode === node.hierarchy_node_id
-                                  ? "    text-blue-800"
-                                  : "hover:bg-gray-100 "
-                              }`}
-                            >
-                              <div className="flex  w-full items-center text-sm text-[#094C81] font-medium">
-                                <span className="mr-2 mt-0.5">
-                                  <GitForkIcon className="w-4 h-4" />
-                                </span>
-                                <div className="flex-1">
-                                  <div className="font-medium">{node.name}</div>
-                                  {node.description && (
-                                    <div className="text-sm text-gray-600 truncate">
-                                      {node.description}
-                                    </div>
-                                  )}
-                                  <div className="text-xs text-gray-500 mt-1">
-                                    Level {node.level} •{" "}
-                                    {node.children?.length || 0} children
-                                  </div>
-                                </div>
-                              </div>
-                            </button>
-
-                            {node.children && node.children.length > 0 && (
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => enterStructure(node)}
-                                className="bg-transparent border-none opacity-70 group-hover:opacity-100 transition-opacity ml-2"
-                                title={`Explore ${node.name} structure`}
-                              >
-                                <ArrowRightIcon className="w-6 h-6 hover:text-[#094C81]" />
-                              </Button>
-                            )}
-                          </div>
-                        ))
                       )}
-                    </div>
-
-                    {/* Selected parent info */}
-                    {selectedParentNode && (
-                      <div className="mt-3 p-2 bg-blue-50 rounded-md text-sm border border-blue-200">
-                        <div className="flex items-center text-[#094C81] font-medium">
-                          <span className="mr-2">
-                            <CheckIcon className="w-4 h-4" />
-                          </span>
-                          <div>
-                            <strong>Selected Parent:</strong>{" "}
-                            {
-                              currentLevelNodes?.find(
-                                (n: any) =>
-                                  n.hierarchy_node_id === selectedParentNode
-                              )?.name
-                            }
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
+            {/* Name and Description Fields - Show with animation when parent is selected */}
+            {!parent_hierarchy_node_id && (
+              <div 
+                className={`flex flex-col gap-4 transition-all duration-500 ease-in-out overflow-hidden ${
+                  isParentSelected 
+                    ? `w-1/2 opacity-100 max-h-[500px] translate-x-0` 
+                    : `w-0 opacity-0 max-h-0 translate-x-[-20px] pointer-events-none`
+                }`}
+              >
+                {/* Node Name */}
+                <div className="w-full">
+                  <Label className="block text-sm text-[#094C81] font-medium mb-2">
+                    Structure Name *
+                  </Label>
+                  <Input
+                    id="structure-name"
+                    placeholder="Enter structure name"
+                    value={name}
+                    className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                {/* Description */}
+                <div className="w-full">
+                  <Label
+                    htmlFor="structure-description"
+                    className="block text-sm text-[#094C81] font-medium mb-2"
+                  >
+                    Description
+                  </Label>
+                  <Textarea
+                    id="structure-description"
+                    placeholder="Enter structure description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+                  />
+                </div>
+              </div>
+            )}
+            
+            {/* Show fields immediately if parent_hierarchy_node_id is provided */}
+            {parent_hierarchy_node_id && (
+              <div className="flex gap-4 w-full">
+                {/* Node Name */}
+                <div className="flex-1 w-1/2">
+                  <Label className="block text-sm text-[#094C81] font-medium mb-2">
+                    Structure Name *
+                  </Label>
+                  <Input
+                    id="structure-name"
+                    placeholder="Enter structure name"
+                    value={name}
+                    className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                {/* Description */}
+                <div className="flex-1 w-1/2">
+                  <Label
+                    htmlFor="structure-description"
+                    className="block text-sm text-[#094C81] font-medium mb-2"
+                  >
+                    Description
+                  </Label>
+                  <Textarea
+                    id="structure-description"
+                    placeholder="Enter structure description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+                  />
+                </div>
+              </div>
+            )}
+            
           </div>
 
           {/* Buttons */}
-          <div className="flex justify-end space-x-2 pt-4">
+          <div 
+            className={`flex justify-end space-x-2 pt-4 transition-all duration-500 ease-in-out ${
+              (parent_hierarchy_node_id || isParentSelected)
+                ? 'opacity-100 max-h-[100px] translate-y-0' 
+                : 'opacity-0 max-h-0 translate-y-[-10px] overflow-hidden pointer-events-none'
+            }`}
+          >
             <Button
               type="button"
               variant="outline"
