@@ -16,6 +16,8 @@ import { CreateHierarchyNodeModal } from "../../modals/CreateHierarchyNodeModal"
 import HierarchyD3Tree from "./HierarchyD3Tree";
 import { useGetUsersAssignedToProjectQuery } from "../../../redux/services/userApi";
 import { Plus } from "lucide-react";
+import AssignUserModal from "../../modals/AssignUserToProjectModal";
+import AssignInternalUsersModal from "../../modals/AssignInternalUsersToProjectModal";
 
 // ------------------- Table Columns -------------------
 const ProjectUserTableColumns = (deleteUser: any) => [
@@ -233,6 +235,11 @@ export default function ProjectAssignedUsers({
             {/* <HierarchyD3Tree data={filteredUsers} isLoading={isLoading} /> */}
           </div>
         )}
+        <AssignInternalUsersModal
+          project_id={project_id}
+          isOpen={isModalOpen}
+          onClose={() => setModalOpen(false)}
+        />
       </PageLayout>
     </>
   );
