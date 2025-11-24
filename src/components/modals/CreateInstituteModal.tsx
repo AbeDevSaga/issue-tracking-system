@@ -51,7 +51,7 @@ export const CreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-200"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white p-6 rounded-2xl w-full max-w-[700px] shadow-2xl transform transition-all duration-200 scale-100">
+      <div className="bg-white p-6 rounded-2xl w-full max-w-[450px] shadow-2xl transform transition-all duration-200 scale-100">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-[20px] font-bold text-[#094C81]">
@@ -68,7 +68,7 @@ export const CreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
         {/* Form */}
         <div className="space-y-5 flex w-full gap-10">
           {/* Name Field */}
-          <div className="w-1/2">
+          <div className="w-full">
             <label className="block text-sm text-[#094C81] font-medium  mb-2">
               Name <span className="text-red-500">*</span>
             </label>
@@ -135,9 +135,8 @@ export const CreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={isLoading || !name.trim()}
             className={`px-6 py-2.5 rounded-lg transition-all duration-200 ${
-              isLoading || !name.trim()
+              isLoading
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-[#094C81] hover:bg-[#094C81]/90"
             } text-white font-medium`}

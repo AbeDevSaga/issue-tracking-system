@@ -10,6 +10,9 @@ import Login_bg from "../../assets/login_bg.png";
 import { useLoginMutation } from "../../redux/services/authApi";
 import { EyeOffIcon } from "lucide-react";
 import { EyeOpenIcon } from "@radix-ui/react-icons";
+import { signInSchema, SignInFormData } from "../../utils/validation/loginSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 
 interface FormData {
   email: string;
@@ -29,7 +32,13 @@ export default function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [loginMutation] = useLoginMutation();
-
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    } = useForm({
+    resolver: zodResolver(signInSchema),
+    });
   // Load token and user from localStorage on mount
   useEffect(() => {
     const storedToken = localStorage.getItem("authToken");
@@ -40,6 +49,7 @@ export default function Login() {
     }
   }, [navigate]);
 
+  
   const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -49,27 +59,20 @@ export default function Login() {
     if (error) setError(null);
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const onSubmit = async (data: SignInFormData) => {
     setError(null);
-
     try {
-      const response = await loginMutation(formData).unwrap();
-
-      if (response.token && response.user) {
-        setUser(response.user);
-        navigate("/dashboard");
-      } else {
-        setError("Login failed: Invalid credentials");
-      }
-    } catch (err: any) {
-      console.error("Login error:", err);
-      setError(err?.data?.message || "Login failed");
-    } finally {
-      setLoading(false);
+    const response = await loginMutation(data).unwrap();
+    if (response.token && response.user) {
+    navigate("/dashboard");
+    } else {
+    setError("Login failed: Invalid credentials");
     }
-  };
+    } catch (err: any) {
+    console.error("Login error:", err);
+    setError(err?.data?.message || "Login failed");
+    }
+    };
 
   return (
     <div
@@ -99,7 +102,7 @@ export default function Login() {
           </div>
         </div>
 
-        <div className="p-6 pt-4 space-y-4 w-full">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 pt-4 space-y-4 w-full">
           {/* Email */}
           <div>
             <Label
@@ -108,16 +111,7 @@ export default function Login() {
             >
               {t("login.email_phone_number")}
             </Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              required
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-blue-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-              placeholder="example.xx@gov.et"
-            />
+              <Input id="email"  placeholder="example.xx@gov.et" {...register("email")} className={`w-full px-3 py-2 border rounded-md text-sm ${ errors.email ? "border-red-500" : "border-blue-300" }`} /> {errors.email && ( <p className="text-red-500 text-sm mt-1">{errors.email.message}</p> )}
           </div>
 
           {/* Password */}
@@ -131,13 +125,10 @@ export default function Login() {
             <div className="relative">
               <Input
                 id="password"
-                name="password"
                 type={showPassword ? "text" : "password"}
-                required
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full px-3 py-2 pr-10 border border-blue-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 placeholder="enter your password"
+                {...register("password")}
+                className={`w-full px-3 py-2 pr-10 border rounded-md text-sm ${ errors.password ? "border-red-500" : "border-blue-300" }`}
               />
               <button
                 type="button"
@@ -151,6 +142,7 @@ export default function Login() {
                 )}
               </button>
             </div>
+            {errors.password && ( <p className="text-red-500 text-sm mt-1">{errors.password.message}</p> )}
           </div>
 
           {/* Forgot Password */}
@@ -167,16 +159,15 @@ export default function Login() {
           <div>
             <Button
               type="submit"
-              onClick={handleSubmit}
-              disabled={loading}
+              disabled={isSubmitting}
               className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white 
                bg-[#0C4A6E] hover:bg-[#083b56] focus:outline-none focus:ring-2 focus:ring-offset-2 
                focus:ring-[#0C4A6E] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? t("login.Signing_in") : t("login.login")}
+              {isSubmitting ? t("login.Signing_in") : t("login.login")}
             </Button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );
