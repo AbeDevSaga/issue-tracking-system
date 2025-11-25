@@ -2,17 +2,25 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useSidebar } from "../context/SidebarContext";
+ 
 import {
+  Home,
+  Users,
+  Building2,
+  Landmark,
+  Database,
+  FileWarning,
+  ClipboardList,
+  ClipboardCheck,
+  ChartPieIcon,
+  PlugIcon,
   ChevronDownIcon,
-  GroupIcon,
-  HorizontaLDots,
-  PieChartIcon,
-  PlugInIcon,
-} from "../icons";
+} from "lucide-react";
 import { useAuth } from "./../contexts/AuthContext";
 import { PERMISSIONS } from "./../types/auth";
 import SidebarWidget from "./SidebarWidget";
 import Logo from "../assets/logo.png";
+import { HorizontaLDots } from "../icons";
 
 const HomeIcon = () => (
   <svg
@@ -153,74 +161,64 @@ const AppSidebar: React.FC = () => {
     [location.pathname]
   );
 
+  
   // 📌 PERMISSION-BASED MENU STRUCTURE
   const navItems: NavItem[] = [
     {
-      icon: <HomeIcon />,
+      icon: <Home />,
       name: "Dashboard",
       path: "/dashboard",
     },
-
+  
     {
-      icon: <GroupIcon />,
+      icon: <Users />,
       name: "User Management",
       path: "/users",
     },
     {
-      icon: <GroupIcon />,
+      icon: <Building2 />,
       name: "Inistitute Management",
       path: "/inistitutes",
     },
     {
-      icon: <GroupIcon />,
+      icon: <Landmark />,
       name: "Organization Management",
       path: "/organization",
     },
     {
-      icon: <BaseDataIcon />,
+      icon: <Database />,
       name: "BaseData",
       path: "/basedata",
     },
-
+  
     {
-      icon: <IssueIcon />,
+      icon: <FileWarning />,
       name: "My Issue",
       path: "/my_issue",
     },
     {
-      icon: <TaskList />,
+      icon: <ClipboardList />,
       name: "Task List",
       path: "/task",
-    },{
-      icon: <TaskList />,
+    },
+    {
+      icon: <ClipboardCheck />,
       name: "Internal Task List",
       path: "/task_list",
     },
-    //  {
-    //   icon: <TaskList />,
+  
+    // Uncomment if needed later:
+    // {
+    //   icon: <ClipboardList />,
     //   name: "Central Admin Task List",
     //   path: "/central_admin_task_list",
     // },
-    // {
-    //   icon: <TaskList />,
-    //   name: "QA Leader Task List",
-    //   path: "/qa_tasks",
-    // },
-    //   {
-    //   icon: <TaskList />,
-    //   name: "QA Expert Task List",
-    //   path: "/tl_tasks",
-    // },
-    // {
-    //   icon: <TaskList />,
-    //   name: "Developer Task List",
-    //   path: "/developer_tasks",
-    // },
   ];
+  
 
   const othersItems: NavItem[] = [
     {
-      icon: <PieChartIcon />,
+      icon: <ChartPieIcon />,
       name: "Reports & Analytics",
       anyPermissions: [PERMISSIONS.REPORTS, PERMISSIONS.AUDIT_LOGS_VIEW],
       subItems: [
@@ -232,7 +230,7 @@ const AppSidebar: React.FC = () => {
       ],
     },
     {
-      icon: <PlugInIcon />,
+      icon: <PlugIcon />,
       name: "System Settings",
       subItems: [{ name: "Profile", path: "/profile" }],
     },
@@ -483,7 +481,7 @@ const AppSidebar: React.FC = () => {
           <div className="flex flex-col gap-4">
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-[#094C81] dark:text-gray-500 ${
+                className={`mb-4 text-xs uppercase flex leading-[20px]     text-gray-400 dark:text-gray-500 ${
                   !isExpanded && !isHovered
                     ? "lg:justify-center"
                     : "justify-start"

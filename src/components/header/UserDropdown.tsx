@@ -13,7 +13,7 @@ export default function UserDropdown() {
   const toggleDropdown = () => setIsOpen(!isOpen);
   const closeDropdown = () => setIsOpen(false);
 
-  if (!user) return null;
+  if (!user) return  <UserRound className="h-8 w-8 text-[#094C81]" />;
 
   const userRole = user.roles?.[0]?.role?.name || "N/A";
 

@@ -103,14 +103,14 @@ export default function AssignmentPreview({
             </div>
           ) : (
             <div className="space-y-4">
-              {users.map((userAssignment) => (
+              {users.map((userAssignment, index) => (
                 <motion.div
                   key={userAssignment.internal_project_user_role_id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className={`bg-white rounded-lg border-2 transition-all duration-200 ${"border-gray-200 shadow-md hover:shadow-lg"}`}
                 >
-                  <div className="p-4">
+                  <div className="p-2 flex justify-between items-center">
                     {/* User Info */}
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex-1">
@@ -132,10 +132,11 @@ export default function AssignmentPreview({
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2 pt-3 border-t border-gray-100">
+                    <div className="flex gap-2 border-t flex-col justify-center items-center h-fit border-gray-100">
+                      {index % 2 === 0 ? (
                       <button
                         onClick={() => handleAssign(userAssignment)}
-                        className="flex-1 bg-[#1E516A] text-white py-2 px-3 rounded-md text-sm font-medium hover:bg-[#2C6B8A] transition-colors duration-200 flex items-center justify-center gap-1"
+                        className="flex-1 bg-[#1E516A] h-fit text-white py-2 px-3 rounded-md text-sm font-medium hover:bg-[#2C6B8A] transition-colors duration-200 flex items-center justify-center gap-1"
                       >
                         <svg
                           className="w-4 h-4"
@@ -152,9 +153,10 @@ export default function AssignmentPreview({
                         </svg>
                         Assign
                       </button>
+                      ):(
                       <button
                         onClick={() => handleRemove(userAssignment)}
-                        className="flex-1 bg-gray-100 text-gray-700 py-2 px-3 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center gap-1"
+                        className="flex-1 h-fit bg-gray-200 text-gray-700 py-2 px-3 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center gap-1"
                       >
                         <svg
                           className="w-4 h-4"
@@ -170,11 +172,12 @@ export default function AssignmentPreview({
                           />
                         </svg>
                         Remove
-                      </button>
+                      </button>)}
                     </div>
                   </div>
                 </motion.div>
               ))}
+              
             </div>
           )}
         </div>

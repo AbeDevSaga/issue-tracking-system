@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Clock } from "lucide-react";
+import { ArrowRight, Clock, X } from "lucide-react";
 
 interface User {
   full_name: string;
@@ -61,24 +61,25 @@ export default function IssueHistoryLog({ logs, onClose }: LogsPreviewProps) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 100 }}
       transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="absolute top-0 right-0 w-full lg:w-[360px] bg-white border-l border-[#D5E3EC] h-full p-4 flex flex-col gap-3 shadow-lg overflow-y-auto"
+      className="absolute top-0 right-0 w-full lg:w-[360px] bg-white border-l border-[#D5E3EC] h-full flex flex-col gap-3 shadow-lg overflow-y-auto"
     >
-      <div className="flex items-center justify-between mb-2">
-        <h4 className="font-bold text-[#1E516A] text-base flex items-center gap-1">
-          {/* <Clock className="w-4 h-4" /> */}
-          Issue Timeline
-        </h4>
-        {onClose && (
+      <div className="p-6 relative border-b border-[#D5E3EC] bg-gradient-to-r from-[#1E516A] to-[#2C6B8A]">
+        <h2 className="text-xl font-bold text-white">Issue Timeline</h2>
+        <p className="text-white text-sm mt-1">View the timeline of the issue</p>
+     <div className="absolute top-5 right-5">
+     {onClose && (
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-white font-bold hover:text-white transition-colors"
           >
-            ✕
+            <X className="w-5 font-bold h-5" />
           </button>
         )}
+        </div>
       </div>
 
-      <div className="relative">
+
+      <div className="relative px-4 mt-5">
         {/* Vertical timeline line */}
         <div className="absolute left-5 top-2 bottom-2 w-0.5 bg-gradient-to-b from-blue-200 via-purple-200 to-green-200"></div>
 
@@ -88,7 +89,7 @@ export default function IssueHistoryLog({ logs, onClose }: LogsPreviewProps) {
               {/* Timeline number */}
               <div className="relative w-6 h-6 ">
                 <div
-                  className={`w-6 h-6 absolute text-xs top-0 left-2 rounded-full border-2 border-white flex items-center justify-center z-10 font-semibold ${
+                  className={`w-6 h-6 absolute text-xs top-0 -left-2 rounded-full border-2 border-white flex items-center justify-center z-10 font-semibold ${
                     log.resolution
                       ? "bg-green-500 text-white"
                       : log.escalation
@@ -102,7 +103,7 @@ export default function IssueHistoryLog({ logs, onClose }: LogsPreviewProps) {
 
               {/* Content card */}
               <div
-                className={`flex-1 p-2 rounded-lg border text-sm ${getActionColor(
+                className={`flex-1 p-2 rounded-lg border -ml-2 text-sm ${getActionColor(
                   log
                 )}`}
               >

@@ -48,18 +48,22 @@ export default function ResolutionPreview({
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 100 }}
       transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="absolute top-0 right-0 w-full lg:w-[360px] bg-white border-l border-[#D5E3EC] h-full p-6 flex flex-col gap-4 shadow-lg"
+      className="absolute top-0 right-0 w-full lg:w-[360px] bg-white border-l border-[#D5E3EC] h-full rounded-r-lg flex flex-col gap-4 shadow-lg"
     >
-      <div className="flex flex-col gap-3">
-        <h4 className="font-semibold text-[#1E516A]">Document Attachment</h4>
-
+      <div className="p-6 border-b border-[#D5E3EC] bg-gradient-to-r from-[#1E516A] to-[#2C6B8A]">
+        <h2 className="text-xl font-bold text-white">Resolve Issue</h2>
+        <p className="text-white text-sm mt-1">Upload files related to the resolution</p>
+      </div>
+      <div className="flex flex-col px-4 gap-3">
         <FileUploadField
+        className="flex flex-col gap-1 font-bold"
           id="resolution_attachments"
           label="Upload files"
           value={attachmentIds}
           onChange={setAttachmentIds}
           accept="image/*,.pdf,.doc,.docx"
           multiple={true}
+          labelClass="text-sm  text-[#1E516A] "
         />
 
         <h4 className="font-semibold text-[#1E516A] mt-4">Summary</h4>
@@ -70,21 +74,22 @@ export default function ResolutionPreview({
           onChange={(e) => setReason(e.target.value)}
         />
 
-        <div className="w-full flex justify-around mt-3">
-          <button
-            onClick={handleSubmit}
-            disabled={isLoading}
-            className="px-4 py-2 rounded-md bg-[#1E516A] text-white font-semibold disabled:opacity-50"
-          >
-            {isLoading ? "Submitting..." : "Confirm"}
-          </button>
-          <button
+        <div className="w-full flex justify-end gap-3 mt-3">
+        <button
             onClick={onClose}
             disabled={isLoading}
-            className="px-4 py-2 rounded-md bg-[#1E516A] text-white font-semibold disabled:opacity-50"
+            className="px-5 py-2 rounded-md bg-gray-200 border text-gray-700 font-semibold disabled:opacity-50"
           >
             Cancel
           </button>
+          <button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="px-5 py-2 rounded-md bg-[#1E516A] text-white font-semibold disabled:opacity-50"
+          >
+            {isLoading ? "Submitting..." : "Confirm"}
+          </button>
+         
         </div>
       </div>
     </motion.div>
