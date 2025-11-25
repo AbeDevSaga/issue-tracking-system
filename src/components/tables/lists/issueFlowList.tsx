@@ -15,7 +15,7 @@ import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
 // import { CreateInternalNodeModal } from "../../modals/CreateInternalNodeModal";
-import HierarchyD3Tree from "./HierarchyD3Tree";
+import HierarchyD3TreeInstitute from "./HierarchyD3TreeInstitute";
 import { CreateInternalNodeModal } from "../../modals/CreateInternalNodeModal";
 
 // ------------------- Table Columns -------------------
@@ -188,7 +188,7 @@ export default function IssueFlowList({ toggleActions }: IssueFlowListProps) {
             currentIndex={pageDetail.pageIndex}
           />
         ) : (
-          <HierarchyD3Tree data={filteredNodes} isLoading={isLoading} />
+          <HierarchyD3TreeInstitute data={filteredNodes} isLoading={isLoading} />
         )}
       </PageLayout>
 
