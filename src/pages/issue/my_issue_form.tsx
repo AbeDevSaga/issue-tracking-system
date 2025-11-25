@@ -108,19 +108,18 @@ export default function AddIssue() {
         singleProject.hierarchyNode?.hierarchy_node_id ?? null
       );
     }
-  
+
     // Auto-select category if only one available
     if (categories.length === 1 && !formValues.issue_category_id) {
       handleChange("issue_category_id", categories[0].category_id);
     }
-  
+
     // Auto-select priority if only one available
     if (priorities.length === 1 && !formValues.priority_id) {
       handleChange("priority_id", priorities[0].priority_id);
     }
-  }, [userProjects, categories, priorities ]);
-  
-  
+  }, [userProjects, categories, priorities]);
+
   // Submit form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -330,7 +329,6 @@ export default function AddIssue() {
                     className="border max-w-[350px] rounded px-2 py-2"
                     value={formValues[field.id]}
                     onChange={(e) => handleChange(field.id, e)}
-                    onChange={(e) => handleChange(field.id, e)}
                   />
                 )}
 
@@ -416,7 +414,11 @@ export default function AddIssue() {
   );
 }
 
-function GuidelinesAccordion({ guidelines }: { guidelines: { title: string; description: string }[] }) {
+function GuidelinesAccordion({
+  guidelines,
+}: {
+  guidelines: { title: string; description: string }[];
+}) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const contentRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -427,7 +429,9 @@ function GuidelinesAccordion({ guidelines }: { guidelines: { title: string; desc
   return (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
       <div className="mb-6">
-        <h3 className="text-2xl font-bold text-[#094C81] mb-2">Issue Reporting Guidelines</h3>
+        <h3 className="text-2xl font-bold text-[#094C81] mb-2">
+          Issue Reporting Guidelines
+        </h3>
         <p className="text-sm text-gray-600 dark:text-gray-400">
           Follow these tips to help us resolve your issue faster
         </p>
@@ -444,7 +448,9 @@ function GuidelinesAccordion({ guidelines }: { guidelines: { title: string; desc
                 <div className="w-8 h-8 rounded-full bg-[#094C81] flex items-center justify-center text-white font-bold text-sm">
                   {i + 1}
                 </div>
-                <h4 className="text-base font-semibold text-[#094C81]">{g.title}</h4>
+                <h4 className="text-base font-semibold text-[#094C81]">
+                  {g.title}
+                </h4>
               </div>
               <span className="text-[#094C81] font-bold">
                 {openIndex === i ? <FaChevronDown /> : <FaChevronRight />}
@@ -471,4 +477,3 @@ function GuidelinesAccordion({ guidelines }: { guidelines: { title: string; desc
     </div>
   );
 }
-

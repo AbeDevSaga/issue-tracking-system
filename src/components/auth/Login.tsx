@@ -95,7 +95,6 @@ export default function Login() {
                 <div className="text-sm text-red-700">{error}</div>
               </div>
             )}
-
           </div>
         </div>
 
