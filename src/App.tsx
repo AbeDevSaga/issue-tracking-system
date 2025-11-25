@@ -64,6 +64,7 @@ import IssueCategoryDetail from "./pages/issueCategory/issueCategoryDetail";
 import CreateRole from "./pages/role/createRole";
 import Profile from "./pages/profile/profile";
 import PriorityLevelDetail from "./pages/priorityLevel/priorityLevelDetail";
+import InternalAppLayout from "./layout/InternalLayout/InternalAppLayout";
 const AuthLoader = () => {
   return (
     <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">
@@ -192,7 +193,10 @@ function AppContent() {
             </PublicRoute>
           }
         />
-
+        {/* Internal Routes */}
+        <Route element= {<InternalAppLayout/>}>
+          <Route path="/internal/dashboard" element={<Home />} />
+        </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
