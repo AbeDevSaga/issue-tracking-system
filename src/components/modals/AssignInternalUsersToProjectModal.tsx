@@ -38,6 +38,7 @@ import { useGetInternalTreeQuery } from "../../redux/services/internalNodeApi";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
+  CheckCircleIcon,
   CheckIcon,
   GitForkIcon,
 } from "lucide-react";
@@ -216,15 +217,15 @@ export default function AssignInternalUsersModal({
 
         <div className="flex gap-2 mt-4">
           {/* LEFT SIDE — FORM */}
-          <div className="w-1/2 flex flex-col justify-between gap-4">
+          <div className="w-1/2 flex flex-col  gap-4">
             {/* USER */}
             <div className="w-full">
-              <Label className="text-sm font-medium text-[#094C81]">
+              <Label className="block text-sm text-[#094C81] font-medium mb-2">
                 Select User
               </Label>
 
               <Select value={selectedUser} onValueChange={setSelectedUser}>
-                <SelectTrigger className="w-full border p-2 rounded mt-1 text-[#094C81]">
+              <SelectTrigger className=" h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
                   <SelectValue placeholder="Select user" />
                 </SelectTrigger>
                 <SelectContent className="text-[#094C81] *: bg-white">
@@ -239,7 +240,7 @@ export default function AssignInternalUsersModal({
 
             {/* ROLE */}
             <div className="w-full">
-              <Label className="text-sm font-medium text-[#094C81]">
+              <Label className="block text-sm text-[#094C81] font-medium mb-2">
                 Select Role
               </Label>
 
@@ -249,7 +250,7 @@ export default function AssignInternalUsersModal({
                   setSelectedRole(value);
                 }}
               >
-                <SelectTrigger className="w-full border p-2 rounded mt-1 text-[#094C81]">
+                <SelectTrigger className=" h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent className="text-[#094C81] bg-white">
@@ -275,7 +276,7 @@ export default function AssignInternalUsersModal({
                 Select Parent Structure {!hasSelectedParent && "(required)"}
               </Label>
 
-              <div className="border p-3 rounded-lg">
+              <div className=" rounded-lg">
                 {isFetchingParents ? (
                   <p className="text-sm text-gray-500">Loading structures...</p>
                 ) : (
@@ -301,7 +302,7 @@ export default function AssignInternalUsersModal({
                     )}
 
                     {/* Root Option - Only show at root level */}
-                    {navigationStack.length === 0 && (
+                    {currentLevelNodes.length === 0 && (
                       <button
                         type="button"
                         className={`block border text-left w-full py-2 px-3 rounded-md mb-2 transition-colors ${
@@ -326,7 +327,7 @@ export default function AssignInternalUsersModal({
                     )}
 
                     {/* Structure Tree */}
-                    <div className="mt-2 space-y-1 max-h-60 overflow-y-auto">
+                    <div className="mt-2 space-y-2 max-h-60 overflow-y-auto">
                       {currentLevelNodes?.length === 0 ? (
                         <p className="text-sm text-center py-4 text-[#094C81] font-medium">
                           No structures found at this level
@@ -336,7 +337,7 @@ export default function AssignInternalUsersModal({
                           <div
                             key={node.internal_node_id}
                             className={`flex border items-center
-                                            hover:bg-gray-100 
+                                            hover:bg-gray-100 pr-2
                                             ${
                                               selectedParentNode ===
                                               node.internal_node_id
@@ -349,7 +350,7 @@ export default function AssignInternalUsersModal({
                               onClick={() =>
                                 handleNodeSelect(node.internal_node_id)
                               }
-                              className={`block text-left w-full py-2 px-3 rounded-md mb-2 transition-colors ${
+                              className={`block text-left  w-full py-2 px-3 rounded-md mb-2 transition-colors ${
                                 selectedParentNode === node.internal_node_id
                                   ? "    text-blue-800"
                                   : "hover:bg-gray-100 "
@@ -373,26 +374,29 @@ export default function AssignInternalUsersModal({
                                 </div>
                               </div>
                             </button>
+                            <div className="flex justify-center items-center">
 
+                            {selectedParentNode === node.internal_node_id && (
+                                  <CheckCircleIcon className="w-5 h-5 text-green-500 mr-2" />
+                                )}
                             {node.children && node.children.length > 0 && (
-                              <Button
+                              <button
                                 type="button"
-                                size="sm"
-                                variant="ghost"
                                 onClick={() => enterStructure(node)}
                                 className="bg-transparent border-none opacity-70 group-hover:opacity-100 transition-opacity ml-2"
                                 title={`Explore ${node.name} structure`}
                               >
                                 <ArrowRightIcon className="w-6 h-6 hover:text-[#094C81]" />
-                              </Button>
+                              </button>
                             )}
+                            </div>
                           </div>
                         ))
                       )}
                     </div>
 
                     {/* Selected parent info */}
-                    {selectedParentNode && (
+                    {/* {selectedParentNode && (
                       <div className="mt-3 p-2 bg-blue-50 rounded-md text-sm border border-blue-200">
                         <div className="flex items-center text-[#094C81] font-medium">
                           <span className="mr-2">
@@ -404,7 +408,7 @@ export default function AssignInternalUsersModal({
                           </div>
                         </div>
                       </div>
-                    )}
+                    )} */}
                   </>
                 )}
               </div>

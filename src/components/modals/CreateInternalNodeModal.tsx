@@ -9,6 +9,7 @@ import { Label } from "../ui/cn/label";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
+  CheckCircleIcon,
   CheckIcon,
   GitForkIcon,
   XIcon,
@@ -183,7 +184,7 @@ export function CreateInternalNodeModal({
       <div className="bg-white p-6 rounded-lg shadow-lg w-[700px] max-h-[85vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-[#094C81]">
-            Create Structure
+            Create Issue Flow
           </h2>
           <button
             onClick={onClose}
@@ -205,7 +206,7 @@ export function CreateInternalNodeModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className={`flex gap-10`}>
-            {
+            {(  
               <div
                 className={`flex flex-col transition-all duration-500 ${
                   hasSelectedParent ? "w-1/2" : "w-full"
@@ -215,8 +216,7 @@ export function CreateInternalNodeModal({
                 <Label className="block text-sm text-[#094C81] font-medium mb-2">
                   Select Parent Structure {!hasSelectedParent && "(required)"}
                 </Label>
-
-                <div className="border p-3 rounded-lg">
+                <div className=" px-3 rounded-lg">
                   {isFetchingParents ? (
                     <p className="text-sm text-gray-500">
                       Loading structures...
@@ -244,7 +244,7 @@ export function CreateInternalNodeModal({
                       )}
 
                       {/* Root Option - Only show at root level */}
-                      {navigationStack.length === 0 && (
+                      {currentLevelNodes.length === 0 && (
                         <button
                           type="button"
                           className={`block border text-left w-full py-2 px-3 rounded-md mb-2 transition-colors ${
@@ -269,7 +269,7 @@ export function CreateInternalNodeModal({
                       )}
 
                       {/* Structure Tree */}
-                      <div className="mt-2 space-y-1 max-h-60 overflow-y-auto">
+                      <div className="flex flex-col gap-2 space-y-1 max-h-60 overflow-y-auto">
                         {currentLevelNodes?.length === 0 ? (
                           <p className="text-sm text-center py-4 text-[#094C81] font-medium">
                             No structures found at this level
@@ -278,13 +278,9 @@ export function CreateInternalNodeModal({
                           currentLevelNodes?.map((node: any) => (
                             <div
                               key={node.internal_node_id}
-                              className={`flex border items-center
-                                hover:bg-gray-100 
-                                ${
-                                  selectedParentNode === node.internal_node_id
-                                    ? "bg-blue-100 border border-blue-300 text-blue-800"
-                                    : "hover:bg-gray-100 border rounded-md"
-                                }`}
+                              className={`flex border border-gray-300 rounded-md items-center
+                                hover:bg-blue-100 
+                                ${selectedParentNode === node.internal_node_id ? "bg-blue-200 border border-[#094C81] text-blue-800 " : ""}`}
                             >
                               <button
                                 type="button"
@@ -292,12 +288,10 @@ export function CreateInternalNodeModal({
                                   handleNodeSelect(node.internal_node_id)
                                 }
                                 className={`block text-left w-full py-2 px-3 rounded-md mb-2 transition-colors ${
-                                  selectedParentNode === node.internal_node_id
-                                    ? "    text-blue-800"
-                                    : "hover:bg-gray-100 "
+                                  selectedParentNode === node.internal_node_id ? "text-blue-800" : ""
                                 }`}
                               >
-                                <div className="flex  w-full items-center text-sm text-[#094C81] font-medium">
+                                <div className="flex w-full items-center text-sm text-[#094C81] font-medium">
                                   <span className="mr-2 mt-0.5">
                                     <GitForkIcon className="w-4 h-4" />
                                   </span>
@@ -317,26 +311,28 @@ export function CreateInternalNodeModal({
                                   </div>
                                 </div>
                               </button>
-
-                              {node.children && node.children.length > 0 && (
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => enterStructure(node)}
-                                  className="bg-transparent border-none opacity-70 group-hover:opacity-100 transition-opacity ml-2"
-                                  title={`Explore ${node.name} structure`}
-                                >
-                                  <ArrowRightIcon className="w-6 h-6 hover:text-[#094C81]" />
-                                </Button>
-                              )}
+                              <div className="flex justify-center items-center">
+                                {selectedParentNode === node.internal_node_id && (
+                                  <CheckCircleIcon className="w-5 h-5 text-green-500 mr-2" />
+                                )}
+                                {node.children && node.children.length > 0 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => enterStructure(node)}
+                                    className="bg-transparent border-none w-fit opacity-70 pr-2 group-hover:opacity-100 transition-opacity"
+                                    title={`Explore ${node.name} structure`}
+                                  >
+                                    <ArrowRightIcon className="w-6 h-6 hover:text-[#094C81]" />
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           ))
                         )}
                       </div>
 
                       {/* Selected parent info */}
-                      {selectedParentNode && (
+                      {/* {selectedParentNode && (
                         <div className="mt-3 p-2 bg-blue-50 rounded-md text-sm border border-blue-200">
                           <div className="flex items-center text-[#094C81] font-medium">
                             <span className="mr-2">
@@ -348,16 +344,17 @@ export function CreateInternalNodeModal({
                             </div>
                           </div>
                         </div>
-                      )}
+                      )} */}
                     </>
                   )}
                 </div>
+                
               </div>
-            }
+            )}
             {/* Name and Description Fields - Show with animation when parent is selected */}
             {
               <div
-                className={`flex flex-col gap-4 transition-all duration-500 ease-in-out overflow-hidden ${
+                className={`flex flex-col px-2 gap-4 transition-all duration-500 ease-in-out overflow-hidden ${
                   hasSelectedParent
                     ? `w-1/2 opacity-100 max-h-[500px] translate-x-0`
                     : `w-0 opacity-0 max-h-0 translate-x-[-20px] pointer-events-none`
@@ -417,8 +414,7 @@ export function CreateInternalNodeModal({
 
             <Button
               type="submit"
-              disabled={isCreatingNode || !name.trim()}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-[#094C81] hover:bg-[#094C81]/80 text-white"
             >
               {isCreatingNode ? "Creating..." : "Create Structure"}
             </Button>

@@ -252,7 +252,7 @@ export default function ProjectDetail() {
 
           {/* Project Hierarchy */}
           {activeTab === "issueFlow" && (
-            <IssueFlowList toggleActions={actions} project_id={id || ""} />
+            <IssueFlowList toggleActions={actions} parent_hierarchy_node_id={project.hierarchy_node_id} />
           )}
 
           {activeTab === "users" && (
