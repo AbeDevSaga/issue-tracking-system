@@ -1,0 +1,54 @@
+import { HomeIcon, UsersIcon } from 'lucide-react'
+import { useNavigate, useLocation } from 'react-router-dom'
+
+const navItems = [
+    {
+        label: 'Dashboard',
+        icon: <HomeIcon />,
+        path: '/dashboard'
+    },
+
+    {
+        label: 'Users',
+        icon: <UsersIcon />,
+        path: '/users'
+    },
+]
+
+const InternalNavBar = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isActive = (path: string) => {
+    return location.pathname === path || location.pathname.startsWith(path + '/');
+  };
+
+  return (
+    <div className="flex w-fit bg-white  items-center gap-2 px-3 py-2 rounded-md border border-[#e5e7eb] shadow-sm">
+      {navItems.map((item, index) => {
+        const active = isActive(item.path);
+
+        return (
+          <button
+            key={index}
+            onClick={() => navigate(item.path)}
+            className={`
+              flex items-center  gap-2 px-6 border border-[#e5e7eb] py-2 rounded-md text-sm font-medium
+              transition-all duration-300
+              ${
+                active
+                  ? "bg-[#073954] text-white"
+                  : "text-[#073954] bg-slate-1001 hover:bg-slate-200"
+              }
+            `}
+          >
+            <span className="h-4  text-[#073954] flex items-center justify-center w-full">{item.icon}</span>
+            <span>{item.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  )
+}
+
+export default InternalNavBar
