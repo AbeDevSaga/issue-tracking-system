@@ -283,24 +283,25 @@ export function CreateHierarchyNodeModal({
                                   </div>
                           
                                   {/* ✅ Show check icon if selected */}
-                                  {selectedParentNode === node.hierarchy_node_id && (
-                                    <CheckCircleIcon className="w-5 h-5 text-green-500 ml-2" />
-                                  )}
+                                  
                                 </div>
                               </button>
-                          
+                              <div className="flex justify-center items-center">
+                              {selectedParentNode === node.hierarchy_node_id && (
+                                    <CheckCircleIcon className="w-5 h-5 text-green-500 mr-2" />
+                                  )}
                               {node.children && node.children.length > 0 && (
-                                <Button
+                                <button
                                   type="button"
-                                  size="sm"
-                                  variant="ghost"
                                   onClick={() => enterStructure(node)}
-                                  className="bg-transparent border-none opacity-70 group-hover:opacity-100 transition-opacity ml-2"
+                                  className="bg-transparent border-none w-fit opacity-70 group-hover:opacity-100 transition-opacity"
                                   title={`Explore ${node.name} structure`}
                                 >
                                   <ArrowRightIcon className="w-6 h-6 hover:text-[#094C81]" />
-                                </Button>
+                                </button>
                               )}
+                              </div>
+                              
                             </div>
                           ))
                           

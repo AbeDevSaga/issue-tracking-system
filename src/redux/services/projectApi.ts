@@ -93,6 +93,24 @@ export const projectApi = baseApi.injectEndpoints({
       invalidatesTags: ["Project"],
     }),
 
+    // Assign internal user to project
+    assignInternalUserToProject: builder.mutation<
+      any,
+      {
+        project_id: string;
+        user_id: string;
+        role_id: string;
+        internal_node_id?: string;
+      }
+    >({
+      query: (data) => ({
+        url: `/projects/assign-internal-user`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Project"],
+    }),
+
     // Update project maintenance (timeline)
     updateProjectMaintenance: builder.mutation<
       {
@@ -150,6 +168,7 @@ export const {
   useGetProjectsByInstituteIdQuery,
   useDeleteProjectMutation,
   useAssignUserToProjectMutation,
+  useAssignInternalUserToProjectMutation,
   useRemoveUserFromProjectMutation,
   useGetProjectsByUserIdQuery, // 🔹 New hook added
 } = projectApi;

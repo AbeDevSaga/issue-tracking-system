@@ -87,7 +87,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     ({ value, onClick }, ref) => (
       <button
         type="button"
-        className="w-full min-w-[330px] h-10 border border-gray-300 px-4 py-2 rounded-md shadow-sm focus:ring-2 focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none flex items-center justify-between bg-white text-left"
+        className="w-full min-w-[330px] h-12 border border-gray-300 px-4 py-2 rounded-md shadow-sm focus:ring-2 focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none flex items-center justify-between bg-white text-left"
         onClick={onClick}
         ref={ref}
       >
@@ -109,7 +109,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     >
       <div className="bg-white p-6 rounded-2xl w-full max-w-[800px] shadow-2xl transform transition-all duration-200">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-[20px] font-bold text-[#094C81]">
+          <h2 className="text-[24px] font-bold text-[#094C81]">
             Create Project
           </h2>
           <button
@@ -121,17 +121,22 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         </div>
 
         <div className="flex w-full gap-4">
-          {/* Project Name and Description Row */}
-          <div className="w-1/2 flex flex-col gap-6 p-4 shadow-md rounded-md">
+          {/* Left Panel: Project Info (without title) */}
+          
+          <div className="w-1/2 border flex flex-col gap-6 p-4 shadow-md rounded-md">
+          <h3 className="text-[#094C81] font-semibold text-lg ">
+             Project Info
+            </h3>
             <div className="w-full">
               <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                Project Name *
+                Project Name <span className="text-red-500">*</span>
               </Label>
-              <Input
+              <input
+                type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter project name"
-                className="w-full h-10 border border-gray-300 px-4 rounded-md focus:ring-2 focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+                className="w-full border border-gray-300 px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none"
               />
             </div>
 
@@ -140,6 +145,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                 Description
               </Label>
               <Textarea
+                rows={3}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Project description"
@@ -148,11 +154,15 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
             </div>
           </div>
 
-          {/* Maintenance Timeline Row */}
-          <div className="w-1/2 flex flex-col gap-6 p-4 shadow-md rounded-md">
-            <div className="w-full ">
+          {/* Right Panel: Maintenance Timeline (keep title) */}
+          <div className="w-1/2 border flex flex-col gap-6 p-4 shadow-md rounded-md">
+            <h3 className="text-[#094C81] font-semibold text-lg ">
+              Maintenance and Support Timeline
+            </h3>
+
+            <div className="w-full">
               <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                Maintenance Start Date
+                Start Date
               </Label>
               <DatePicker
                 selected={maintenanceStart}
@@ -168,7 +178,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
 
             <div className="w-full">
               <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                Maintenance End Date
+                End Date
               </Label>
               <DatePicker
                 selected={maintenanceEnd}
@@ -189,8 +199,10 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={isLoading}>
-            {isLoading ? "Creating..." : "Create Project"}
+          <Button
+          
+          onClick={handleSubmit} disabled={isLoading}>
+            {isLoading ? "Creating..." : "Create"}
           </Button>
         </div>
       </div>

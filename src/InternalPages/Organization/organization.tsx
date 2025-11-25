@@ -2,13 +2,13 @@
 // import PageMeta from "../../components/common/PageMeta";
 // import OrganizationTable from "../../components/tables/BasicTables/organizationTable";
 // import { useTranslation } from "react-i18next";
-import OrganizationList from "../../components/tables/lists/organizationList";
+import InstituteList from "../../components/tables/lists/inistituteList";
 export default function Organization() {
   // const { t } = useTranslation();
 
   return (
     <>
-      <OrganizationList />
+      <InstituteList />
       {/* <PageMeta
         title={t("basedata.organization_management")}
         description={t("basedata.subtitle", { title: t("basedata.organization") })}
