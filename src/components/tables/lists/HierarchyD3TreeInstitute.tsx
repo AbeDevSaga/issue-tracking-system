@@ -87,7 +87,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({
 
   const handleViewDetailsClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    window.location.href = `/org_structure/${nodeDatum.attributes.internal_node_id}`;
+    window.location.href = `/issue_flow/${nodeDatum.attributes.internal_node_id}`;
   };
 
   // Card dimensions

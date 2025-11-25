@@ -166,7 +166,7 @@ export default function IssueFlowList({ toggleActions }: IssueFlowListProps) {
     setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
   };
 
-  console.log(filteredNodes,"this is the filtered nodes");
+  console.log(filteredNodes.length > 0 ? true : false,filteredNodes,"this is the filtered nodes");
   return (
     <>
       <PageLayout

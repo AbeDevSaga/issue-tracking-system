@@ -69,6 +69,7 @@ import CreateRole from "./pages/role/createRole";
 import Profile from "./pages/profile/profile";
 import PriorityLevelDetail from "./pages/priorityLevel/priorityLevelDetail";
 import InternalAppLayout from "./layout/InternalLayout/InternalAppLayout";
+import IssueFlow from "./InternalPages/IssueFlow/IssueFlow";
 const AuthLoader = () => {
   return (
     <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">
@@ -150,6 +151,7 @@ function AppContent() {
             path="/inistitutes/project/:id"
             element={<InternalProjectDetail />}
           />
+          <Route path="/issue_flow/:id" element={<IssueFlow />} />
           <Route path="/priority_level" element={<ProjectLevel />} />
           <Route path="/priority_level/:id" element={<PriorityLevelDetail />} />
           <Route path="/permission" element={<Permission />} />
