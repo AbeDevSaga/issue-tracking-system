@@ -121,6 +121,12 @@ export const userApi = baseApi.injectEndpoints({
       providesTags: ["User"],
     }),
 
+    // Get all users assigned to a project
+    getInternalUsersAssignedToProject: builder.query<any, string>({
+      query: (project_id) => `/users/project/internal/${project_id}`,
+      providesTags: ["User"],
+    }),
+
     // Get users from an institute NOT assigned to a project
     getUsersNotAssignedToProject: builder.query<
       User[],
@@ -226,6 +232,7 @@ export const {
   useGetUsersByHierarchyNodeIdQuery,
   useGetUsersAssignedToProjectQuery,
   useGetUsersNotAssignedToProjectQuery,
+  useGetInternalUsersAssignedToProjectQuery,
   useGetInternalUsersNotAssignedToProjectQuery,
   useGetUserByIdQuery,
   useCreateUserMutation,

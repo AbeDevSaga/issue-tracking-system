@@ -191,6 +191,10 @@ const AppSidebar: React.FC = () => {
       icon: <TaskList />,
       name: "Task List",
       path: "/task",
+    },{
+      icon: <TaskList />,
+      name: "Internal Task List",
+      path: "/task_list",
     },
     //  {
     //   icon: <TaskList />,
