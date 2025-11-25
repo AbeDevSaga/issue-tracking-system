@@ -78,6 +78,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({
   setModalOpen,
   setSelectedParentNodeId,
 }) => {
+  console.log(nodeDatum,"this is the node datum");
   const hasChildren = nodeDatum.children && nodeDatum.children.length > 0;
   const isActive = nodeDatum.attributes.is_active;
   const project = nodeDatum.attributes.project;
@@ -90,6 +91,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({
   };
 
   // Card dimensions
+  const descriptionHeight = nodeDatum.attributes.description ? 20 : 0;
   const cardWidth = 300; // Between 220-260px
   const padding = 40;
   const titleHeight = 20;
@@ -162,13 +164,13 @@ const CustomNode: React.FC<CustomNodeProps> = ({
             </span>
           </div>
 
-          {/* Project Name - Centered */}
-          {project && (
-            <div className="text-center mb-3 flex-1 flex items-center justify-center">
-              <p className="text-[#094C81] text-sm font-normal">
-                {project.length > 30
-                  ? `${project.substring(0, 30)}...`
-                  : project}
+          {/* Description - Centered */}
+          {nodeDatum.attributes.description && (
+            <div className="mb-3" style={{ height: descriptionHeight }}>
+              <p className="text-gray-600 font-bold text-center text-sm line-clamp-2">
+                {nodeDatum.attributes.description.length > 50
+                  ? `${nodeDatum.attributes.description.substring(0, 50)}...`
+                  : nodeDatum.attributes.description}
               </p>
             </div>
           )}
