@@ -15,6 +15,7 @@ const InternalAppHeader = () => {
     i18n.changeLanguage(lng);
     setLangOpen(false);
   };
+  
   return (
     <header className="sticky top-0 mx-auto  bg-white border-gray-200 z-50 dark:border-gray-800 dark:bg-gray-900 border-b">
       <div className="flex flex-col items-center justify-between grow lg:flex-row lg:px-6">
@@ -22,8 +23,8 @@ const InternalAppHeader = () => {
           <Link to="/" className="flex items-center  ">
             <img className="w-30" src="/logo.jpeg" alt="Logo" />
             <div className="flex -ml-5 flex-col">
-              <h1 className="text-4xl font-semibold text-[#094C81]">EAII</h1>
-              {/* <h1>Ethiopian Artificial Intelligence Institute</h1> */}
+              {/* <h1 className="text-4xl font-semibold text-[#094C81]">EAII</h1> */}
+              <h1 className="text-lg text-[#094C81] font-semibold">Ethiopian Artificial Intelligence Institute</h1>
             </div>
           </Link>
         </div>

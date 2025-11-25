@@ -216,7 +216,9 @@ const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({
   const { id:project_id } = useParams<{ id: string }>();
   if (!project_id) {
     throw new Error('Project ID is required');
+
   }
+  console.log(data,"this is the data");
   const [isModalOpen, setModalOpen] = useState(false);
   // Build tree from flat list using the simple technique
   const buildTree = (nodes: TreeNode[]): TreeNode[] => {
@@ -263,21 +265,15 @@ const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({
       return { d3TreeData: null, rootNodeOptions: [] };
     }
     
-    console.log('═══════════════════════════════════════');
-    console.log('🌳 HIERARCHY TREE - BUILDING FROM FLAT LIST');
-    console.log('═══════════════════════════════════════');
-    console.log('📥 Raw flat list received:', data.length, 'nodes');
     
     // Build tree from flat list
     const treeNodes = buildTree(data);
     
-    console.log('🌲 Tree built - Root nodes:', treeNodes.length);
     
     // Log each root node and its full hierarchy
     const logHierarchy = (node: TreeNode, depth = 0, prefix = '') => {
       const indent = '  '.repeat(depth);
       const nodeInfo = `${indent}${prefix}${node.name} (Level ${node.level}, ID: ${node.hierarchy_node_id}, Children: ${node.children?.length || 0})`;
-      console.log(nodeInfo);
       
       if (node.children && node.children.length > 0) {
         node.children.forEach((child, index) => {
@@ -290,7 +286,6 @@ const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({
     
     if (treeNodes && treeNodes.length > 0) {
       treeNodes.forEach((rootNode, index) => {
-        console.log(`\n🌲 Root Node ${index + 1}:`);
         logHierarchy(rootNode);
       });
     }
@@ -304,11 +299,7 @@ const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({
       label: `${node.name}${node.project?.name ? ` (${node.project.name})` : ''}`,
     }));
     
-    console.log('\n🔄 Converted to D3 Tree Format:');
-    console.log('📦 Root nodes count:', converted.length);
-    console.log('🌲 Full D3 Tree Structure:', JSON.stringify(converted, null, 2));
-    console.log('═══════════════════════════════════════\n');
-    
+     
     return {
       d3TreeData: converted,
       rootNodeOptions: options,

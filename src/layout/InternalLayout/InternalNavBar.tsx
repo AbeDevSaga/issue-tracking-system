@@ -33,7 +33,7 @@ const InternalNavBar = () => {
             key={index}
             onClick={() => navigate(item.path)}
             className={`
-              flex items-center  gap-2 px-6 border border-[#e5e7eb] py-2 rounded-md text-sm font-medium
+              flex items-center bg-gray-50  gap-2 px-6 border border-[#e5e7eb] py-2 rounded-md text-sm font-medium
               transition-all duration-300
               ${
                 active
@@ -42,7 +42,7 @@ const InternalNavBar = () => {
               }
             `}
           >
-            <span className="h-4  text-[#073954] flex items-center justify-center w-full">{item.icon}</span>
+            <span className="h-4 w-4  text-[#073954] flex items-center justify-center ">{item.icon}</span>
             <span>{item.label}</span>
           </button>
         );

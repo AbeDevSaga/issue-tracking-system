@@ -55,7 +55,7 @@ export const CreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-[20px] font-bold text-[#094C81]">
-            Add New Organization
+            Create New Organization
           </h2>
           <button
             onClick={onClose}
@@ -147,7 +147,7 @@ export const CreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
                 <span>Creating...</span>
               </div>
             ) : (
-              "Create Organization"
+              "Create "
             )}
           </Button>
         </div>
