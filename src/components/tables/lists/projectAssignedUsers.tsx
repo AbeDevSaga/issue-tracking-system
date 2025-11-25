@@ -8,14 +8,15 @@ import {
   useGetHierarchyNodesByProjectIdQuery,
 } from "../../../redux/services/hierarchyNodeApi";
 
-import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
-import { CreateHierarchyNodeModal } from "../../modals/CreateHierarchyNodeModal";
-import HierarchyD3Tree from "./HierarchyD3Tree";
-import { useGetUsersAssignedToProjectQuery } from "../../../redux/services/userApi";
+import {
+  useGetInternalUsersAssignedToProjectQuery,
+  useGetUsersAssignedToProjectQuery,
+} from "../../../redux/services/userApi";
 import { Plus } from "lucide-react";
+import AssignInternalUsersModal from "../../modals/AssignInternalUsersToProjectModal";
 
 // ------------------- Table Columns -------------------
 const ProjectUserTableColumns = (deleteUser: any) => [
@@ -43,10 +44,10 @@ const ProjectUserTableColumns = (deleteUser: any) => [
     ),
   },
   {
-    accessorKey: "hierarchyNode.name",
-    header: "Assigned Node",
+    accessorKey: "internalNode.name",
+    header: "Level",
     cell: ({ row }: any) => (
-      <div>{row.original.hierarchyNode?.name || "N/A"}</div>
+      <div>{row.original.internalNode?.name || "N/A"}</div>
     ),
   },
   {
@@ -135,12 +136,10 @@ export default function ProjectAssignedUsers({
     pageSize: 10,
   });
 
-  const { data, isLoading, isError } = useGetUsersAssignedToProjectQuery(
-    project_id,
-    {
+  const { data, isLoading, isError } =
+    useGetInternalUsersAssignedToProjectQuery(project_id, {
       skip: !project_id,
-    }
-  );
+    });
 
   // You'll need to implement this mutation or use an existing one
   const [deleteUserAssignment] = useDeleteHierarchyNodeMutation(); // Replace with actual user assignment deletion mutation
@@ -233,6 +232,11 @@ export default function ProjectAssignedUsers({
             {/* <HierarchyD3Tree data={filteredUsers} isLoading={isLoading} /> */}
           </div>
         )}
+        <AssignInternalUsersModal
+          project_id={project_id}
+          isOpen={isModalOpen}
+          onClose={() => setModalOpen(false)}
+        />
       </PageLayout>
     </>
   );
