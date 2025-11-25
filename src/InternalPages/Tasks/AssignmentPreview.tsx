@@ -3,48 +3,61 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { useEscalateIssueMutation } from "../../redux/services/issueEscalationApi";
-import { FileUploadField } from "../../components/common/FileUploadField";
+import { useGetInternalProjectSubNodeUsersQuery } from "../../redux/services/userApi";
 
 interface AssignmentPreviewProps {
   issue_id: string;
   project_id: string;
   assigned_by: string;
+  internal_node_id: string;
   onClose?: () => void;
+}
+
+interface UserAssignment {
+  internal_project_user_role_id: string;
+  user_id: string;
+  user: {
+    user_id: string;
+    full_name: string;
+    email: string;
+  };
+  role: {
+    role_id: string;
+    name: string;
+  };
+  internalNode: {
+    internal_node_id: string;
+    name: string;
+    level: number;
+  };
 }
 
 export default function AssignmentPreview({
   issue_id,
   project_id,
   assigned_by,
+  internal_node_id,
   onClose,
 }: AssignmentPreviewProps) {
-  const [reason, setReason] = useState("");
-  const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
+  const {
+    data: usersData,
+    isLoading: isLoadingUsers,
+    isError,
+  } = useGetInternalProjectSubNodeUsersQuery(
+    { project_id, Internal_node_id: internal_node_id },
+    { refetchOnMountOrArgChange: true }
+  );
 
-  const [escalateIssue, { isLoading }] = useEscalateIssueMutation();
+  const users: UserAssignment[] = usersData?.assignments || [];
 
-  const handleSubmit = async () => {
-    if (!reason.trim()) {
-      return toast.error("Please provide a reason.");
-    }
+  const handleAssign = (user: UserAssignment) => {
+    toast.success(`Assigned to ${user.user.full_name}`);
+    // Add your assignment logic here
+  };
 
-    try {
-      await escalateIssue({
-        issue_id,
-        from_tier,
-        to_tier: to_tier || null,
-        reason,
-        escalated_by,
-        attachment_ids: attachmentIds,
-      }).unwrap();
-
-      toast.success("Assignment submitted successfully!");
-
-      onClose?.();
-    } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to submit assignment.");
-    }
+  const handleRemove = (user: UserAssignment) => {
+    toast.error(`Removed ${user.user.full_name}`);
+    // Add your removal logic here
   };
 
   return (
@@ -53,42 +66,126 @@ export default function AssignmentPreview({
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 100 }}
       transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="absolute top-0 right-0 w-full lg:w-[360px] bg-white border-l border-[#D5E3EC] h-full p-6 flex flex-col gap-4 shadow-lg"
+      className="absolute top-0 right-0 w-full lg:w-[360px] bg-white border-l border-[#D5E3EC] h-full flex flex-col shadow-xl"
     >
-      <div className="flex flex-col gap-3">
-        <h4 className="font-semibold text-[#1E516A]">Document Attachment</h4>
+      {/* Header */}
+      <div className="p-6 border-b border-[#D5E3EC] bg-gradient-to-r from-[#1E516A] to-[#2C6B8A]">
+        <h2 className="text-xl font-bold text-white">Assign Users</h2>
+        <p className="text-blue-100 text-sm mt-1">
+          Select users to assign this issue
+        </p>
+      </div>
 
-        <FileUploadField
-          id="assignment_attachments"
-          label="Upload files"
-          value={attachmentIds}
-          onChange={setAttachmentIds}
-          accept="image/*,.pdf,.doc,.docx"
-          multiple={true}
-        />
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-6">
+        {/* Users List */}
+        <div className="mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-semibold text-[#1E516A] text-lg">
+              Available Users
+            </h3>
+            <span className="text-sm text-gray-500 bg-blue-50 px-2 py-1 rounded">
+              {users.length} users
+            </span>
+          </div>
 
-        <h4 className="font-semibold text-[#1E516A] mt-4">Assignment Reason</h4>
+          {isLoadingUsers ? (
+            <div className="flex justify-center items-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1E516A]"></div>
+            </div>
+          ) : isError ? (
+            <div className="text-center py-8 text-red-500">
+              Failed to load users
+            </div>
+          ) : users.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No users available for assignment
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {users.map((userAssignment) => (
+                <motion.div
+                  key={userAssignment.internal_project_user_role_id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`bg-white rounded-lg border-2 transition-all duration-200 ${"border-gray-200 shadow-md hover:shadow-lg"}`}
+                >
+                  <div className="p-4">
+                    {/* User Info */}
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-800">
+                          {userAssignment.user.full_name}
+                        </h4>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {userAssignment.user.email}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                            {userAssignment.role.name}
+                          </span>
+                          <span className="inline-block px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                            {userAssignment.internalNode.name}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
 
-        <textarea
-          className="w-full border border-[#BFD7EA] rounded-lg p-3 text-sm h-32 focus:outline-none focus:ring-2 focus:ring-[#1E516A]"
-          placeholder="Explain why this assignment is needed"
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-        />
+                    {/* Action Buttons */}
+                    <div className="flex gap-2 pt-3 border-t border-gray-100">
+                      <button
+                        onClick={() => handleAssign(userAssignment)}
+                        className="flex-1 bg-[#1E516A] text-white py-2 px-3 rounded-md text-sm font-medium hover:bg-[#2C6B8A] transition-colors duration-200 flex items-center justify-center gap-1"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                          />
+                        </svg>
+                        Assign
+                      </button>
+                      <button
+                        onClick={() => handleRemove(userAssignment)}
+                        className="flex-1 bg-gray-100 text-gray-700 py-2 px-3 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center gap-1"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
 
-        <div className="w-full flex justify-around mt-3">
-          <button
-            onClick={handleSubmit}
-            disabled={isLoading}
-            className="px-4 py-2 rounded-md bg-[#1E516A] text-white font-semibold disabled:opacity-50"
-          >
-            {isLoading ? "Submitting..." : "Confirm"}
-          </button>
-
+      {/* Footer Actions */}
+      <div className="p-6 border-t border-[#D5E3EC] bg-white">
+        <div className="flex gap-3">
           <button
             onClick={onClose}
-            disabled={isLoading}
-            className="px-4 py-2 rounded-md bg-[#1E516A] text-white font-semibold disabled:opacity-50"
+            className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors duration-200"
           >
             Cancel
           </button>

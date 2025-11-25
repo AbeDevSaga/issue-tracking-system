@@ -75,6 +75,15 @@ export const internalNodeApi = baseApi.injectEndpoints({
       providesTags: (result, error, id) => [{ type: "InternalNode", id }],
     }),
 
+    // 🟢 Get user-assigned internal nodes by project
+    getUserInternalNodesByProject: builder.query<
+      { user_id: string; full_name: string; internal_nodes: InternalNode[] }[],
+      string
+    >({
+      query: (projectId) => `/internal-nodes/project/${projectId}/user-nodes`,
+      providesTags: ["InternalNode"],
+    }),
+
     // ✅ Update internal node
     updateInternalNode: builder.mutation<
       InternalNode,
@@ -125,5 +134,6 @@ export const {
   useUpdateInternalNodeMutation,
   useDeleteInternalNodeMutation,
   useGetParentInternalNodesQuery,
+  useGetUserInternalNodesByProjectQuery,
   useGetInternalTreeQuery,
 } = internalNodeApi;

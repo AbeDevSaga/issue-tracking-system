@@ -36,6 +36,8 @@ import IssueHistoryLog from "../../pages/userTasks/IssueHistoryLog";
 import EscalationPreview from "../../pages/userTasks/EscalationPreview";
 import ResolutionPreview from "../../pages/userTasks/ResolutionPreview";
 import AssignmentPreview from "./AssignmentPreview";
+import { useGetUserInternalNodesByProjectQuery } from "../../redux/services/internalNodeApi";
+import Project from "../../pages/project/project";
 
 export default function UserTaskDetail() {
   const { id } = useParams<{ id: string }>();
@@ -49,12 +51,22 @@ export default function UserTaskDetail() {
   const [resolveIssue, setResolveIssue] = useState(false);
   const [markIssue, setMarkIssue] = useState(false);
   const [openTimeline, setOpenTimeline] = useState(false);
-
+  const [project_id, setProjectId] = useState("");
+  const [internal_node_id, setInternalNodeId] = useState("");
   const [fileViewerUrl, setFileViewerUrl] = useState<string | null>(null);
   const [hierarchyStructure, setHierarchyStructure] = useState<any>(null);
 
   const { data: loggedUser, isLoading: userLoading } = useGetCurrentUserQuery();
   const userId = loggedUser?.user?.user_id || "";
+  const {
+    data: userProjectNode,
+    isLoading: isLoadingNode,
+    isError: nodeError,
+  } = useGetUserInternalNodesByProjectQuery(project_id, {
+    skip: !project_id,
+  });
+  // assignments
+  console.log("userProjectNode: ", userProjectNode);
 
   useEffect(() => {
     if (loggedUser?.user?.project_roles && issue?.project?.project_id) {
@@ -80,6 +92,20 @@ export default function UserTaskDetail() {
   useEffect(() => {
     setMarkIssue(canMarkInProgress(userId, issue?.status, issue));
   }, [userId, issue?.status, issue]);
+
+  useEffect(() => {
+    setProjectId(issue?.project_id);
+  }, [issue?.project_id, issue]);
+
+  useEffect(() => {
+    if (userProjectNode?.assignments?.length) {
+      setInternalNodeId(
+        userProjectNode.assignments[0].internal_node?.internal_node_id || ""
+      );
+    } else {
+      setInternalNodeId("");
+    }
+  }, [userProjectNode]);
 
   // Map issue attachments to files array with proper URLs and file info
   const issueFiles =
@@ -720,10 +746,10 @@ export default function UserTaskDetail() {
             {selectedAction === "assign" && (
               <AssignmentPreview
                 issue_id={id || ""}
-                from_tier={hierarchyStructure?.hierarchy_node_id || ""}
-                to_tier={hierarchyStructure?.parent_id || ""}
+                project_id={project_id || ""}
+                internal_node_id={internal_node_id}
                 onClose={() => setSelectedAction("")}
-                escalated_by={userId}
+                assigned_by={userId}
               />
             )}{" "}
             {openTimeline && (
