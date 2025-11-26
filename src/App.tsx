@@ -70,6 +70,7 @@ import Profile from "./pages/profile/profile";
 import PriorityLevelDetail from "./pages/priorityLevel/priorityLevelDetail";
 import InternalAppLayout from "./layout/InternalLayout/InternalAppLayout";
 import IssueFlow from "./InternalPages/IssueFlow/IssueFlow";
+import IssueConfigurationDetail from "./InternalPages/IssueFlow/IssueConfigurationDetail";
 const AuthLoader = () => {
   return (
     <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">
@@ -162,6 +163,7 @@ function AppContent() {
           <Route path="/issue_category/:id" element={<IssueCategoryDetail />} />
           <Route path="/my_issue" element={<MyIssue />} />
           <Route path="/issue_configuration" element={<IssueFlowConfig />} />
+          <Route path="/issue_configuration/:id" element={<IssueConfigurationDetail />} />
           {/* IssueFlowConfig */}
           <Route path="/add_issue" element={<MyissueForm />} />
           <Route path="/qa_tasks" element={<QATask />} />

@@ -8,12 +8,26 @@ import { Label } from "../ui/cn/label";
 import { useCreateIssuePriorityMutation } from "../../redux/services/issuePriorityApi";
 import { XIcon } from "lucide-react";
 import { Textarea } from "../ui/cn/textarea";
-import { Select, SelectContent, SelectTrigger, SelectItem, SelectValue } from "../ui/cn/select";
-
+import {
+  Select,
+  SelectContent,
+  SelectTrigger,
+  SelectItem,
+  SelectValue,
+} from "../ui/cn/select";
+import { HexColorPicker } from "react-colorful";
 interface CreatePriorityModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+const responseTimeOptions = [
+  { label: "1 Day", value: "1day" },
+  { label: "3 Days", value: "3days" },
+  { label: "1 Week", value: "1week" },
+  { label: "2 Weeks", value: "2weeks" },
+  { label: "1 Month", value: "1month" },
+];
 
 export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
   isOpen,
@@ -23,6 +37,8 @@ export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
   const [description, setDescription] = useState("");
   const [responseTime, setResponseTime] = useState("");
   const [createPriority, { isLoading }] = useCreateIssuePriorityMutation();
+  const [color, setColor] = useState("#aabbcc");
+  const [open, setOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,9 +82,7 @@ export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
         >
           <div className="flex w-full gap-10">
             <div className="flex w-1/2 flex-col gap-3  space-y-1">
-              
-              
-              <div className="flex flex-col w-full"> 
+              <div className="flex flex-col w-full">
                 <Label
                   htmlFor="priority-name"
                   className="block text-sm text-[#094C81] font-medium mb-2"
@@ -82,7 +96,7 @@ export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter priority name"
                   required
-                  className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+                  className="w-full h-11 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
                 />
               </div>
               {/* Response Time */}
@@ -93,37 +107,74 @@ export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
                 >
                   Response Time
                 </Label>
-              </div>
-              <Select
 
-               value={responseTime} onValueChange={(value) => setResponseTime(value)}>
-                <SelectTrigger className="w-full bg-white h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
-                  <SelectValue className="text-sm text-[#094C81] font-medium" placeholder="Select response time" />
-                </SelectTrigger>
-                <SelectContent className="text-sm bg-white text-[#094C81] font-medium">
-                  <SelectItem className="text-sm text-[#094C81] font-medium" value="1hr">1 Hour</SelectItem>
-                  <SelectItem className="text-sm text-[#094C81] font-medium" value="4hr">4 Hours</SelectItem>
-                  <SelectItem className="text-sm text-[#094C81] font-medium" value="1day">1 Day</SelectItem>
-                  <SelectItem className="text-sm text-[#094C81] font-medium" value="2day">2 Days</SelectItem>
-                  <SelectItem className="text-sm text-[#094C81] font-medium" value="1week">1 Week</SelectItem>
-                </SelectContent>
-              </Select>
+                <Select
+                  value={responseTime}
+                  onValueChange={(value) => setResponseTime(value)}
+                >
+                  <SelectTrigger className="h-11 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
+                    <SelectValue
+                      className="text-sm text-[#094C81] font-medium"
+                      placeholder="Select response time"
+                    />
+                  </SelectTrigger>
+
+                  <SelectContent className="text-sm bg-white text-[#094C81] font-medium">
+                    {responseTimeOptions.map((item) => (
+                      <SelectItem
+                        key={item.value}
+                        value={item.value}
+                        className="text-sm text-[#094C81] font-medium"
+                      >
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Description */}
+              <div className="flex flex-col w-full">
+                <Label
+                  htmlFor="priority-description"
+                  className="block text-sm text-[#094C81] font-medium mb-2"
+                >
+                  Description
+                </Label>
+                <Textarea
+                  id="priority-description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Enter description (optional)"
+                  className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+                />
+              </div>
             </div>
 
-            <div className="flex w-1/2 flex-col space-y-1">
-              <Label
-                htmlFor="priority-description"
-                className="block text-sm text-[#094C81] font-medium mb-2"
-              >
-                Description
-              </Label>
-              <Textarea
-                id="priority-description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Enter description (optional)"
-                className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
-              />
+            <div className="flex w-1/2 flex-col gap-3 space-y-1">
+              {/* Priority Color */}
+              <div className="flex flex-col w-full">
+                <Label
+                  htmlFor="priority-color"
+                  className="block text-sm text-[#094C81] font-medium mb-2"
+                >
+                  Priority Color
+                </Label>
+
+                <div className="min-h-[200px]  border bg-white w-full h-full shadow-md p-3 rounded-md">
+                  <HexColorPicker color={color} onChange={setColor} />
+                </div>
+                <div className="flex justify-end mt-2">
+                  {/* Copy Color Code */}
+                  {/* input field to show the color code */}
+                  <Input
+                    type="text"
+                    value={color}
+                    onChange={(e) => setColor(e.target.value)}
+                    className="w-full h-10 text-[#094C81] border-gray-300 px-4 py-3 rounded-md border focus:ring-0 focus:ring-transparent transition-all duration-200 outline-none"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -132,7 +183,7 @@ export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Creating..." : "Create Priority"}
+              {isLoading ? "Creating..." : "Create"}
             </Button>
           </div>
         </form>
@@ -140,3 +191,6 @@ export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
     </div>
   );
 };
+// .your-component .react-colorful {
+//   height: 240px;
+// }

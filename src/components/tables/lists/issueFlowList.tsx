@@ -76,7 +76,7 @@ const InternalNodeTableColumns = (deleteNode: any) => [
       return (
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/issue_flow/${node.internal_node_id}`}>
+            <Link to={`/issue_configuration/${node.internal_node_id}`}>
               <Eye className="h-4 w-4" />
             </Link>
           </Button>

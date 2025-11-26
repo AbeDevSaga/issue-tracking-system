@@ -11,7 +11,22 @@ import {
   useDeleteIssuePriorityMutation,
 } from "../../../redux/services/issuePriorityApi";
 import { CreatePriorityModal } from "../../modals/CreatePriorityModal";
+import DeleteModal from "../../common/DeleteModal";
 
+
+export default function IssuePriorityList() {
+  const [response, setResponse] = useState<any[]>([]);
+  const [filteredResponse, setFilteredResponse] = useState<any[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [pageDetail, setPageDetail] = useState({
+    pageIndex: 0,
+    pageCount: 1,
+    pageSize: 10,
+  });
+  const [deletePriority,{isLoading: isDeleteLoading}] = useDeleteIssuePriorityMutation();
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deletePriorityId, setDeletePriorityId] = useState<string>("");
 // --- Define table columns ---
 const PriorityTableColumns = [
   {
@@ -32,7 +47,6 @@ const PriorityTableColumns = [
     header: "Actions",
     cell: ({ row }: any) => {
       const priority = row.original;
-      const [deletePriority] = useDeleteIssuePriorityMutation();
 
       return (
         <div className="flex items-center space-x-2">
@@ -59,7 +73,11 @@ const PriorityTableColumns = [
             variant="outline"
             size="sm"
             className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-            onClick={() => deletePriority(priority.priority_id)}
+            onClick={() => {
+              setDeleteModalOpen(true);
+              setDeletePriorityId(priority.priority_id);
+              console.log("deletePriorityId", deletePriorityId);
+            }}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -69,18 +87,6 @@ const PriorityTableColumns = [
     },
   },
 ];
-
-export default function IssuePriorityList() {
-  const [response, setResponse] = useState<any[]>([]);
-  const [filteredResponse, setFilteredResponse] = useState<any[]>([]);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [isModalOpen, setModalOpen] = useState(false);
-  const [pageDetail, setPageDetail] = useState({
-    pageIndex: 0,
-    pageCount: 1,
-    pageSize: 10,
-  });
-
   const { data, isLoading, isError } = useGetIssuePrioritiesQuery();
 
   const actions: ActionButton[] = [
@@ -161,6 +167,15 @@ export default function IssuePriorityList() {
       <CreatePriorityModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
+      />
+      <DeleteModal
+        message="Are you sure you want to delete this priority?"
+        onCancel={() => setDeleteModalOpen(false)}
+        onDelete={() => {deletePriority(deletePriorityId).unwrap()
+          setDeleteModalOpen(false);}
+        }
+        open={isDeleteModalOpen}
+        isLoading={isDeleteLoading || isLoading}
       />
     </>
   );
