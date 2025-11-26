@@ -39,6 +39,7 @@
   },
   "basedata": {
     "title": "Base Data",
+
     "first_subtitle": "This is the central admin basedata.",
     "subtitle": "This is the Base Data of the {{title}}",
     "organization_management": "Organization Management",
@@ -64,6 +65,8 @@
     "priority_level": "Priority Level",
     "risk_level_management": "Risk Level Management",
     "issue_category": "Issue Category",
+    "issue_flow": "Issue Flow",
+    "issue_configuration": "Issue Configuration",
     "branch": "Branch",
     "level": "Level",
     "response_time": "Response Time",

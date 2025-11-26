@@ -5,6 +5,7 @@ import { Select, SelectTrigger } from '../../ui/cn/select';
 import { SelectItem, SelectContent, SelectValue } from '../../ui/cn/select';
 import { CreateHierarchyNodeModal } from '../../modals/CreateHierarchyNodeModal';
 import { useParams } from 'react-router-dom';
+import { CreateInstituteHierarchyNodeModal } from '../../modals/CreateInstituteHierarchyNodeModal';
 
 // ---------------------------
 // Types
@@ -87,7 +88,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({
 
   const handleViewDetailsClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    window.location.href = `/issue_flow/${nodeDatum.attributes.internal_node_id}`;
+    window.location.href = `/issue_configuration/${nodeDatum.attributes.internal_node_id}`;
   };
 
   // Card dimensions
@@ -216,10 +217,6 @@ const HierarchyD3TreeInstitute: React.FC<HierarchyD3TreeProps> = ({
   const [selectedParentNodeId, setSelectedParentNodeId] = useState<string | null>(null);
   // params id
   const { id:project_id } = useParams<{ id: string }>();
-  if (!project_id) {
-    throw new Error('Project ID is required');
-
-  }
   console.log(data,"this is the data");
   const [isModalOpen, setModalOpen] = useState(false);
   // Build tree from flat list using the simple technique
@@ -467,9 +464,8 @@ const HierarchyD3TreeInstitute: React.FC<HierarchyD3TreeProps> = ({
           </div>
         )}
       </div>
-      <CreateHierarchyNodeModal
+      <CreateInstituteHierarchyNodeModal
         parent_hierarchy_node_id={selectedParentNodeId}
-        project_id={project_id }
         isOpen={isModalOpen}
         onClose={() => {
           setModalOpen(false);

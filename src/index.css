@@ -778,3 +778,19 @@ span.flatpickr-weekday,
 .simplebar-scrollbar.simplebar-visible:before {
   @apply opacity-100;
 }
+
+
+/* override react-colorful size */
+.react-colorful {
+  width: 100% !important;
+  height: 100% !important; 
+}
+
+.react-colorful__saturation {
+  border-radius: 0.5rem; /* optional → round corners */
+}
+
+.react-colorful__hue,
+.react-colorful__alpha {
+  height: 12px; /* optional tuning */
+}
