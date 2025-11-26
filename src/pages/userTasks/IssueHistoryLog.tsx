@@ -79,7 +79,7 @@ export default function IssueHistoryLog({ logs, onClose }: LogsPreviewProps) {
       </div>
 
 
-      <div className="relative px-4 mt-5">
+      <div className="relative px-4 my-5 mb-8">
         {/* Vertical timeline line */}
         <div className="absolute left-5 top-2 bottom-2 w-0.5 bg-gradient-to-b from-blue-200 via-purple-200 to-green-200"></div>
 

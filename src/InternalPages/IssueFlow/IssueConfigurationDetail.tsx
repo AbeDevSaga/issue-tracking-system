@@ -18,6 +18,7 @@ import { Button } from "../../components/ui/cn/button";
 import { useState } from "react";
 import { CreateChildInternalNodeModal } from "../../components/modals/CreateChildInternalNodeModal";
 import InternalNodeUsersList from "../../components/tables/lists/InternalNodeUsersList";
+import InternalNodeUsersListConfig from "../../components/tables/lists/InternalNodeUsersListConfig";
 
 const IssueConfigurationDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -226,7 +227,7 @@ const IssueConfigurationDetail = () => {
             onClose={() => setModalOpen(false)}
           />
           {/* Assigned Users */}
-          <InternalNodeUsersList
+          <InternalNodeUsersListConfig
             projectId={localStorage.getItem("current_project_id") || ""}
             internal_node_id={id || ""}
             internal_node_name={issueFlow.name || ""}
