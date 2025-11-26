@@ -28,6 +28,8 @@ import {
   canAssign,
   canConfirm,
   canEscalate,
+  canInternallyMarkInProgress,
+  canInternallyResolve,
   canMarkInProgress,
   canResolve,
 } from "../../utils/taskHelper";
@@ -86,11 +88,11 @@ export default function UserTaskDetail() {
   }, [userId, issue?.status, issue]);
 
   useEffect(() => {
-    setResolveIssue(canResolve(userId, issue?.status, issue));
+    setResolveIssue(canInternallyResolve(userId, issue?.status, issue));
   }, [userId, issue?.status, issue]);
 
   useEffect(() => {
-    setMarkIssue(canMarkInProgress(userId, issue?.status, issue));
+    setMarkIssue(canInternallyMarkInProgress(userId, issue?.status, issue));
   }, [userId, issue?.status, issue]);
 
   useEffect(() => {
