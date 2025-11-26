@@ -16,10 +16,10 @@ const InfoCard: React.FC<InfoCardProps> = ({
   onClick,
 }) => {
   return (
-    <div className="flex flex-col justify-between p-4 bg-white rounded-xl shadow-[0_4px_15px_rgba(9,76,129,0.4)] border border-gray-200 dark:bg-gray-800 dark:border-gray-700 w-full max-w-lg">
-      <div className="flex items-center gap-3">
-        {icon && <div className="text-blue-600 dark:text-blue-400">{icon}</div>}
-        <div className="flex-1">
+    <div className="flex gap-5 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-gradient-to-b from-[#F9FBFC] to-[#EFF6FB] rounded-[35px] justify-between items-center p-4 bg-white  border border-gray-200 dark:bg-gray-800 dark:border-gray-700 w-full ">
+      <div className="flex items-center gap-5">
+        {icon && <div className="text-blue-600 dark:text-blue-400 ">{icon}</div>}
+        <div className="flex-1 ">
           <h3 className="text-lg font-semibold mb-1 text-black dark:text-gray-100">
             {title}
           </h3>
@@ -29,10 +29,10 @@ const InfoCard: React.FC<InfoCardProps> = ({
         </div>
       </div>
       {onClick && (
-        <div className="flex justify-end mt-4">
+        <div className="flex justify-center h-fit items-center">
           <button
             onClick={onClick}
-            className="px-4 py-1.5 bg-[#094C81] text-white text-sm font-medium rounded-lg hover:bg-[#07365c] transition"
+            className="px-5 py-1.5 bg-[#094C81] text-white text-sm font-medium rounded-lg hover:bg-[#07365c] transition"
           >
             {buttonText}
           </button>

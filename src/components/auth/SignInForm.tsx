@@ -1,12 +1,12 @@
 // src/components/auth/SignInForm.tsx
 import { ChangeEvent, FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Checkbox from "../form/input/Checkbox";
 import Input from "../form/input/InputField";
 import Button from "../ui/button/Button";
+import { useLoginMutation } from "../../redux/services/authApi";
 
 interface FormData {
   email: string;
@@ -20,53 +20,32 @@ export default function SignInForm() {
     email: "",
     password: "",
   });
-  const [loading, setLoading] = useState<boolean>(false);
 
-  const { login, error, clearError, user, isAuthenticated } = useAuth();
+  const [login, { isLoading, error }] = useLoginMutation();
   const navigate = useNavigate();
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    // Clear error when user starts typing
-    if (error) clearError();
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: FormEvent): Promise<void> => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
     try {
-      console.log("Attempting login with:", formData);
-      const result = await login(formData);
+      const result = await login(formData).unwrap(); // unwrap to catch errors
       console.log("Login result:", result);
-      
-      // Check if tokens are stored in localStorage
-      const storedToken = localStorage.getItem('authToken');
-      const storedUser = localStorage.getItem('user');
-      console.log("Stored token:", storedToken ? "YES" : "NO");
-      console.log("Stored user:", storedUser ? "YES" : "NO");
-      
-      // Check auth state after login
-      console.log("Auth state after login - user:", user);
-      console.log("Auth state after login - isAuthenticated:", isAuthenticated);
-      
-      // Wait a bit for state to update, then navigate
-      setTimeout(() => {
-        console.log("Navigating to dashboard...");
-        navigate("/dashboard");
-      }, 100);
-      
-    } catch (error) {
-      console.error("Login error:", error);
-    } finally {
-      setLoading(false);
+
+      // Navigate after login
+      navigate("/dashboard");
+    } catch (err: any) {
+      console.error("Login failed:", err?.data?.message || err.message);
     }
   };
+
+  // Get stored user from localStorage for debug/info
+  const storedUser = localStorage.getItem("user");
+  const user = storedUser ? JSON.parse(storedUser) : null;
 
   return (
     <div className="flex flex-col w-full max-w-md">
@@ -81,15 +60,15 @@ export default function SignInForm() {
 
       {/* Debug Info - Remove in production */}
       <div className="mb-4 p-2 bg-yellow-100 border border-yellow-400 text-yellow-700 text-xs">
-        <div>User: {user ? user.name : "None"}</div>
-        <div>Authenticated: {isAuthenticated ? "YES" : "NO"}</div>
-        <div>Loading: {loading ? "YES" : "NO"}</div>
+        <div>User: {user ? user.full_name : "None"}</div>
+        <div>Authenticated: {user ? "YES" : "NO"}</div>
+        <div>Loading: {isLoading ? "YES" : "NO"}</div>
       </div>
 
       {/* Error Message */}
       {error && (
         <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-          {error}
+          {(error as any).data?.message || "Login failed"}
         </div>
       )}
 
@@ -160,9 +139,9 @@ export default function SignInForm() {
           type="submit"
           className="w-full bg-[#269A99] hover:bg-[#1d7d7d] disabled:opacity-50"
           size="md"
-          disabled={loading || !formData.email || !formData.password}
+          disabled={isLoading || !formData.email || !formData.password}
         >
-          {loading ? "Signing In..." : "Sign In"}
+          {isLoading ? "Signing In..." : "Sign In"}
         </Button>
 
         {/* Don't have an account? */}

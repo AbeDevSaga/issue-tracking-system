@@ -2,20 +2,38 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useSidebar } from "../context/SidebarContext";
+ 
 import {
+  Home,
+  Users,
+  Building2,
+  Landmark,
+  Database,
+  FileWarning,
+  ClipboardList,
+  ClipboardCheck,
+  ChartPieIcon,
+  PlugIcon,
   ChevronDownIcon,
-  GroupIcon,
-  HorizontaLDots,
-  PieChartIcon,
-  PlugInIcon
-} from "../icons";
+} from "lucide-react";
 import { useAuth } from "./../contexts/AuthContext";
 import { PERMISSIONS } from "./../types/auth";
 import SidebarWidget from "./SidebarWidget";
-import Logo from "../assets/logo.png"
+import Logo from "../assets/logo.png";
+import { HorizontaLDots } from "../icons";
 
 const HomeIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
     <polyline points="9 22 9 12 15 12 15 22" />
   </svg>
@@ -132,107 +150,95 @@ const AppSidebar: React.FC = () => {
     type: "main" | "others";
     index: number;
   } | null>(null);
-  const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>({});
+  const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
+    {}
+  );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const isActive = useCallback(
-    (path: string) => location.pathname === path || location.pathname.startsWith(path + '/'),
+    (path: string) =>
+      location.pathname === path || location.pathname.startsWith(path + "/"),
     [location.pathname]
   );
 
-  // 📌 PERMISSION-BASED MENU STRUCTURE
-const navItems: NavItem[] = [
-  {
-    icon: <HomeIcon />,
-    name: "Dashboard",
-    path: "/dashboard",
-  },
-
-  {
-    icon: <GroupIcon />,
-    name: "User Management",
-    path: "/users"
-    //permission: PERMISSIONS.USER_READ,
-    // subItems: [
-    //   { 
-    //     name: "Role & Permissions ", 
-    //     path: "/roles", 
-    //    // permission: PERMISSIONS.ROLE_READ 
-    //   },
-      
-    //   { 
-    //     name: " Users", 
-    //     path: "/users", 
-    //   //  permission: PERMISSIONS.USER_READ 
-    //   },
-    // ],
-  },
-
-  {
-    icon: <BaseDataIcon />,
-    name: "BaseData",
-    path: "/basedata",
-  },
   
-  {
-    icon: <IssueIcon />,
-    name: "My Issue",
-    path: "/my_issue",
-  },
-   {
-    icon: <TaskList />,
-    name: "Central Admin Task List",
-    path: "/central_admin_task_list",
-  },
-  {
-    icon: <TaskList />,
-    name: "QA Task List",
-    path: "/qa_tasks", 
-  },
+  // 📌 PERMISSION-BASED MENU STRUCTURE
+  const navItems: NavItem[] = [
     {
-    icon: <TaskList />,
-    name: "Team Leader Task List",
-    path: "/tl_tasks", 
-  },
-  {
-    icon: <TaskList />,
-    name: "Developer Task List",
-    path: "/developer_tasks", 
-  },
+      icon: <Home />,
+      name: "Dashboard",
+      path: "/dashboard",
+    },
+  
+    {
+      icon: <Users />,
+      name: "User Management",
+      path: "/users",
+    },
+    {
+      icon: <Building2 />,
+      name: "Inistitute Management",
+      path: "/inistitutes",
+    },
+    {
+      icon: <Landmark />,
+      name: "Organization Management",
+      path: "/organization",
+    },
+    {
+      icon: <Database />,
+      name: "BaseData",
+      path: "/basedata",
+    },
+  
+    {
+      icon: <FileWarning />,
+      name: "My Issue",
+      path: "/my_issue",
+    },
+    {
+      icon: <ClipboardList />,
+      name: "Task List",
+      path: "/task",
+    },
+    {
+      icon: <ClipboardCheck />,
+      name: "Internal Task List",
+      path: "/task_list",
+    },
+  
+    // Uncomment if needed later:
+    // {
+    //   icon: <ClipboardList />,
+    //   name: "Central Admin Task List",
+    //   path: "/central_admin_task_list",
+    // },
+  ];
+  
 
-];
-
-const othersItems: NavItem[] = [
-  {
-    icon: <PieChartIcon />,
-    name: "Reports & Analytics",
-    anyPermissions: [PERMISSIONS.REPORTS, PERMISSIONS.AUDIT_LOGS_VIEW],
-    subItems: [
-      { 
-        name: "Reports", 
-        path: "/financial", 
-        permission: PERMISSIONS.FINANCIAL_REPORTS 
-      },
-     
-    
-    ],
-  },
-  {
-    icon: <PlugInIcon />,
-    name: "System Settings",
-    subItems: [
-      { name: "Profile", path: "/profile" },
-     
-   
-    
-    ],
-  },
-
-];
+  const othersItems: NavItem[] = [
+    {
+      icon: <ChartPieIcon />,
+      name: "Reports & Analytics",
+      anyPermissions: [PERMISSIONS.REPORTS, PERMISSIONS.AUDIT_LOGS_VIEW],
+      subItems: [
+        {
+          name: "Reports",
+          path: "/financial",
+          permission: PERMISSIONS.FINANCIAL_REPORTS,
+        },
+      ],
+    },
+    {
+      icon: <PlugIcon />,
+      name: "System Settings",
+      subItems: [{ name: "Profile", path: "/profile" }],
+    },
+  ];
 
   // Filter menu items based on permissions
   const filterMenuItems = (items: NavItem[]) => {
-    return items.filter(item => {
+    return items.filter((item) => {
       // Check main item permission
       if (item.permission && !hasPermission(item.permission)) {
         return false;
@@ -243,7 +249,7 @@ const othersItems: NavItem[] = [
 
       // Filter subitems
       if (item.subItems) {
-        item.subItems = item.subItems.filter(subItem => {
+        item.subItems = item.subItems.filter((subItem) => {
           if (subItem.permission && !hasPermission(subItem.permission)) {
             return false;
           }
@@ -311,7 +317,7 @@ const othersItems: NavItem[] = [
 
   const renderMenuItems = (items: NavItem[], menuType: "main" | "others") => {
     const filteredItems = filterMenuItems(items);
-    
+
     if (filteredItems.length === 0) return null;
 
     return (
@@ -333,7 +339,8 @@ const othersItems: NavItem[] = [
               >
                 <span
                   className={`menu-item-icon-size  ${
-                    openSubmenu?.type === menuType && openSubmenu?.index === index
+                    openSubmenu?.type === menuType &&
+                    openSubmenu?.index === index
                       ? "menu-item-icon-active"
                       : "menu-item-icon-inactive"
                   }`}
@@ -359,7 +366,9 @@ const othersItems: NavItem[] = [
                 <Link
                   to={nav.path}
                   className={`menu-item group ${
-                    isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
+                    isActive(nav.path)
+                      ? "menu-item-active"
+                      : "menu-item-inactive"
                   }`}
                 >
                   <span
@@ -385,30 +394,30 @@ const othersItems: NavItem[] = [
                 className="overflow-hidden transition-all duration-300"
                 style={{
                   height:
-                    openSubmenu?.type === menuType && openSubmenu?.index === index
+                    openSubmenu?.type === menuType &&
+                    openSubmenu?.index === index
                       ? `${subMenuHeight[`${menuType}-${index}`]}px`
                       : "0px",
                 }}
               >
-               <ul className="relative mt-2 ml-5">
-  <span className="absolute left-0 top-0 w-[2px] h-full bg-gray-300 dark:bg-gray-600"></span>
+                <ul className="relative mt-2 ml-5">
+                  <span className="absolute left-0 top-0 w-[2px] h-full bg-gray-300 dark:bg-gray-600"></span>
 
-  {nav.subItems.map((subItem, idx) => (
-    <li key={subItem.name} className="relative pl-4">
-      <Link
-        to={subItem.path}
-        className={`menu-dropdown-item block ${
-          isActive(subItem.path)
-            ? "menu-dropdown-item-active"
-            : "menu-dropdown-item-inactive"
-        }`}
-      >
-        {subItem.name}
-      </Link>
-    </li>
-  ))}
-</ul>
-
+                  {nav.subItems.map((subItem, idx) => (
+                    <li key={subItem.name} className="relative pl-4">
+                      <Link
+                        to={subItem.path}
+                        className={`menu-dropdown-item block ${
+                          isActive(subItem.path)
+                            ? "menu-dropdown-item-active"
+                            : "menu-dropdown-item-inactive"
+                        }`}
+                      >
+                        {subItem.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
           </li>
@@ -420,7 +429,7 @@ const othersItems: NavItem[] = [
   return (
     <aside
       // className={`fixed mt-16 flex flex-col lg:mt-10 top-0 px-5 left-0 bg-white dark:bg-gray-900 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 dark:border-gray-800
-       className={`fixed mt-16 flex flex-col lg:mt-10 top-0 px-5 left-0 bg-white dark:bg-gray-900 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 dark:border-gray-800 rounded-r-2xl
+      className={`fixed mt-5 flex flex-col  top-0 px-5 left-0 bg-white dark:bg-gray-900 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 dark:border-gray-800 rounded-r-2xl
 
         ${
           isExpanded || isMobileOpen
@@ -434,48 +443,45 @@ const othersItems: NavItem[] = [
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-
-   <div
-  className={`py-2 flex flex-col mb-4 ${
-    !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-  } border-b border-gray-300`}
->
-  <Link
-    to="/"
-    className="flex flex-col items-center justify-center group p-2"
-  >
-      {isExpanded || isHovered || isMobileOpen ? (<>
-       <img
-      src={Logo}
-      alt="Logo"
-      className={isExpanded || isHovered || isMobileOpen ? "w-40" : "w-12"}
-    />
-  <h2 className="mt-2 text-xs uppercase text-center leading-[20px] text-[#094C81] dark:text-[#094C81] font-bold">
-  የኢትዮጵያ አርቴፊሻል ኢንተለጀንስ ተቋም
-</h2>
-<h2 className="text-xs uppercase text-center leading-[20px] text-[#094C81] dark:text-[#094C81] font-bold">
-  Ethiopian Artificial Intelligence
-</h2>
-</>):(<> 
-<img
-      src={Logo}
-      alt="Logo"
-      className={isExpanded || isHovered || isMobileOpen ? "w-40" : "w-12"}
-    />
-  
-</>)}
-   
-  </Link>
-
-</div>
-
+      <div
+        className={`py-2 flex flex-col mb-4 ${
+          !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+        } border-b border-gray-300`}
+      >
+        <Link
+          to="/"
+          className="flex flex-col items-center justify-center group p-2"
+        >
+          {isExpanded || isHovered || isMobileOpen ? (
+            <>
+              <img
+                src={Logo}
+                alt="Logo"
+                className={
+                  isExpanded || isHovered || isMobileOpen ? "w-40" : "w-40"
+                }
+              />
+              <h2 className="mt-2 text-xs uppercase text-center leading-[20px] text-[#094C81] dark:text-[#094C81] font-bold">
+                የኢትዮጵያ አርቴፊሻል ኢንተለጀንስ ተቋም
+              </h2>
+              <h2 className="text-xs uppercase text-center leading-[20px] text-[#094C81] dark:text-[#094C81] font-bold">
+                Ethiopian Artificial Intelligence
+              </h2>
+            </>
+          ) : (
+            <>
+              <img src={Logo} alt="Logo" className="w-40" />
+            </>
+          )}
+        </Link>
+      </div>
 
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6">
           <div className="flex flex-col gap-4">
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-[#094C81] dark:text-gray-500 ${
+                className={`mb-4 text-xs uppercase flex leading-[20px]     text-gray-400 dark:text-gray-500 ${
                   !isExpanded && !isHovered
                     ? "lg:justify-center"
                     : "justify-start"

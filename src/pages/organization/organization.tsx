@@ -1,13 +1,15 @@
-import ComponentCard from "../../components/common/ComponentCard";
-import PageMeta from "../../components/common/PageMeta";
-import OrganizationTable from "../../components/tables/BasicTables/organizationTable";
-import { useTranslation } from "react-i18next";
+// import ComponentCard from "../../components/common/ComponentCard";
+// import PageMeta from "../../components/common/PageMeta";
+// import OrganizationTable from "../../components/tables/BasicTables/organizationTable";
+// import { useTranslation } from "react-i18next";
+import OrganizationList from "../../components/tables/lists/organizationList";
 export default function Organization() {
-      const { t } = useTranslation();
-    
+  // const { t } = useTranslation();
+
   return (
     <>
-      <PageMeta
+      <OrganizationList />
+      {/* <PageMeta
         title={t("basedata.organization_management")}
         description={t("basedata.subtitle", { title: t("basedata.organization") })}
       />
@@ -16,7 +18,7 @@ export default function Organization() {
         <ComponentCard title={t("basedata.organization_management")}>
           <OrganizationTable />
         </ComponentCard>
-      </div>
+      </div> */}
     </>
   );
 }

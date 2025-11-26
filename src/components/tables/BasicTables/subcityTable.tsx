@@ -28,7 +28,7 @@ const mockCities: SubCity[] = [
 ];
 
 // Component
-export default function CityTable() {
+export default function SubCityTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [entriesPerPage, setEntriesPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);

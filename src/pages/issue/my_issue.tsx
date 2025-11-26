@@ -1,13 +1,17 @@
-import ComponentCard from "../../components/common/ComponentCard";
-import PageMeta from "../../components/common/PageMeta";
-import MyIssueTable from "../../components/tables/BasicTables/myIssueTable";
-import { useTranslation } from "react-i18next";
+// import ComponentCard from "../../components/common/ComponentCard";
+// import PageMeta from "../../components/common/PageMeta";
+// import MyIssueTable from "../../components/tables/BasicTables/myIssueTable";
+
+import IssueList from "../../components/tables/lists/IssueList";
+
+// import { useTranslation } from "react-i18next";
 export default function IssueCategory() {
-      const { t } = useTranslation();
-    
+  // const { t } = useTranslation();
+
   return (
     <>
-      <PageMeta
+      <IssueList />
+      {/* <PageMeta
         title={t("issue.myissue")}
         description={t("basedata.subtitle", { title: t("issue.myissue") })}
       />
@@ -16,7 +20,7 @@ export default function IssueCategory() {
         <ComponentCard title={t("issue.issue_management")}>
           <MyIssueTable />
         </ComponentCard>
-      </div>
+      </div> */}
     </>
   );
 }

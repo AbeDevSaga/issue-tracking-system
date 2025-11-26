@@ -2,57 +2,94 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import PageMeta from "../../components/common/PageMeta";
 import InfoCard from "../../components/Basedata/card";
-import { FaProjectDiagram,  FaExclamationTriangle, FaFlag, FaBuilding, FaCity, FaMapMarkerAlt } from "react-icons/fa";
+import {
+  FaExclamationTriangle,
+  FaFlag,
+  FaUserTie,
+  FaLock,
+  FaProjectDiagram,
+} from "react-icons/fa";
 
 export default function Basedata() {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
   const cards = [
+    // {
+    //   title: t("basedata.organization_management"),
+    //   description: t("basedata.subtitle", {
+    //     title: t("basedata.organization"),
+    //   }),
+    //   icon: <FaBuilding size={26} color={"#094C81"} />,
+    //   route: "/organization",
+    // },
+    // {
+    //   title: t("basedata.org_structure_management"),
+    //   description: t("basedata.subtitle", {
+    //     title: t("basedata.org_structure"),
+    //   }),
+    //   icon: <FaBuilding size={24} color={"#094C81"} />,
+    //   route: "/org_structure",
+    // },
+    // {
+    //   title: t("basedata.level_management"),
+    //   description: t("basedata.subtitle", { title: t("basedata.level") }),
+    //   icon: <FaBuilding size={24} />,
+    //   route: "/branch",
+    // },
+
+    // {
+    //   title: t("basedata.branch_management"),
+    //   description: t("basedata.subtitle", { title: t("basedata.branch") }),
+    //   icon: <FaBuilding size={24} color={"#094C81"} />,
+    //   route: "/branch",
+    // },
+
     {
-      title: t("basedata.organization_management"),
-      description: t("basedata.subtitle", { title: t("basedata.organization") }),
-      icon: <FaBuilding size={24} />,
-      route: "/organization",
-    },
-       {
-      title: t("basedata.org_structure_management"),
-      description: t("basedata.subtitle", { title: t("basedata.org_structure") }),
-      icon: <FaBuilding size={24} />,
-      route: "/org_structure",
-    },
-       {
-      title: t("basedata.branch_management"),
-      description: t("basedata.subtitle", { title: t("basedata.branch") }),
-      icon: <FaBuilding size={24} />,
-      route: "/branch",
-    },
-       
-      {
-      title: t("basedata.project_management"),
-      description: t("basedata.subtitle", { title: t("basedata.project") }),
-      icon: <FaProjectDiagram size={24} />,
-      route: "/project",
+      title: t("basedata.issue_flow"),
+      description: t("basedata.subtitle", { title: t("basedata.issue_flow") }),
+      icon: <FaProjectDiagram size={24} color={"#094C81"} />,
+      route: "/issue_configuration",
     },
     {
       title: t("basedata.priority_level_management"),
-      description: t("basedata.subtitle", { title: t("basedata.priority_level") }),
-      icon: <FaFlag size={24} />,
+      description: t("basedata.subtitle", {
+        title: t("basedata.priority_level"),
+      }),
+      icon: <FaFlag size={26} color={"#094C81"} />,
       route: "/priority_level",
     },
-   
+
     {
       title: t("basedata.issue_category_management"),
-      description: t("basedata.subtitle", { title: t("basedata.issue_category") }),
-      icon: <FaExclamationTriangle size={24} />,
+      description: t("basedata.subtitle", {
+        title: t("basedata.issue_category"),
+      }),
+      icon: <FaExclamationTriangle size={26} color={"#094C81"} />,
       route: "/issue_category",
+    },
+    {
+      title: t("basedata.role_management"),
+      description: t("basedata.subtitle", {
+        title: t("basedata.role"),
+      }),
+      icon: <FaUserTie size={26} color={"#094C81"} />,
+      route: "/role",
+    },
+    {
+      title: t("basedata.permission_management"),
+      description: t("basedata.subtitle", {
+        title: t("basedata.permission"),
+      }),
+      icon: <FaLock size={26} color={"#094C81"} />,
+      route: "/permission",
     },
   ];
 
   return (
     <>
       <PageMeta title={t("basedata.title")} description="" />
-      <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-5">
+      <div className="rounded-xl border min-h-[80vh] border-gray-200 bg-white dark:border-gray-800  p-5">
         <h3 className="text-xl lg:text-2xl font-bold text-[#11255A] dark:text-white/90">
           {t("basedata.title")}
         </h3>
@@ -60,7 +97,7 @@ export default function Basedata() {
           {t("basedata.first_subtitle")}
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+        <div className="grid grid-cols-1  sm:grid-cols-2  gap-x-10 gap-y-5 mt-10">
           {cards.map((card, index) => (
             <InfoCard
               key={index}

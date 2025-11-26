@@ -1,46 +1,55 @@
-// src/types/auth.ts
+export interface User {
+  user_id: string;
+  full_name: string;
+  email: string;
+  phone_number?: string;
+  position?: string;
+  profile_image?: string;
+  institute?: {
+    institute_id: string;
+    name: string;
+  } | null;
+  roles: {
+    project_user_role_id: string;
+    role?: {
+      role_id: string;
+      name: string;
+      subRoles: {
+        subRole: {
+          sub_role_id: string;
+          name: string;
+        };
+        permissions: {
+          permission_id: string;
+          resource: string;
+          action: string;
+        }[];
+      }[];
+    } | null;
+    subRole?: {
+      sub_role_id: string;
+      name: string;
+    } | null;
+  }[];
+}
+
+export interface AuthResponse {
+  message: string;
+  token: string;
+  user: User;
+}
 
 export interface LoginCredentials {
-  user_name?: string;
   email?: string;
+  user_name?: string;
   password: string;
 }
 
 export interface RegisterData {
-  name: string;
-  user_name: string;
+  full_name: string;
   email: string;
   password: string;
-  user_type: string;
-  gender?: string;
-  phone?: string;
-  // Add other registration fields as needed
-}
-
-export interface AuthResponse {
-  access_token: string;
-  user: User;
-  message?: string;
-}
-
-export interface User {
-  id: string;
-  name: string;
-  user_name: string;
-  gender: string;
-  user_type: string;
- 
-  status: boolean;
-  last_login: string | null;
-  photo: string | null;
-  school: any | null;
-
-  grade: any | null;
-  roles: Array<{
-    id: string;
-    name: string;
-  }>;
-  permissions: string[];
+  [key: string]: any;
 }
 
 export interface AuthContextType {
@@ -48,40 +57,28 @@ export interface AuthContextType {
   token: string | null;
   loading: boolean;
   error: string | null;
+  isAuthenticated: boolean;
+
   login: (credentials: LoginCredentials) => Promise<AuthResponse>;
   register: (userData: RegisterData) => Promise<AuthResponse>;
-  logout: () => void;
-  updateProfile: (profileData: Partial<User>) => Promise<any>;
-  changePassword: (passwordData: { currentPassword: string; newPassword: string }) => Promise<any>;
+  logout: () => Promise<void> | void;
+  updateProfile: (profileData: Partial<User>) => Promise<User>;
+  changePassword: (passwordData: {
+    currentPassword: string;
+    newPassword: string;
+  }) => Promise<any>;
   clearError: () => void;
-  isAuthenticated: boolean;
+
   hasPermission: (permission: string) => boolean;
   hasAnyPermission: (permissions: string[]) => boolean;
   hasAllPermissions: (permissions: string[]) => boolean;
   hasRole: (roleName: string) => boolean;
 }
 
+// Add this:
 export const PERMISSIONS = {
-  
-
-
-
-  ROLE_READ: 'role_read',
-  USER_READ: 'user_read',
-
-  ROLE_UPDATE: 'role_update',
-  
- 
-} as const;
-
-
-export type Permission = typeof PERMISSIONS[keyof typeof PERMISSIONS];
-
-// Role constants for better type safety
-export const ROLES = {
-  ADMIN: 'Admin',
-
-  // Add other roles as needed
-} as const;
-
-export type Role = typeof ROLES[keyof typeof ROLES];
+  REPORTS: "REPORTS",
+  AUDIT_LOGS_VIEW: "AUDIT_LOGS_VIEW",
+  FINANCIAL_REPORTS: "FINANCIAL_REPORTS",
+  // Add other permissions as needed
+};

@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "../../ui/table";
 import { useTranslation } from "react-i18next";
-import AssignDeveloper from "../../../pages/CentralAdminTaskList/TeamLeaderTaskModal";
+import AssignDeveloper from "../../../pages/CentralAdminTaskList/QAExpertTaskModal";
 import Alert from "../../ui/alert/Alert";
 import { useNavigate } from "react-router-dom";
 
@@ -296,12 +296,10 @@ export default function CentralAdminTaskListTable() {
                   </TableCell>
                   <TableCell className="px-5 py-4 text-start">
                     <div className="flex flex-col">
-                      <span className="font-semibold text-[#1E516A] text-sm">
-                        {issue.organization}
-                      </span>
-                      <span className="text-gray-500 text-xs">
+                      <span className="text-[#1E516A] text-sm">
                         {issue.system_name}
                       </span>
+                    
                     </div>
                   </TableCell>
                   <TableCell className="px-4 py-3 text-start">

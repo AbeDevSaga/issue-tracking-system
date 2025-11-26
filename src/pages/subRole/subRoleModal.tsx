@@ -57,11 +57,8 @@ console.log("field",fields)
         </button>
 
         <h2 className="text-xl text-[#094C81] font-semibold mb-2">
-          {t("role.add_role")}
+          {t("subrole.add_subrole")}
         </h2>
-        <h6 className="text-sm text-[#094C81] mb-4">
-          {t("role.modal_title")}
-        </h6>
 
        <Form onSubmit={handleSubmit} className="space-y-6">
   <div className="grid grid-cols-1 gap-6">
