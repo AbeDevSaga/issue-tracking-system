@@ -10,21 +10,22 @@ import Login_bg from "../../assets/login_bg.png";
 import { useLoginMutation } from "../../redux/services/authApi";
 import { EyeOffIcon } from "lucide-react";
 import { EyeOpenIcon } from "@radix-ui/react-icons";
-import { signInSchema, SignInFormData } from "../../utils/validation/loginSchema";
+import {
+  signInSchema,
+  SignInFormData,
+} from "../../utils/validation/loginSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 
 interface FormData {
   email: string;
+  phoneNumber: string;
   password: string;
 }
 
 export default function Login() {
+  const [loginMethod, setLoginMethod] = useState<"email" | "phone">("email");
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [formData, setFormData] = useState<FormData>({
-    email: "",
-    password: "",
-  });
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
@@ -32,13 +33,24 @@ export default function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [loginMutation] = useLoginMutation();
+
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
-    } = useForm({
+    setValue,
+    watch,
+    trigger,
+    resetField,
+  } = useForm({
     resolver: zodResolver(signInSchema),
-    });
+    defaultValues: {
+      email: "",
+      phoneNumber: "",
+      password: "",
+    },
+  });
+
   // Load token and user from localStorage on mount
   useEffect(() => {
     const storedToken = localStorage.getItem("authToken");
@@ -49,30 +61,71 @@ export default function Login() {
     }
   }, [navigate]);
 
-  
-  const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    if (error) setError(null);
+  // Format Ethiopian phone number for display
+  const formatEthiopianPhoneNumber = (value: string) => {
+    if (!value) return value;
+
+    const cleaned = value.replace(/\D/g, "");
+
+    if (cleaned.length <= 1) {
+      return cleaned;
+    } else if (cleaned.length <= 3) {
+      return `${cleaned.slice(0, 1)}-${cleaned.slice(1)}`;
+    } else if (cleaned.length <= 6) {
+      return `${cleaned.slice(0, 1)}-${cleaned.slice(1, 4)}-${cleaned.slice(
+        4
+      )}`;
+    } else {
+      return `${cleaned.slice(0, 1)}-${cleaned.slice(1, 4)}-${cleaned.slice(
+        4,
+        7
+      )}-${cleaned.slice(7, 10)}`;
+    }
   };
 
-  const onSubmit = async (data: SignInFormData) => {
+  const handlePhoneNumberChange = (value: string) => {
+    const formattedValue = formatEthiopianPhoneNumber(value);
+    return formattedValue;
+  };
+
+  const handleLoginMethodChange = (method: "email" | "phone") => {
+    setLoginMethod(method);
+    // Clear both fields when switching methods
+    setValue("email", "");
+    setValue("phoneNumber", "");
+    setError(null);
+  };
+
+  const onSubmit = async (data: any) => {
     setError(null);
     try {
-    const response = await loginMutation(data).unwrap();
-    if (response.token && response.user) {
-    navigate("/dashboard");
-    } else {
-    setError("Login failed: Invalid credentials");
-    }
+      let loginData;
+
+      if (loginMethod === "email") {
+        loginData = {
+          email: data.email,
+          password: data.password,
+        };
+      } else {
+        // Clean phone number for API (remove formatting)
+        const cleanPhoneNumber = data.phoneNumber.replace(/\D/g, "");
+        loginData = {
+          phoneNumber: cleanPhoneNumber,
+          password: data.password,
+        };
+      }
+
+      const response = await loginMutation(loginData).unwrap();
+      if (response.token && response.user) {
+        navigate("/dashboard");
+      } else {
+        setError("Login failed: Invalid credentials");
+      }
     } catch (err: any) {
-    console.error("Login error:", err);
-    setError(err?.data?.message || "Login failed");
+      console.error("Login error:", err);
+      setError(err?.data?.message || "Login failed");
     }
-    };
+  };
 
   return (
     <div
@@ -101,16 +154,111 @@ export default function Login() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 pt-4 space-y-4 w-full">
-          {/* Email */}
+        {/* Login Method Toggle */}
+        <div className="w-full px-6">
+          <div className="flex bg-gray-100 rounded-lg p-1">
+            <button
+              type="button"
+              onClick={() => handleLoginMethodChange("email")}
+              className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                loginMethod === "email"
+                  ? "bg-white text-[#0C4A6E] shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              {t("login.email")}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleLoginMethodChange("phone")}
+              className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                loginMethod === "phone"
+                  ? "bg-white text-[#0C4A6E] shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              {t("login.phone")}
+            </button>
+          </div>
+        </div>
+
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="p-6 pt-4 space-y-4 w-full"
+        >
+          {/* Email or Phone Input */}
           <div>
             <Label
-              htmlFor="email"
+              htmlFor={loginMethod === "email" ? "email" : "phoneNumber"}
               className="block text-base font-medium text-[#0C4A6E] mb-1"
             >
-              {t("login.email_phone_number")}
+              {loginMethod === "email"
+                ? t("login.email")
+                : t("login.phone_number")}
             </Label>
-              <Input id="email"  placeholder="example.xx@gov.et" {...register("email")} className={`w-full px-3 py-2 border rounded-md text-sm ${ errors.email ? "border-red-500" : "border-blue-300" }`} /> {errors.email && ( <p className="text-red-500 text-sm mt-1">{errors.email.message}</p> )}
+
+            {loginMethod === "email" ? (
+              <Controller
+                name="email"
+                control={control}
+                render={({ field }) => (
+                  <>
+                    <Input
+                      id="email"
+                      placeholder="example.xx@gov.et"
+                      value={field.value}
+                      onChange={(e) => {
+                        field.onChange(e.target.value);
+                        setValue("phoneNumber", ""); // Clear phone when using email
+                      }}
+                      className={`w-full px-3 py-2 border rounded-md text-sm ${
+                        errors.email ? "border-red-500" : "border-blue-300"
+                      }`}
+                    />
+                    {errors.email && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.email.message}
+                      </p>
+                    )}
+                  </>
+                )}
+              />
+            ) : (
+              <Controller
+                name="phoneNumber"
+                control={control}
+                render={({ field }) => (
+                  <>
+                    <Input
+                      id="phoneNumber"
+                      placeholder="9-123-456-789"
+                      value={field.value}
+                      onChange={(e) => {
+                        const formattedValue = handlePhoneNumberChange(
+                          e.target.value
+                        );
+                        field.onChange(formattedValue);
+                        setValue("email", ""); // Clear email when using phone
+                      }}
+                      maxLength={14}
+                      className={`w-full px-3 py-2 border rounded-md text-sm ${
+                        errors.phoneNumber
+                          ? "border-red-500"
+                          : "border-blue-300"
+                      }`}
+                    />
+                    {errors.phoneNumber && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.phoneNumber.message}
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-500 mt-1">
+                      {t("login.phone_format")}
+                    </p>
+                  </>
+                )}
+              />
+            )}
           </div>
 
           {/* Password */}
@@ -121,27 +269,40 @@ export default function Login() {
             >
               {t("login.password")}
             </Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="enter your password"
-                {...register("password")}
-                className={`w-full px-3 py-2 pr-10 border rounded-md text-sm ${ errors.password ? "border-red-500" : "border-blue-300" }`}
-              />
-              <button
-                type="button"
-                className="absolute top-1/2 -translate-y-1/2 inset-y-0 right-0 pr-3 flex items-center"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? (
-                  <EyeOpenIcon className="h-5 w-5 text-[#0C4A6E]" />
-                ) : (
-                  <EyeOffIcon className="h-5 w-5 text-[#0C4A6E]" />
-                )}
-              </button>
-            </div>
-            {errors.password && ( <p className="text-red-500 text-sm mt-1">{errors.password.message}</p> )}
+            <Controller
+              name="password"
+              control={control}
+              render={({ field }) => (
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="enter your password"
+                    value={field.value}
+                    onChange={field.onChange}
+                    className={`w-full px-3 py-2 pr-10 border rounded-md text-sm ${
+                      errors.password ? "border-red-500" : "border-blue-300"
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    className="absolute top-1/2 -translate-y-1/2 inset-y-0 right-0 pr-3 flex items-center"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOpenIcon className="h-5 w-5 text-[#0C4A6E]" />
+                    ) : (
+                      <EyeOffIcon className="h-5 w-5 text-[#0C4A6E]" />
+                    )}
+                  </button>
+                  {errors.password && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.password.message}
+                    </p>
+                  )}
+                </div>
+              )}
+            />
           </div>
 
           {/* Forgot Password */}
