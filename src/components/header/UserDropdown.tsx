@@ -4,6 +4,7 @@ import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import Avater from "../../assets/avater.jpg";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { User, User2Icon, UserRound } from "lucide-react";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,12 +23,16 @@ export default function UserDropdown() {
         onClick={toggleDropdown}
         className="flex items-center rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
       >
-        <span className="overflow-hidden rounded-full h-11 w-11 border-2 border-gray-200 dark:border-gray-700">
-          <img
-            src={user.profile_image || Avater}
-            alt="User"
-            className="h-full w-full object-cover"
-          />
+        <span className="overflow-hidden rounded-full h-11 w-11 flex items-center justify-center border-2 border-gray-200 dark:border-gray-700">
+          {user.profile_image ? (
+            <img
+              src={user.profile_image }
+              alt="User"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <UserRound className="h-8 w-8 text-[#094C81]" />
+          )}
         </span>
       </button>
 

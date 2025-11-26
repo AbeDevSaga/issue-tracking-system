@@ -134,7 +134,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                 onValueChange={setSelectedUserTypeId}
                 disabled={loadingUserTypes}
               >
-                <SelectTrigger className=" h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
+                <SelectTrigger className=" h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
                   <SelectValue
                     className="text-sm text-[#094C81] font-medium placeholder:text-sm placeholder:text-[#094C81] placeholder:font-medium"
                     placeholder="Select User Type"
@@ -164,7 +164,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                   onValueChange={setInstituteId}
                   disabled={loadingInstitutes}
                 >
-                  <SelectTrigger className=" h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
+                  <SelectTrigger className=" h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
                     <SelectValue
                       className="text-sm text-[#094C81] font-medium"
                       placeholder="Select Institute"
@@ -192,7 +192,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="John Doe"
-                className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+                className="w-full h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
               />
             </div>
             <div className="space-y-2">
@@ -203,7 +203,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 placeholder="+251 9xxxxxxx"
-                className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+                className="w-full h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
               />
             </div>
             <div className="space-y-2">
@@ -215,7 +215,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="john@example.com"
-                className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+                className="w-full h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
               />
             </div>
           </div>
@@ -231,7 +231,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
             disabled={isLoading}
             className="min-w-24"
           >
-            {isLoading ? "Creating..." : "Create User"}
+            {isLoading ? "Creating..." : "Create"}
           </Button>
         </div>
       </div>

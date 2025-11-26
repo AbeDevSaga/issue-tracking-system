@@ -45,6 +45,10 @@ import CentralAdminTaskList from "./pages/CentralAdminTaskList/CentralAdminTaskL
 import CentralAdminTaskDetail from "./pages/CentralAdminTaskList/CentralAdminTaskDetail";
 import DeveloperTaskDetail from "./pages/DeveloperTaskList/DeveloperTaskDetail";
 
+// internal
+import InternalTaskList from "./InternalPages/Tasks/TaskList";
+import InternalTaskDetail from "./InternalPages/Tasks/TaskDetail";
+
 import DeveloperTaskList from "./pages/DeveloperTaskList/DeveloperTaskList";
 import UserTaskList from "./pages/userTasks/TaskList";
 import UserTaskDetail from "./pages/userTasks/TaskDetail";
@@ -116,7 +120,11 @@ function AppContent() {
                 <Users />
               </ProtectedRoute>
             }
-          /> */}
+          // /> */}
+          {/* InternalTaskList */}
+
+          <Route path="/task_list" element={<InternalTaskList />} />
+          <Route path="/task_list/:id" element={<InternalTaskDetail />} />
 
           <Route path="/task" element={<UserTaskList />} />
           <Route path="/task/:id" element={<UserTaskDetail />} />
@@ -139,7 +147,11 @@ function AppContent() {
           <Route path="/woreda" element={<Woreda />} />
           <Route path="/project" element={<Project />} />
           <Route path="/project/:id" element={<ProjectDetail />} />
-          <Route path="/inistitutes/project/:id" element={<InternalProjectDetail />} />
+          <Route
+            path="/inistitutes/project/:id"
+            element={<InternalProjectDetail />}
+          />
+          <Route path="/issue_flow/:id" element={<IssueFlow />} />
           <Route path="/priority_level" element={<ProjectLevel />} />
           <Route path="/priority_level/:id" element={<PriorityLevelDetail />} />
           <Route path="/permission" element={<Permission />} />

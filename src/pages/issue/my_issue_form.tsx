@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
+import { Info, FileText, Image as ImageIcon, AlertTriangle, HelpCircle } from "lucide-react";
+
 // import Select from "../../components/form/Select";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -118,8 +120,14 @@ export default function AddIssue() {
     if (priorities.length === 1 && !formValues.priority_id) {
       handleChange("priority_id", priorities[0].priority_id);
     }
-  }, [userProjects, categories, priorities]);
+    // Auto-fill current date/time on initial load
+if (!formValues.issue_occured_time) {
+  handleChange("issue_occured_time", maxDateTime);
+}
 
+  }, [userProjects, categories, priorities ]);
+  
+  
   // Submit form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -190,33 +198,38 @@ export default function AddIssue() {
     { id: "description", label: "Description", type: "textarea" },
   ];
 
-  // Guidelines data
-  const guidelines = [
-    {
-      title: "Be Specific:",
-      description:
-        "Clearly describe what went wrong, when it happened, and what you were trying to do.",
-    },
-    {
-      title: "Include Details:",
-      description:
-        "Provide error messages, browser/device information, and steps to reproduce the issue.",
-    },
-    {
-      title: "Attach Evidence:",
-      description:
-        "Screenshots or logs help our team understand the problem faster.",
-    },
-    {
-      title: "Set Correct Severity:",
-      description:
-        "Critical = system down, High = major functionality broken, Medium = partial functionality affected, Low = minor issue.",
-    },
-  ];
+// Guidelines data
+const guidelines = [
+  {
+    title: "Be Specific:",
+    description:
+      "Clearly describe what went wrong, when it happened, and what you were trying to do.",
+    icon: Info,
+  },
+  {
+    title: "Include Details:",
+    description:
+      "Provide error messages, browser/device information, and steps to reproduce the issue.",
+    icon: FileText,
+  },
+  {
+    title: "Attach Evidence:",
+    description:
+      "Screenshots or logs help our team understand the problem faster.",
+    icon: ImageIcon,
+  },
+  {
+    title: "Set Correct Severity:",
+    description:
+      "Critical = system down, High = major functionality broken, Medium = partial functionality affected, Low = minor issue.",
+    icon: AlertTriangle,
+  },
+];
+
   const maxDateTime = format(new Date(), "yyyy-MM-dd'T'HH:mm");
 
   return (
-    <div className="w-full p-6 bg-gray-50 dark:bg-gray-900">
+    <div className="w-full p-6 bg-white rounded-2xl border border-gray-200 dark:bg-gray-900">
       <div className="mb-5">
         <h2 className="text-xl font-bold text-[#094C81]">Add New Issue</h2>
         <DetailHeader breadcrumbs={[]} />
@@ -417,7 +430,7 @@ export default function AddIssue() {
 function GuidelinesAccordion({
   guidelines,
 }: {
-  guidelines: { title: string; description: string }[];
+  guidelines: { title: string; description: string; icon?: any }[];
 }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const contentRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -438,42 +451,51 @@ function GuidelinesAccordion({
       </div>
 
       <div className="space-y-2">
-        {guidelines.map((g, i) => (
-          <div key={i} className="border rounded-lg overflow-hidden">
-            <button
-              className="w-full flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-700 border-l-4 border-[#094C81] hover:shadow-md transition-shadow"
-              onClick={() => toggle(i)}
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-8 h-8 rounded-full bg-[#094C81] flex items-center justify-center text-white font-bold text-sm">
-                  {i + 1}
-                </div>
-                <h4 className="text-base font-semibold text-[#094C81]">
-                  {g.title}
-                </h4>
-              </div>
-              <span className="text-[#094C81] font-bold">
-                {openIndex === i ? <FaChevronDown /> : <FaChevronRight />}
-              </span>
-            </button>
+        {guidelines.map((g, i) => {
+          const IconComponent = g.icon || HelpCircle; // default icon
 
-            <div
-              ref={(el) => (contentRefs.current[i] = el)}
-              className="overflow-hidden transition-all duration-300 ease-in-out"
-              style={{
-                maxHeight:
-                  openIndex === i && contentRefs.current[i]
-                    ? contentRefs.current[i].scrollHeight
-                    : 0,
-              }}
-            >
-              <div className="p-4 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                {g.description}
+          return (
+            <div key={i} className="border rounded-lg overflow-hidden">
+              <button
+                className="w-full flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-700  border-[#094C81] hover:shadow-md transition-shadow"
+                onClick={() => toggle(i)}
+              >
+                <div className="flex items-center gap-4">
+                  {/* Icon */}
+                  <div className="w-8 h-8 rounded-full bg-[#094C81] flex items-center justify-center text-white">
+                    <IconComponent size={18} />
+                  </div>
+
+                  <h4 className="text-base font-semibold text-[#094C81]">
+                    {g.title}
+                  </h4>
+                </div>
+
+                <span className="text-[#094C81] font-bold">
+                  {openIndex === i ? <FaChevronDown /> : <FaChevronRight />}
+                </span>
+              </button>
+
+              <div
+                ref={(el) => (contentRefs.current[i] = el)}
+                className="overflow-hidden transition-all duration-300 ease-in-out"
+                style={{
+                  maxHeight:
+                    openIndex === i && contentRefs.current[i]
+                      ? contentRefs.current[i].scrollHeight
+                      : 0,
+                }}
+              >
+                <div className="p-4 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                  {g.description}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 }
+
+

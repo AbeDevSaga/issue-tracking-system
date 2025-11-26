@@ -10,7 +10,7 @@ import { useParams } from 'react-router-dom';
 // Types
 // ---------------------------
 interface TreeNode {
-  hierarchy_node_id: string;
+  internal_node_id: string;
   name: string;
   description?: string;
   parent_id?: string | null;
@@ -26,7 +26,7 @@ interface TreeNode {
 interface D3TreeNode {
   name: string;
   attributes: {
-    hierarchy_node_id: string;
+    internal_node_id: string;
     description?: string;
     project?: string;
     level?: number;
@@ -50,7 +50,7 @@ function convertToD3Tree(nodes: TreeNode[]): D3TreeNode[] {
   return nodes.map((node) => ({
     name: node.name || 'Unnamed Node',
     attributes: {
-      hierarchy_node_id: node.hierarchy_node_id,
+      internal_node_id: node.internal_node_id,
       description: node.description || '',
       project: node.project?.name || '',
       level: node.level ?? 0,
@@ -78,6 +78,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({
   setModalOpen,
   setSelectedParentNodeId,
 }) => {
+  console.log(nodeDatum,"this is the node datum");
   const hasChildren = nodeDatum.children && nodeDatum.children.length > 0;
   const isActive = nodeDatum.attributes.is_active;
   const project = nodeDatum.attributes.project;
@@ -86,10 +87,11 @@ const CustomNode: React.FC<CustomNodeProps> = ({
 
   const handleViewDetailsClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    window.location.href = `/org_structure/${nodeDatum.attributes.hierarchy_node_id}`;
+    window.location.href = `/issue_flow/${nodeDatum.attributes.internal_node_id}`;
   };
 
   // Card dimensions
+  const descriptionHeight = nodeDatum.attributes.description ? 20 : 0;
   const cardWidth = 300; // Between 220-260px
   const padding = 40;
   const titleHeight = 20;
@@ -162,13 +164,13 @@ const CustomNode: React.FC<CustomNodeProps> = ({
             </span>
           </div>
 
-          {/* Project Name - Centered */}
-          {project && (
-            <div className="text-center mb-3 flex-1 flex items-center justify-center">
-              <p className="text-[#094C81] text-sm font-normal">
-                {project.length > 30
-                  ? `${project.substring(0, 30)}...`
-                  : project}
+          {/* Description - Centered */}
+          {nodeDatum.attributes.description && (
+            <div className="mb-3" style={{ height: descriptionHeight }}>
+              <p className="text-gray-600 font-bold text-center text-sm line-clamp-2">
+                {nodeDatum.attributes.description.length > 50
+                  ? `${nodeDatum.attributes.description.substring(0, 50)}...`
+                  : nodeDatum.attributes.description}
               </p>
             </div>
           )}
@@ -185,7 +187,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({
             {/* Add Child Node Button */}
             <button
               onClick={() => {
-                setSelectedParentNodeId(nodeDatum.attributes.hierarchy_node_id);
+                setSelectedParentNodeId(nodeDatum.attributes.internal_node_id);
                 setModalOpen(true);
               }}
               className="w-full bg-[#094C81] hover:bg-[#073954] text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 text-xs"
@@ -203,7 +205,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({
 // ---------------------------
 // Main Component
 // ---------------------------
-const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({
+const HierarchyD3TreeInstitute: React.FC<HierarchyD3TreeProps> = ({
   data,
   isLoading = false,
 }) => {
@@ -228,7 +230,7 @@ const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({
 
     // Initialize map with each node's id and empty children array
     nodes.forEach((node) => {
-      nodeMap.set(node.hierarchy_node_id, {
+      nodeMap.set(node.internal_node_id, {
         ...node,
         children: [], // Initialize with empty children array
       });
@@ -238,7 +240,7 @@ const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({
 
     // Build parent-child relationships
     nodes.forEach((node) => {
-      const nodeId = node.hierarchy_node_id;
+      const nodeId = node.internal_node_id;
       if (!nodeId) return;
 
       const currentNode = nodeMap.get(nodeId);
@@ -273,7 +275,7 @@ const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({
     // Log each root node and its full hierarchy
     const logHierarchy = (node: TreeNode, depth = 0, prefix = '') => {
       const indent = '  '.repeat(depth);
-      const nodeInfo = `${indent}${prefix}${node.name} (Level ${node.level}, ID: ${node.hierarchy_node_id}, Children: ${node.children?.length || 0})`;
+      const nodeInfo = `${indent}${prefix}${node.name} (Level ${node.level}, ID: ${node.internal_node_id}, Children: ${node.children?.length || 0})`;
       
       if (node.children && node.children.length > 0) {
         node.children.forEach((child, index) => {
@@ -295,7 +297,7 @@ const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({
     
     // Create root node options for select dropdown
     const options = treeNodes.map((node) => ({
-      value: node.hierarchy_node_id,
+      value: node.internal_node_id,
       label: `${node.name}${node.project?.name ? ` (${node.project.name})` : ''}`,
     }));
     
@@ -320,7 +322,7 @@ const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({
   const selectedD3TreeData = useMemo(() => {
     if (!d3TreeData || !selectedRootNodeId || !Array.isArray(d3TreeData)) return null;
     
-    const selected = d3TreeData.find((node) => node.attributes.hierarchy_node_id === selectedRootNodeId);
+    const selected = d3TreeData.find((node) => node.attributes.internal_node_id === selectedRootNodeId);
     return selected ? [selected] : null;
   }, [d3TreeData, selectedRootNodeId]);
   // Calculate translate and dimensions based on container size
@@ -478,5 +480,5 @@ const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({
   );
 };
 
-export default HierarchyD3Tree;
+export default HierarchyD3TreeInstitute;
 

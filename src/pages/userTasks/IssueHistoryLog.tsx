@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Clock } from "lucide-react";
 
@@ -131,7 +130,7 @@ export default function IssueHistoryLog({ logs, onClose }: LogsPreviewProps) {
                       </span>
                       <ArrowRight className="w-3 h-3" />
                       <span className="font-medium">
-                        {log.escalation.toTierNode.name}
+                        {log.escalation.toTierNode?.name ?? "EAII"}
                       </span>
                     </div>
                   )}

@@ -20,19 +20,24 @@ import {
 } from "../../redux/services/issueApi";
 import FileViewer from "../../components/common/FileView";
 import { getFileType, getFileUrl } from "../../utils/fileUrl";
+
 import { useGetCurrentUserQuery } from "../../redux/services/authApi";
 import { getHeirarchyStructure } from "../../utils/hierarchUtils";
 
 import {
+  canAssign,
   canConfirm,
   canEscalate,
   canMarkInProgress,
   canResolve,
 } from "../../utils/taskHelper";
 import TimelineOpener from "../../components/common/TimelineOpener";
-import IssueHistoryLog from "./IssueHistoryLog";
-import EscalationPreview from "./EscalationPreview";
-import ResolutionPreview from "./ResolutionPreview";
+import IssueHistoryLog from "../../pages/userTasks/IssueHistoryLog";
+import EscalationPreview from "../../pages/userTasks/EscalationPreview";
+import ResolutionPreview from "../../pages/userTasks/ResolutionPreview";
+import AssignmentPreview from "./AssignmentPreview";
+import { useGetUserInternalNodesByProjectQuery } from "../../redux/services/internalNodeApi";
+import Project from "../../pages/project/project";
 
 export default function UserTaskDetail() {
   const { id } = useParams<{ id: string }>();
@@ -42,15 +47,26 @@ export default function UserTaskDetail() {
   const [modalImageIndex, setModalImageIndex] = useState<number | null>(null);
   const [acceptIssue, { isLoading: isAccepting }] = useAcceptIssueMutation();
   const [escalateIssue, setEscalateIssue] = useState(false);
+  const [assignIssue, setAssignIssue] = useState(false);
   const [resolveIssue, setResolveIssue] = useState(false);
   const [markIssue, setMarkIssue] = useState(false);
   const [openTimeline, setOpenTimeline] = useState(false);
-
+  const [project_id, setProjectId] = useState("");
+  const [internal_node_id, setInternalNodeId] = useState("");
   const [fileViewerUrl, setFileViewerUrl] = useState<string | null>(null);
   const [hierarchyStructure, setHierarchyStructure] = useState<any>(null);
 
   const { data: loggedUser, isLoading: userLoading } = useGetCurrentUserQuery();
   const userId = loggedUser?.user?.user_id || "";
+  const {
+    data: userProjectNode,
+    isLoading: isLoadingNode,
+    isError: nodeError,
+  } = useGetUserInternalNodesByProjectQuery(project_id, {
+    skip: !project_id,
+  });
+  // assignments
+  console.log("userProjectNode: ", userProjectNode);
 
   useEffect(() => {
     if (loggedUser?.user?.project_roles && issue?.project?.project_id) {
@@ -66,12 +82,30 @@ export default function UserTaskDetail() {
   }, [userId, issue?.status, issue]);
 
   useEffect(() => {
+    setAssignIssue(canAssign(userId, issue?.status, issue));
+  }, [userId, issue?.status, issue]);
+
+  useEffect(() => {
     setResolveIssue(canResolve(userId, issue?.status, issue));
   }, [userId, issue?.status, issue]);
 
   useEffect(() => {
     setMarkIssue(canMarkInProgress(userId, issue?.status, issue));
   }, [userId, issue?.status, issue]);
+
+  useEffect(() => {
+    setProjectId(issue?.project_id);
+  }, [issue?.project_id, issue]);
+
+  useEffect(() => {
+    if (userProjectNode?.assignments?.length) {
+      setInternalNodeId(
+        userProjectNode.assignments[0].internal_node?.internal_node_id || ""
+      );
+    } else {
+      setInternalNodeId("");
+    }
+  }, [userProjectNode]);
 
   // Map issue attachments to files array with proper URLs and file info
   const issueFiles =
@@ -206,16 +240,16 @@ export default function UserTaskDetail() {
       onClick: () => resolveIssue && handleActions("resolve"),
     },
     {
-      key: "escalate",
-      label: "Escalate Issue",
-      desc: escalateIssue
-        ? "This issue requires advanced debugging or specialized expertise from EAII."
-        : "Cannot escalate - issue is not in progress or you have already escalated it",
-      color: "#6D28D9",
-      bg: "#F5F3FF",
-      border: "#D9D3FA",
-      enabled: escalateIssue,
-      onClick: () => escalateIssue && handleActions("escalate"),
+      key: "assign",
+      label: "Assign Issue",
+      desc: assignIssue
+        ? "Assign this issue to the next responsible user in the workflow."
+        : "Cannot assign - issue is not in progress or assignment is not allowed.",
+      color: "#1E516A",
+      bg: "#E6F3F9",
+      border: "#BFD7EA",
+      enabled: assignIssue,
+      onClick: () => assignIssue && handleActions("assign"),
     },
   ];
 
@@ -709,13 +743,13 @@ export default function UserTaskDetail() {
                 onClose={() => setSelectedAction("")}
               />
             )}
-            {selectedAction === "escalate" && (
-              <EscalationPreview
+            {selectedAction === "assign" && (
+              <AssignmentPreview
                 issue_id={id || ""}
-                from_tier={hierarchyStructure?.hierarchy_node_id || ""}
-                to_tier={hierarchyStructure?.parent_id || ""}
+                project_id={project_id || ""}
+                internal_node_id={internal_node_id}
                 onClose={() => setSelectedAction("")}
-                escalated_by={userId}
+                assigned_by={userId}
               />
             )}{" "}
             {openTimeline && (

@@ -7,6 +7,8 @@ import UserDropdown from "../components/header/UserDropdown";
 import { useAuth } from "../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { useSidebar } from "../context/SidebarContext";
+import { GlobeAltIcon } from "@heroicons/react/24/solid";
+import { Globe, Globe2Icon } from "lucide-react";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
@@ -150,7 +152,7 @@ const AppHeader: React.FC = () => {
                   langOpen ? "rotate-90" : ""
                 }`}
               >
-                🌐
+                <Globe className="w-5 h-5 text-[#094C81]"/>
               </span>
               {i18n.language.toUpperCase()}
             </button>

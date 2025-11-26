@@ -172,7 +172,9 @@
 import React from "react";
 
 function Dashboard() {
-  return <div>Dashboard</div>;
+  return <div className="p-6 space-y-6 bg-white rounded-2xl border border-gray-200 min-h-screen">
+    <h1 className="">Dashboard</h1>
+  </div>;
 }
 
 export default Dashboard;
