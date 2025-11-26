@@ -34,6 +34,11 @@ const UserTableColumns = [
     header: "Email",
     cell: ({ row }: any) => <div>{row.getValue("email")}</div>,
   },
+  {
+    accessorKey: "phone_number",
+    header: "Phone",
+    cell: ({ row }: any) => <div>{row.getValue("phone_number")}</div>,
+  },
   // {
   //   accessorKey: "position",
   //   header: "Position",
@@ -133,7 +138,7 @@ const UserTableColumns = [
 ];
 
 interface UserListProps {
-  inistitute_id?: string
+  inistitute_id?: string;
 }
 
 export default function UserList() {

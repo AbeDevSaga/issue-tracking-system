@@ -37,14 +37,14 @@ export const authApi = baseApi.injectEndpoints({
     // ✅ Password reset mutation
     resetUserPassword: builder.mutation({
       query: ({ email }: { email: string }) => ({
-        url: "/users/reset-password",
+        url: "/auth/reset-password",
         method: "POST",
         body: { email }, // must match backend
       }),
     }),
     confirmPasswordReset: builder.mutation({
       query: (data: { token: string; email: string; newPassword: string }) => ({
-        url: "/users/reset-password/confirm",
+        url: "/auth/reset-password/confirm",
         method: "POST",
         body: data,
       }),
@@ -52,7 +52,7 @@ export const authApi = baseApi.injectEndpoints({
 
     validateResetToken: builder.query({
       query: ({ token, email }: { token: string; email: string }) => ({
-        url: `/users/reset-password/validate?token=${token}&email=${encodeURIComponent(
+        url: `/auth/reset-password/validate?token=${token}&email=${encodeURIComponent(
           email
         )}`,
         method: "GET",
