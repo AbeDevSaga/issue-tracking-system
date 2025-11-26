@@ -17,7 +17,7 @@ import { Edit, Plus, Trash2 } from "lucide-react";
 import { Button } from "../../components/ui/cn/button";
 import { useState } from "react";
 import { CreateChildInternalNodeModal } from "../../components/modals/CreateChildInternalNodeModal";
-import HierarchyUsersList from "../../components/tables/lists/HierarchyUsersList";
+import InternalNodeUsersList from "../../components/tables/lists/InternalNodeUsersList";
 
 const IssueConfigurationDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -226,12 +226,11 @@ const IssueConfigurationDetail = () => {
             onClose={() => setModalOpen(false)}
           />
           {/* Assigned Users */}
-          {/* <HierarchyUsersList
-            projectId=""
-            inistitute_id=""
-            hierarchy_node_id={id || ""}
-            hierarchy_node_name={issueFlow.name || ""}
-          /> */}
+          <InternalNodeUsersList
+            projectId={localStorage.getItem("current_project_id") || ""}
+            internal_node_id={id || ""}
+            internal_node_name={issueFlow.name || ""}
+          />
         </div>
       </div>
     </>

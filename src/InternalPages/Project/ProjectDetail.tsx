@@ -17,7 +17,7 @@ import {
   ArrowLeftIcon,
   BuildingOfficeIcon,
 } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import DeleteModal from "../../components/common/DeleteModal";
@@ -37,6 +37,13 @@ export default function ProjectDetail() {
   const [activeTab, setActiveTab] = useState<"issueFlow" | "users">(
     "issueFlow"
   );
+
+  // Save project ID to localStorage on every load/update
+  useEffect(() => {
+    if (id) {
+      localStorage.setItem("current_project_id", id);
+    }
+  }, [id]);
 
   const actions: ActionButton[] = [
     {
@@ -252,7 +259,10 @@ export default function ProjectDetail() {
 
           {/* Project Hierarchy */}
           {activeTab === "issueFlow" && (
-            <IssueFlowList toggleActions={actions} parent_hierarchy_node_id={project.hierarchy_node_id} />
+            <IssueFlowList
+              toggleActions={actions}
+              parent_hierarchy_node_id={project.hierarchy_node_id}
+            />
           )}
 
           {activeTab === "users" && (
