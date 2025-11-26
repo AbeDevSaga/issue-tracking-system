@@ -70,6 +70,8 @@ import Profile from "./pages/profile/profile";
 import PriorityLevelDetail from "./pages/priorityLevel/priorityLevelDetail";
 import ForgotPassword from "./components/auth/ForgotPassword";
 import ResetPassword from "./components/auth/ResetPassword";
+import InternalAppLayout from "./layout/InternalLayout/InternalAppLayout";
+import IssueFlow from "./InternalPages/IssueFlow/IssueFlow";
 const AuthLoader = () => {
   return (
     <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">
@@ -206,8 +208,15 @@ function AppContent() {
             </PublicRoute>
           }
         />
+<<<<<<< HEAD
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+=======
+        {/* Internal Routes */}
+        <Route element={<InternalAppLayout />}>
+          <Route path="/internal/dashboard" element={<Home />} />
+        </Route>
+>>>>>>> 17c7c78504d101ddc68cb89a49367e756fecb0df
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
