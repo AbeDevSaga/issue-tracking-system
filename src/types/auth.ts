@@ -5,6 +5,7 @@ export interface User {
   phone_number?: string;
   position?: string;
   profile_image?: string;
+  user_type: string;
   institute?: {
     institute_id: string;
     name: string;

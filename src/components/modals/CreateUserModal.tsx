@@ -1,7 +1,7 @@
 // Updated CreateUserModal with normal div modal instead of Dialog
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Input } from "../ui/cn/input";
 import { Label } from "../ui/cn/label";
@@ -16,8 +16,6 @@ import {
 
 import {
   useCreateUserMutation,
-  useGetUserTypesQuery,
-  UserType,
   CreateUserDto,
 } from "../../redux/services/userApi";
 
@@ -28,11 +26,19 @@ import {
 import { XIcon } from "lucide-react";
 
 interface CreateUserModalProps {
+  logged_user_type: string;
+  user_type: string;
+  user_type_id: string;
+  inistitute_id: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
 export const CreateUserModal: React.FC<CreateUserModalProps> = ({
+  logged_user_type,
+  user_type,
+  user_type_id,
+  inistitute_id,
   isOpen,
   onClose,
 }) => {
@@ -41,29 +47,34 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
   const [phoneNumber, setPhoneNumber] = useState("");
   const [position, setPosition] = useState("");
   const [isActive, setIsActive] = useState(true);
-  const [selectedUserTypeId, setSelectedUserTypeId] = useState<string>("");
   const [instituteId, setInstituteId] = useState<string>("");
-
-  const { data: userTypesResponse, isLoading: loadingUserTypes } =
-    useGetUserTypesQuery();
-  const userTypes: UserType[] = userTypesResponse?.data || [];
-
-  const selectedUserType = userTypes.find(
-    (ut) => ut.user_type_id === selectedUserTypeId
-  );
 
   const { data: institutes, isLoading: loadingInstitutes } =
     useGetInstitutesQuery();
 
   const [createUser, { isLoading }] = useCreateUserMutation();
 
+  // Set initial ID on modal open
+  useEffect(() => {
+    if (isOpen) {
+      setInstituteId(inistitute_id || "");
+    }
+  }, [isOpen, inistitute_id]);
+
+  // Restore initial ID after institutes load (avoid resetting user-selected value)
+  useEffect(() => {
+    if (isOpen && institutes && inistitute_id && instituteId === "") {
+      setInstituteId(inistitute_id);
+    }
+  }, [institutes, isOpen, inistitute_id]);
+
   const handleSubmit = async () => {
-    if (!fullName || !email || !selectedUserTypeId) {
+    if (!fullName || !email || !user_type_id) {
       toast.error("Please fill all required fields");
       return;
     }
 
-    if (selectedUserType?.name === "external_user" && !instituteId) {
+    if (user_type === "external_user" && !instituteId) {
       toast.error("Please select an institute for external users");
       return;
     }
@@ -72,9 +83,9 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
       full_name: fullName,
       email,
       phone_number: phoneNumber || undefined,
-      user_type_id: selectedUserTypeId,
+      user_type_id: user_type_id,
       position: position || undefined,
-      ...(selectedUserType?.name === "external_user" && {
+      ...(user_type === "external_user" && {
         institute_id: instituteId,
       }),
     };
@@ -93,7 +104,6 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
     setEmail("");
     setPhoneNumber("");
     setPosition("");
-    setSelectedUserTypeId("");
     setIsActive(true);
     setInstituteId("");
     onClose();
@@ -125,65 +135,37 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
         {/* Content */}
         <div className="w-full flex flex-col space-y-4">
           <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4  mt-2 pr-2">
-            <div className="space-y-2">
-              <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                User Type *
-              </Label>
-              <Select
-                value={selectedUserTypeId}
-                onValueChange={setSelectedUserTypeId}
-                disabled={loadingUserTypes}
-              >
-                <SelectTrigger className=" h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
-                  <SelectValue
-                    className="text-sm text-[#094C81] font-medium placeholder:text-sm placeholder:text-[#094C81] placeholder:font-medium"
-                    placeholder="Select User Type"
-                  />
-                </SelectTrigger>
-                <SelectContent className="text-sm text-[#094C81] font-medium">
-                  {userTypes.map((type) => (
-                    <SelectItem
-                      className="text-sm text-[#094C81] font-medium"
-                      key={type.user_type_id}
-                      value={type.user_type_id}
-                    >
-                      {type.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {selectedUserType?.name === "external_user" && (
-              <div className="space-y-2">
-                <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                  Institute *
-                </Label>
-                <Select
-                  value={instituteId}
-                  onValueChange={setInstituteId}
-                  disabled={loadingInstitutes}
-                >
-                  <SelectTrigger className=" h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
-                    <SelectValue
-                      className="text-sm text-[#094C81] font-medium"
-                      placeholder="Select Institute"
-                    />
-                  </SelectTrigger>
-                  <SelectContent className="text-sm bg-white text-[#094C81] font-medium">
-                    {institutes?.map((inst: Institute) => (
-                      <SelectItem
+            {logged_user_type === "internal_user" &&
+              user_type === "external_user" && (
+                <div className="space-y-2">
+                  <Label className="block text-sm text-[#094C81] font-medium mb-2">
+                    Institute *
+                  </Label>
+                  <Select
+                    value={instituteId}
+                    onValueChange={setInstituteId}
+                    disabled={loadingInstitutes}
+                  >
+                    <SelectTrigger className=" h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
+                      <SelectValue
                         className="text-sm text-[#094C81] font-medium"
-                        key={inst.institute_id}
-                        value={inst.institute_id}
-                      >
-                        {inst.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+                        placeholder="Select Institute"
+                      />
+                    </SelectTrigger>
+                    <SelectContent className="text-sm bg-white text-[#094C81] font-medium">
+                      {institutes?.map((inst: Institute) => (
+                        <SelectItem
+                          className="text-sm text-[#094C81] font-medium"
+                          key={inst.institute_id}
+                          value={inst.institute_id}
+                        >
+                          {inst.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             <div className="space-y-2">
               <Label className="block text-sm text-[#094C81] font-medium mb-2">
                 Full Name *

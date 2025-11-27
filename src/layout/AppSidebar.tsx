@@ -2,154 +2,24 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useSidebar } from "../context/SidebarContext";
- 
-import {
-  Home,
-  Users,
-  Building2,
-  Landmark,
-  Database,
-  FileWarning,
-  ClipboardList,
-  ClipboardCheck,
-  ChartPieIcon,
-  PlugIcon,
-  ChevronDownIcon,
-} from "lucide-react";
-import { useAuth } from "./../contexts/AuthContext";
-import { PERMISSIONS } from "./../types/auth";
-import SidebarWidget from "./SidebarWidget";
+import { useAuth } from "../contexts/AuthContext";
 import Logo from "../assets/logo.png";
 import { HorizontaLDots } from "../icons";
-
-const HomeIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-    <polyline points="9 22 9 12 15 12 15 22" />
-  </svg>
-);
-const BaseDataIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <ellipse cx="12" cy="5" rx="9" ry="3" />
-    <path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5" />
-    <path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3" />
-  </svg>
-);
-const IssueIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="10" />
-    <line x1="12" y1="8" x2="12" y2="12" />
-    <line x1="12" y1="16" x2="12.01" y2="16" />
-  </svg>
-);
-const TaskList = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <line x1="9" y1="6" x2="21" y2="6" />
-    <line x1="9" y1="12" x2="21" y2="12" />
-    <line x1="9" y1="18" x2="21" y2="18" />
-    <polyline points="3 6 5 8 7 4" />
-    <polyline points="3 12 5 14 7 10" />
-    <polyline points="3 18 5 20 7 16" />
-  </svg>
-);
-
-const TaskListIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="3 6 5 8 7 4" />
-    <polyline points="3 12 5 14 7 10" />
-    <polyline points="3 18 5 20 7 16" />
-
-    <line x1="9" y1="6" x2="21" y2="6" />
-    <line x1="9" y1="12" x2="21" y2="12" />
-    <line x1="9" y1="18" x2="21" y2="18" />
-  </svg>
-);
-const LogoIcon = ({ size = 24 }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="#269A99"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
-    <path d="M8 6h8" />
-    <path d="M8 10h4" />
-  </svg>
-);
-
-type NavItem = {
-  name: string;
-  icon: React.ReactNode;
-  path?: string;
-  subItems?: { name: string; path: string; permission?: string }[];
-  permission?: string;
-  anyPermissions?: string[];
-};
+import { getNavItemsByUserType, NavItem } from "../types/userTypeRoutes";
+import DynamicIcon from "../components/common/DynamicIcon";
+import { useGetCurrentUserQuery } from "../redux/services/authApi";
 
 const AppSidebar: React.FC = () => {
+  const { data: loggedUser, isLoading: userLoading } = useGetCurrentUserQuery();
+
+  const userType = loggedUser?.user?.user_type || "external_user";
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
-  const { hasPermission, hasAnyPermission } = useAuth();
+  const { hasPermission, hasAnyPermission, user } = useAuth();
   const location = useLocation();
 
-  const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "others";
-    index: number;
-  } | null>(null);
+  const [openSubmenu, setOpenSubmenu] = useState<{ index: number } | null>(
+    null
+  );
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
     {}
   );
@@ -161,100 +31,14 @@ const AppSidebar: React.FC = () => {
     [location.pathname]
   );
 
-  
-  // 📌 PERMISSION-BASED MENU STRUCTURE
-  const navItems: NavItem[] = [
-    {
-      icon: <Home />,
-      name: "Dashboard",
-      path: "/dashboard",
-    },
-  
-    {
-      icon: <Users />,
-      name: "User Management",
-      path: "/users",
-      subItems: [
-        {
-          name: "User List",
-          path: "/users",
-        },
-        {
-          name: "Role Management",
-          path: "/role",
-        },
-        {
-          name: "Permission Management",
-          path: "/permission",
-        },
-      ],
-    },
-    {
-      icon: <Building2 />,
-      name: "Inistitute Management",
-      path: "/inistitutes",
-    },
-    {
-      icon: <Landmark />,
-      name: "Organization Management",
-      path: "/organization",
-    },
-    {
-      icon: <Database />,
-      name: "BaseData",
-      path: "/basedata",
-    },
-  
-    {
-      icon: <FileWarning />,
-      name: "My Issue",
-      path: "/my_issue",
-    },
-    {
-      icon: <ClipboardList />,
-      name: "Task List",
-      path: "/task",
-    },
-    {
-      icon: <ClipboardCheck />,
-      name: "Internal Task List",
-      path: "/task_list",
-    },
-  
-    // Uncomment if needed later:
-    // {
-    //   icon: <ClipboardList />,
-    //   name: "Central Admin Task List",
-    //   path: "/central_admin_task_list",
-    // },
-  ];
-  
-
-  const othersItems: NavItem[] = [
-    {
-      icon: <ChartPieIcon />,
-      name: "Reports & Analytics",
-      anyPermissions: [PERMISSIONS.REPORTS, PERMISSIONS.AUDIT_LOGS_VIEW],
-      subItems: [
-        {
-          name: "Reports",
-          path: "/financial",
-          permission: PERMISSIONS.FINANCIAL_REPORTS,
-        },
-      ],
-    },
-    {
-      icon: <PlugIcon />,
-      name: "System Settings",
-      subItems: [{ name: "Profile", path: "/profile" }],
-    },
-  ];
+  // Get user type and filter menu items
+  const filteredNavItems = getNavItemsByUserType(userType);
 
   // Filter menu items based on permissions
   const filterMenuItems = (items: NavItem[]) => {
     return items.filter((item) => {
       // Check main item permission
-      if (item.permission && !hasPermission(item.permission)) {
+      if (item.permission && !hasAnyPermission(item.permission)) {
         return false;
       }
       if (item.anyPermissions && !hasAnyPermission(item.anyPermissions)) {
@@ -264,7 +48,7 @@ const AppSidebar: React.FC = () => {
       // Filter subitems
       if (item.subItems) {
         item.subItems = item.subItems.filter((subItem) => {
-          if (subItem.permission && !hasPermission(subItem.permission)) {
+          if (subItem.permission && !hasAnyPermission(subItem.permission)) {
             return false;
           }
           return true;
@@ -282,21 +66,15 @@ const AppSidebar: React.FC = () => {
 
   useEffect(() => {
     let submenuMatched = false;
-    ["main", "others"].forEach((menuType) => {
-      const items = menuType === "main" ? navItems : othersItems;
-      items.forEach((nav, index) => {
-        if (nav.subItems) {
-          nav.subItems.forEach((subItem) => {
-            if (isActive(subItem.path)) {
-              setOpenSubmenu({
-                type: menuType as "main" | "others",
-                index,
-              });
-              submenuMatched = true;
-            }
-          });
-        }
-      });
+    filteredNavItems.forEach((nav, index) => {
+      if (nav.subItems) {
+        nav.subItems.forEach((subItem) => {
+          if (isActive(subItem.path)) {
+            setOpenSubmenu({ index });
+            submenuMatched = true;
+          }
+        });
+      }
     });
 
     if (!submenuMatched) {
@@ -306,7 +84,7 @@ const AppSidebar: React.FC = () => {
 
   useEffect(() => {
     if (openSubmenu !== null) {
-      const key = `${openSubmenu.type}-${openSubmenu.index}`;
+      const key = `${openSubmenu.index}`;
       if (subMenuRefs.current[key]) {
         setSubMenuHeight((prevHeights) => ({
           ...prevHeights,
@@ -316,20 +94,16 @@ const AppSidebar: React.FC = () => {
     }
   }, [openSubmenu]);
 
-  const handleSubmenuToggle = (index: number, menuType: "main" | "others") => {
+  const handleSubmenuToggle = (index: number) => {
     setOpenSubmenu((prevOpenSubmenu) => {
-      if (
-        prevOpenSubmenu &&
-        prevOpenSubmenu.type === menuType &&
-        prevOpenSubmenu.index === index
-      ) {
+      if (prevOpenSubmenu && prevOpenSubmenu.index === index) {
         return null;
       }
-      return { type: menuType, index };
+      return { index };
     });
   };
 
-  const renderMenuItems = (items: NavItem[], menuType: "main" | "others") => {
+  const renderMenuItems = (items: NavItem[]) => {
     const filteredItems = filterMenuItems(items);
 
     if (filteredItems.length === 0) return null;
@@ -340,9 +114,9 @@ const AppSidebar: React.FC = () => {
           <li key={nav.name}>
             {nav.subItems ? (
               <button
-                onClick={() => handleSubmenuToggle(index, menuType)}
+                onClick={() => handleSubmenuToggle(index)}
                 className={`menu-item group ${
-                  openSubmenu?.type === menuType && openSubmenu?.index === index
+                  openSubmenu?.index === index
                     ? "menu-item-active"
                     : "menu-item-inactive"
                 } cursor-pointer ${
@@ -353,21 +127,20 @@ const AppSidebar: React.FC = () => {
               >
                 <span
                   className={`menu-item-icon-size  ${
-                    openSubmenu?.type === menuType &&
                     openSubmenu?.index === index
                       ? "menu-item-icon-active"
                       : "menu-item-icon-inactive"
                   }`}
                 >
-                  {nav.icon}
+                  <DynamicIcon name={nav.icon as string} />
                 </span>
                 {(isExpanded || isHovered || isMobileOpen) && (
                   <span className="menu-item-text">{nav.name}</span>
                 )}
                 {(isExpanded || isHovered || isMobileOpen) && (
-                  <ChevronDownIcon
+                  <DynamicIcon
+                    name="ChevronDownIcon"
                     className={`ml-auto w-5 h-5 transition-transform duration-200 ${
-                      openSubmenu?.type === menuType &&
                       openSubmenu?.index === index
                         ? "rotate-180 text-brand-500"
                         : ""
@@ -392,7 +165,7 @@ const AppSidebar: React.FC = () => {
                         : "menu-item-icon-inactive"
                     }`}
                   >
-                    {nav.icon}
+                    <DynamicIcon name={nav.icon as string} />
                   </span>
                   {(isExpanded || isHovered || isMobileOpen) && (
                     <span className="menu-item-text">{nav.name}</span>
@@ -403,21 +176,19 @@ const AppSidebar: React.FC = () => {
             {nav.subItems && (isExpanded || isHovered || isMobileOpen) && (
               <div
                 ref={(el) => {
-                  subMenuRefs.current[`${menuType}-${index}`] = el;
+                  subMenuRefs.current[`${index}`] = el;
                 }}
                 className="overflow-hidden transition-all duration-300"
                 style={{
                   height:
-                    openSubmenu?.type === menuType &&
                     openSubmenu?.index === index
-                      ? `${subMenuHeight[`${menuType}-${index}`]}px`
+                      ? `${subMenuHeight[`${index}`]}px`
                       : "0px",
                 }}
               >
                 <ul className="relative mt-2 ml-5">
                   <span className="absolute left-0 top-0 w-[2px] h-full bg-gray-300 dark:bg-gray-600"></span>
-
-                  {nav.subItems.map((subItem, idx) => (
+                  {nav.subItems.map((subItem) => (
                     <li key={subItem.name} className="relative pl-4">
                       <Link
                         to={subItem.path}
@@ -442,9 +213,7 @@ const AppSidebar: React.FC = () => {
 
   return (
     <aside
-      // className={`fixed mt-16 flex flex-col lg:mt-10 top-0 px-5 left-0 bg-white dark:bg-gray-900 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 dark:border-gray-800
-      className={`fixed mt-5 flex flex-col  top-0 px-5 left-0 bg-white dark:bg-gray-900 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 dark:border-gray-800 rounded-r-2xl
-
+      className={`fixed mt-5 flex flex-col top-0 px-5 left-0 bg-white dark:bg-gray-900 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 dark:border-gray-800 rounded-r-2xl
         ${
           isExpanded || isMobileOpen
             ? "w-[290px]"
@@ -483,9 +252,7 @@ const AppSidebar: React.FC = () => {
               </h2>
             </>
           ) : (
-            <>
-              <img src={Logo} alt="Logo" className="w-40" />
-            </>
+            <img src={Logo} alt="Logo" className="w-40" />
           )}
         </Link>
       </div>
@@ -495,39 +262,20 @@ const AppSidebar: React.FC = () => {
           <div className="flex flex-col gap-4">
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px]     text-gray-400 dark:text-gray-500 ${
-                  !isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "Menu"
-                ) : (
-                  <HorizontaLDots className="size-6 text-gray-400 dark:text-gray-500" />
-                )}
-              </h2>
-              {renderMenuItems(navItems, "main")}
-            </div>
-            <div>
-              <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 dark:text-gray-500 ${
                   !isExpanded && !isHovered
                     ? "lg:justify-center"
                     : "justify-start"
                 }`}
               >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "Administration"
-                ) : (
+                {isExpanded || isHovered || isMobileOpen ? null : (
                   <HorizontaLDots className="size-6 text-gray-400 dark:text-gray-500" />
                 )}
               </h2>
-              {renderMenuItems(othersItems, "others")}
+              {renderMenuItems(filteredNavItems)}
             </div>
           </div>
         </nav>
-        {(isExpanded || isHovered || isMobileOpen) && <SidebarWidget />}
       </div>
     </aside>
   );

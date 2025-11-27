@@ -14,6 +14,7 @@ import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
 import { CreateProjectModal } from "../../modals/CreateProjectModal";
+import { isPermittedActionButton } from "../../../utils/guards/isPermittedActionButton";
 
 interface ProjectListProps {
   userType: string;
@@ -111,8 +112,15 @@ export default function ProjectList({
       variant: "default",
       size: "default",
       onClick: () => setModalOpen(true),
+      // permissions: ["create:projects"],
+      allowedFor: ["internal_user"],
     },
   ];
+
+  // Filter the actions once
+  const permittedActions = actions.filter((action) =>
+    isPermittedActionButton(action)
+  );
 
   const filterFields: FilterField[] = [
     {
@@ -165,7 +173,7 @@ export default function ProjectList({
       <PageLayout
         filters={filterFields}
         filterColumnsPerRow={1}
-        actions={actions}
+        actions={permittedActions}
       >
         <DataTable
           columns={ProjectTableColumns}

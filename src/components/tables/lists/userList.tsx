@@ -19,6 +19,7 @@ import {
 
 interface UserListProps {
   user_type?: string;
+  logged_user_type?: string;
   user_type_id?: string;
   inistitute_id?: string;
   toggleActions?: ActionButton[];
@@ -26,6 +27,7 @@ interface UserListProps {
 
 export default function UserList({
   user_type,
+  logged_user_type,
   user_type_id,
   inistitute_id,
   toggleActions,
@@ -46,46 +48,24 @@ export default function UserList({
       header: "Email",
       cell: ({ row }: any) => <div>{row.getValue("email")}</div>,
     },
-    // {
-    //   accessorKey: "position",
-    //   header: "Position",
-    //   cell: ({ row }: any) => <div>{row.getValue("position") || "N/A"}</div>,
-    // },
-
-    // "institute": {
-    //               "institute_id": "66aa142b-dc70-44cb-8082-8835e049d6a0",
-    //               "name": "Bole Airport International"
-    //           },
-    user_type === "external_user" && {
-      accessorKey: "institute.name", // ✅ Access nested userType name
-      header: "Institute",
-      cell: ({ row }: any) => {
-        const inst = row.original.institute?.name || "N/A";
-        return (
-          <span className={`px-2 py-1 text-xs font-semibold rounded-full`}>
-            {inst.replace("_", " ")}
-          </span>
-        );
-      },
-    },
     {
-      accessorKey: "userType.name", // ✅ Access nested userType name
-      header: "User Type",
-      cell: ({ row }: any) => {
-        const userType = row.original.userType?.name || "N/A";
-        return (
-          <span
-            className={`px-2 py-1 text-xs font-semibold rounded-full ${
-              userType === "internal_user"
-                ? "bg-blue-100 text-blue-800"
-                : "bg-yellow-100 text-yellow-800"
-            }`}
-          >
-            {userType.replace("_", " ")}
-          </span>
-        );
-      },
+      accessorKey: "phone_number",
+      header: "Phone Number",
+      cell: ({ row }: any) => <div>{row.getValue("phone_number")}</div>,
     },
+    logged_user_type !== "external_user" &&
+      user_type === "external_user" && {
+        accessorKey: "institute.name", // ✅ Access nested userType name
+        header: "Institute",
+        cell: ({ row }: any) => {
+          const inst = row.original.institute?.name || "N/A";
+          return (
+            <span className={`px-2 py-1 text-xs font-semibold rounded-full`}>
+              {inst.replace("_", " ")}
+            </span>
+          );
+        },
+      },
     {
       accessorKey: "is_active",
       header: "Status",
@@ -185,9 +165,14 @@ export default function UserList({
     setPageDetail({ ...pageDetail, pageIndex, pageSize });
   };
 
+  const buttonLabel = toggleActions
+    ? user_type === "internal_user"
+      ? "Add Internal User"
+      : "Add External User"
+    : "Add User";
   const actions: ActionButton[] = [
     {
-      label: "Add User",
+      label: buttonLabel,
       icon: <Plus className="h-4 w-4" />,
       variant: "default",
       size: "default",
@@ -231,6 +216,10 @@ export default function UserList({
       </PageLayout>
 
       <CreateUserModal
+        logged_user_type={logged_user_type || ""}
+        user_type={user_type || "internal_user"}
+        user_type_id={user_type_id || ""}
+        inistitute_id={inistitute_id || ""}
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
       />
