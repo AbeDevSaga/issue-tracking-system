@@ -18,6 +18,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { Textarea } from "../ui/cn/textarea";
+import { shortenText } from "../../utils/shortenText";
 
 interface HierarchyCreateionProps {
   project_id: string;
@@ -162,7 +163,7 @@ export function CreateHierarchyNodeModal({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-[700px] max-h-[85vh] overflow-y-auto">
+      <div className={`bg-white p-6 rounded-lg shadow-lg ${hasSelectedParent ? "w-[1000px]" : "min-w-[700px]"} max-h-[85vh] overflow-y-auto`}>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-[#094C81]">
             Create Structure
@@ -257,7 +258,7 @@ export function CreateHierarchyNodeModal({
                             <div
                               key={node.hierarchy_node_id}
                               className={`flex border border-gray-300 rounded-md items-center
-                                hover:bg-blue-100 
+                                hover:bg-blue-100  pr-3
                                 ${selectedParentNode === node.hierarchy_node_id ? "bg-blue-200 border border-[#094C81] text-blue-800 " : ""}`}
                             >
                               <button
@@ -275,7 +276,7 @@ export function CreateHierarchyNodeModal({
                                   <div className="flex-1">
                                     <div className="font-medium">{node.name}</div>
                                     {node.description && (
-                                      <div className="text-sm text-gray-600 truncate">{node.description}</div>
+                                      <div className="text-sm text-gray-600 truncate">{shortenText(node.description,40)}</div>
                                     )}
                                     <div className="text-xs text-gray-500 mt-1">
                                       Level {node.level} • {node.children?.length || 0} children
@@ -308,25 +309,7 @@ export function CreateHierarchyNodeModal({
                         )}
                       </div>
 
-                      {/* Selected parent info */}
-                      {/* {selectedParentNode && (
-                        <div className="mt-3 p-2 bg-blue-50 rounded-md text-sm border border-blue-200">
-                          <div className="flex items-center text-[#094C81] font-medium">
-                            <span className="mr-2">
-                              <CheckIcon className="w-4 h-4" />
-                            </span>
-                            <div>
-                              <strong>Selected Parent:</strong>{" "}
-                              {
-                                currentLevelNodes?.find(
-                                  (n: any) =>
-                                    n.hierarchy_node_id === selectedParentNode
-                                )?.name
-                              }
-                            </div>
-                          </div>
-                        </div>
-                      )} */}
+                     
                     </>
                   )}
                 </div>
@@ -346,7 +329,7 @@ export function CreateHierarchyNodeModal({
                   <Label className="block text-sm text-[#094C81] font-medium mb-2">
                     Structure Name *
                   </Label>
-                  <Input
+                  <input
                     id="structure-name"
                     placeholder="Enter structure name"
                     value={name}

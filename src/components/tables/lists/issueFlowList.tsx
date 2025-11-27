@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Eye } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 
 import {
@@ -18,6 +18,28 @@ import { ActionButton, FilterField } from "../../../types/layout";
 import HierarchyD3TreeInstitute from "./HierarchyD3TreeInstitute";
 import { CreateInternalNodeModal } from "../../modals/CreateInternalNodeModal";
 
+
+interface IssueFlowListProps {
+  toggleActions?: ActionButton[];
+}
+
+// ------------------- Component -------------------
+export default function IssueFlowList({ toggleActions }: IssueFlowListProps) {
+  const { data, isLoading, isError } = useGetInternalNodesQuery();
+  const [deleteNode] = useDeleteInternalNodeMutation();
+
+  const [nodes, setNodes] = useState<any[]>([]);
+  const [filteredNodes, setFilteredNodes] = useState<any[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [toggleView, setToggleView] = useState("table");
+  const [pageDetail, setPageDetail] = useState({
+    pageIndex: 0,
+    pageCount: 1,
+    pageSize: 10,
+  });
+  const {pathname} = useLocation();
+  console.log(pathname,"this is the pathname");
 // ------------------- Table Columns -------------------
 const InternalNodeTableColumns = (deleteNode: any) => [
   {
@@ -61,22 +83,26 @@ const InternalNodeTableColumns = (deleteNode: any) => [
     header: "Actions",
     cell: ({ row }: any) => {
       const node = row.original;
-
-      const handleDelete = async () => {
-        if (confirm(`Delete node "${node.name}"?`)) {
-          try {
-            await deleteNode(node.internal_node_id).unwrap();
-            toast.success("Internal node deleted successfully");
-          } catch (err: any) {
-            toast.error(err?.data?.message || "Error deleting node");
-          }
-        }
-      };
-
+      
+      // const handleDelete = async () => {
+      //   if (confirm(`Delete node "${node.name}"?`)) {
+      //     try {
+      //       await deleteNode(node.internal_node_id).unwrap();
+      //       toast.success("Internal node deleted successfully");
+      //     } catch (err: any) {
+      //       toast.error(err?.data?.message || "Error deleting node");
+      //     }
+      //   }
+      // };
+      let toggle = true
+      if (pathname.startsWith("/inistitutes/project")) {
+        toggle = false;
+      }
+      
       return (
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/issue_configuration/${node.internal_node_id}`}>
+            <Link to={toggle ? `/issue_configuration/${node.internal_node_id}` : `/issue_flow/${node.internal_node_id}`}>
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
@@ -97,27 +123,6 @@ const InternalNodeTableColumns = (deleteNode: any) => [
     },
   },
 ];
-
-interface IssueFlowListProps {
-  toggleActions?: ActionButton[];
-}
-
-// ------------------- Component -------------------
-export default function IssueFlowList({ toggleActions }: IssueFlowListProps) {
-  const { data, isLoading, isError } = useGetInternalNodesQuery();
-  const [deleteNode] = useDeleteInternalNodeMutation();
-
-  const [nodes, setNodes] = useState<any[]>([]);
-  const [filteredNodes, setFilteredNodes] = useState<any[]>([]);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [isModalOpen, setModalOpen] = useState(false);
-  const [toggleView, setToggleView] = useState("table");
-  const [pageDetail, setPageDetail] = useState({
-    pageIndex: 0,
-    pageCount: 1,
-    pageSize: 10,
-  });
-
   const actions: ActionButton[] = [
     {
       label: "Add Issue Flow",

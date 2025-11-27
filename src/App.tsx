@@ -164,6 +164,7 @@ function AppContent() {
           <Route path="/my_issue" element={<MyIssue />} />
           <Route path="/issue_configuration" element={<IssueFlowConfig />} />
           <Route path="/issue_configuration/:id" element={<IssueConfigurationDetail />} />
+          <Route path="/issue_flow/:id" element={<IssueFlow />} />
           {/* IssueFlowConfig */}
           <Route path="/add_issue" element={<MyissueForm />} />
           <Route path="/qa_tasks" element={<QATask />} />
