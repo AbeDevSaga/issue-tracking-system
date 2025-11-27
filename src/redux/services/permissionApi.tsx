@@ -24,22 +24,23 @@ export const permissionApi = baseApi.injectEndpoints({
     }),
     activatePermission: builder.mutation<PermissionToggleResponse, string>({
       query: (permission_id) => ({
-        url: `/permissions/${permission_id}/activate`,
-        method: "PATCH",
+        url: `/permissions/activate/${permission_id}`,
+        method: "PUT",
       }),
       invalidatesTags: ["Permission"],
     }),
     deactivatePermission: builder.mutation<PermissionToggleResponse, string>({
       query: (permission_id) => ({
-        url: `/permissions/${permission_id}/deactivate`,
-        method: "PATCH",
+        url: `/permissions/deactivate/${permission_id}`,
+        method: "PUT",
       }),
       invalidatesTags: ["Permission"],
     }),
-    togglePermission: builder.mutation<PermissionToggleResponse, string>({
+    togglePermission: builder.mutation({
       query: (permission_id) => ({
-        url: `/permissions/${permission_id}/toggle`,
+        url: `/permissions/toggle/${permission_id}`,
         method: "PUT",
+        body: {},
       }),
       invalidatesTags: ["Permission"],
     }),

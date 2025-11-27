@@ -17,108 +17,122 @@ import {
   User,
 } from "../../../redux/services/userApi";
 
-// --- Define table columns ---
-// --- Define table columns ---
-const UserTableColumns = [
-  {
-    accessorKey: "full_name",
-    header: "Full Name",
-    cell: ({ row }: any) => (
-      <div className="font-medium text-blue-600">
-        {row.getValue("full_name")}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "email",
-    header: "Email",
-    cell: ({ row }: any) => <div>{row.getValue("email")}</div>,
-  },
-  // {
-  //   accessorKey: "position",
-  //   header: "Position",
-  //   cell: ({ row }: any) => <div>{row.getValue("position") || "N/A"}</div>,
-  // },
+interface UserListProps {
+  user_type?: string;
+  user_type_id?: string;
+  inistitute_id?: string;
+  toggleActions?: ActionButton[];
+}
 
-  // "institute": {
-  //               "institute_id": "66aa142b-dc70-44cb-8082-8835e049d6a0",
-  //               "name": "Bole Airport International"
-  //           },
-  {
-    accessorKey: "institute.name", // ✅ Access nested userType name
-    header: "Institute",
-    cell: ({ row }: any) => {
-      const inst = row.original.institute?.name || "N/A";
-      return (
-        <span className={`px-2 py-1 text-xs font-semibold rounded-full`}>
-          {inst.replace("_", " ")}
-        </span>
-      );
+export default function UserList({
+  user_type,
+  user_type_id,
+  inistitute_id,
+  toggleActions,
+}: UserListProps) {
+  // --- Define table columns ---
+  const UserTableColumns = [
+    {
+      accessorKey: "full_name",
+      header: "Full Name",
+      cell: ({ row }: any) => (
+        <div className="font-medium text-blue-600">
+          {row.getValue("full_name")}
+        </div>
+      ),
     },
-  },
-  {
-    accessorKey: "userType.name", // ✅ Access nested userType name
-    header: "User Type",
-    cell: ({ row }: any) => {
-      const userType = row.original.userType?.name || "N/A";
-      return (
-        <span
-          className={`px-2 py-1 text-xs font-semibold rounded-full ${
-            userType === "internal_user"
-              ? "bg-blue-100 text-blue-800"
-              : "bg-yellow-100 text-yellow-800"
-          }`}
-        >
-          {userType.replace("_", " ")}
-        </span>
-      );
+    {
+      accessorKey: "email",
+      header: "Email",
+      cell: ({ row }: any) => <div>{row.getValue("email")}</div>,
     },
-  },
-  {
-    accessorKey: "is_active",
-    header: "Status",
-    cell: ({ row }: any) => {
-      const isActive = row.getValue("is_active");
-      return (
-        <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-          }`}
-        >
-          {isActive ? "Active" : "Inactive"}
-        </span>
-      );
-    },
-  },
-  {
-    id: "actions",
-    header: "Actions",
-    cell: ({ row }: any) => {
-      const user = row.original as User;
-      const [deleteUser] = useDeleteUserMutation();
+    // {
+    //   accessorKey: "position",
+    //   header: "Position",
+    //   cell: ({ row }: any) => <div>{row.getValue("position") || "N/A"}</div>,
+    // },
 
-      const handleDelete = async () => {
-        try {
-          await deleteUser(user.user_id).unwrap();
-          toast.success("User deleted successfully!");
-        } catch (err: any) {
-          toast.error(err?.data?.message || "Failed to delete user");
-        }
-      };
+    // "institute": {
+    //               "institute_id": "66aa142b-dc70-44cb-8082-8835e049d6a0",
+    //               "name": "Bole Airport International"
+    //           },
+    user_type === "external_user" && {
+      accessorKey: "institute.name", // ✅ Access nested userType name
+      header: "Institute",
+      cell: ({ row }: any) => {
+        const inst = row.original.institute?.name || "N/A";
+        return (
+          <span className={`px-2 py-1 text-xs font-semibold rounded-full`}>
+            {inst.replace("_", " ")}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "userType.name", // ✅ Access nested userType name
+      header: "User Type",
+      cell: ({ row }: any) => {
+        const userType = row.original.userType?.name || "N/A";
+        return (
+          <span
+            className={`px-2 py-1 text-xs font-semibold rounded-full ${
+              userType === "internal_user"
+                ? "bg-blue-100 text-blue-800"
+                : "bg-yellow-100 text-yellow-800"
+            }`}
+          >
+            {userType.replace("_", " ")}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "is_active",
+      header: "Status",
+      cell: ({ row }: any) => {
+        const isActive = row.getValue("is_active");
+        return (
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+              isActive
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
+            }`}
+          >
+            {isActive ? "Active" : "Inactive"}
+          </span>
+        );
+      },
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }: any) => {
+        const user = row.original as User;
+        const [deleteUser] = useDeleteUserMutation();
 
-      return (
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/users/${user.user_id}`}>
-              <Eye className="h-4 w-4" />
-            </Link>
-          </Button>
-          {/* <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
+        const handleDelete = async () => {
+          try {
+            await deleteUser(user.user_id).unwrap();
+            toast.success("User deleted successfully!");
+          } catch (err: any) {
+            toast.error(err?.data?.message || "Failed to delete user");
+          }
+        };
+
+        return (
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
+              <Link to={`/users/${user.user_id}`}>
+                <Eye className="h-4 w-4" />
+              </Link>
+            </Button>
+            {/* <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
             <Link to={`/users/${user.user_id}`}>
               <Edit className="h-4 w-4" />
             </Link>
           </Button> */}
-          {/* <Button
+            {/* <Button
             variant="outline"
             size="sm"
             className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
@@ -126,18 +140,16 @@ const UserTableColumns = [
           >
             <Trash2 className="h-4 w-4" />
           </Button> */}
-        </div>
-      );
+          </div>
+        );
+      },
     },
-  },
-];
+  ].filter(Boolean);
 
-interface UserListProps {
-  inistitute_id?: string
-}
-
-export default function UserList() {
-  const { data, isLoading, isError } = useGetUsersQuery();
+  const { data, isLoading, isError } = useGetUsersQuery({
+    institute_id: inistitute_id,
+    user_type_id: user_type_id,
+  });
   // useGetUsersByInstituteIdQuery
   const [response, setResponse] = useState<User[]>([]);
   const [filteredResponse, setFilteredResponse] = useState<User[]>([]);
@@ -205,6 +217,7 @@ export default function UserList() {
       <PageLayout
         filters={filterFields}
         filterColumnsPerRow={1}
+        toggleActions={toggleActions}
         actions={actions}
       >
         <DataTable

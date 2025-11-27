@@ -22,11 +22,10 @@ interface CreatePriorityModalProps {
 }
 
 const responseTimeOptions = [
+  { label: "3 Hour", value: "3hour" },
   { label: "1 Day", value: "1day" },
   { label: "3 Days", value: "3days" },
   { label: "1 Week", value: "1week" },
-  { label: "2 Weeks", value: "2weeks" },
-  { label: "1 Month", value: "1month" },
 ];
 
 export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
@@ -49,10 +48,17 @@ export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
     }
 
     try {
-      await createPriority({ name, description }).unwrap();
+      await createPriority({
+        name,
+        description,
+        color_value: color,
+        response_time: responseTime,
+      }).unwrap();
       toast.success("Priority created successfully");
       setName("");
       setDescription("");
+      setResponseTime("");
+      setColor("");
       onClose();
     } catch (err: any) {
       console.error(err);

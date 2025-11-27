@@ -223,6 +223,7 @@ export default function UserTaskDetail() {
       bg: "#E7F3FF",
       border: "#BFD7EA",
       enabled: markIssue,
+      // visible: true,
       onClick: () => {
         if (markIssue) {
           handleMarkAsInProgress();
@@ -239,6 +240,7 @@ export default function UserTaskDetail() {
       bg: "#E7F3FF",
       border: "#BFD7EA",
       enabled: resolveIssue,
+      // visible: true,
       onClick: () => resolveIssue && handleActions("resolve"),
     },
     {
@@ -251,6 +253,7 @@ export default function UserTaskDetail() {
       bg: "#E6F3F9",
       border: "#BFD7EA",
       enabled: assignIssue,
+      // visible: resolveIssue,
       onClick: () => assignIssue && handleActions("assign"),
     },
   ];
@@ -604,7 +607,7 @@ export default function UserTaskDetail() {
                 </div>
               )}
 
-              {issue?.status !== "resolved" && (
+              {issue?.status !== "resolved" ? (
                 <>
                   <h3 className="text-[#1E516A] font-semibold text-lg mt-4 mb-3 flex items-center gap-2">
                     🎯 Select Action
@@ -667,7 +670,71 @@ export default function UserTaskDetail() {
                     ))}
                   </div>
                 </>
-              )}
+              ) : null}
+              {/* (
+                <>
+                  <h3 className="text-[#1E516A] font-semibold text-lg mt-4 mb-3 flex items-center gap-2">
+                    🎯 Select Action
+                  </h3>
+
+                  <div className="flex flex-col md:flex-row gap-4 mb-6">
+                    {actionButtons.map((action) => (
+                      <button
+                        key={action.key}
+                        onClick={action.onClick}
+                        disabled={!action.enabled}
+                        className={`flex-1 text-left border rounded-lg p-4 transition-all relative ${
+                          selectedAction === action.key
+                            ? `border-[${action.border}] bg-[${action.bg}]`
+                            : action.enabled
+                            ? "border-[#D5E3EC] bg-white hover:bg-gray-50 cursor-pointer"
+                            : "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
+                        }`}
+                      >
+                        {!action.enabled && (
+                          <div className="absolute top-2 right-2">
+                            <Lock className="w-4 h-4 text-gray-400" />
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 mb-1">
+                          <div
+                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                              selectedAction === action.key
+                                ? `border-[${action.color}]`
+                                : action.enabled
+                                ? "border-gray-300"
+                                : "border-gray-200"
+                            }`}
+                          >
+                            {selectedAction === action.key && (
+                              <CheckCircle2
+                                className="w-4 h-4"
+                                style={{ color: action.color }}
+                              />
+                            )}
+                          </div>
+                          <p
+                            className={`font-semibold ${
+                              action.enabled
+                                ? "text-[#1E516A]"
+                                : "text-gray-500"
+                            }`}
+                          >
+                            {action.label}
+                          </p>
+                        </div>
+                        <p
+                          className={`text-sm ${
+                            action.enabled ? "text-gray-600" : "text-gray-400"
+                          }`}
+                        >
+                          {action.desc}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )} */}
             </div>
           </div>
 

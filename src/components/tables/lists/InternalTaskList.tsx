@@ -9,8 +9,11 @@ import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { FilterField } from "../../../types/layout";
-import { useMultipleIssuesQueries } from "../../../hooks/useMultipleIssuesQueries";
-import { useGetEscalatedIssuesWithNullTierQuery } from "../../../redux/services/issueApi";
+import {
+  useGetAssignedIssuesQuery,
+  useGetEscalatedIssuesWithNullTierQuery,
+} from "../../../redux/services/issueApi";
+import { useIssuesQuery } from "../../../hooks/useIssueQuery";
 
 const TaskTableColumns = [
   {
@@ -103,40 +106,15 @@ export default function InternalTaskList() {
 
   const { data: loggedUser, isLoading: userLoading } = useGetCurrentUserQuery();
   const userId = loggedUser?.user?.user_id || "";
+  const userInternalNode =
+    loggedUser?.user?.internal_project_roles?.[0]?.internal_node;
 
-  // Map project-role pairs
-  const projectHierarchyPairs = useMemo(
-    () =>
-      (loggedUser?.user?.project_roles || []).map((role) => ({
-        project_id: role.project?.project_id!,
-        hierarchy_node_id: role.hierarchy_node?.hierarchy_node_id || null,
-      })),
-    [loggedUser]
-  );
-
-  // Use custom hook to fetch all issues
-  // const {
-  //   allIssues,
-  //   isLoading: issuesLoading,
-  //   isError,
-  //   errors,
-  // } = useMultipleIssuesQueries(projectHierarchyPairs, userId);
-  // data, isLoading, isError, error
   const {
     data: allIssues,
     isLoading: issuesLoading,
     isError,
     error: errors,
-  } = useGetEscalatedIssuesWithNullTierQuery();
-
-  console.log("allIssues: ", allIssues);
-
-  // Apply status filter
-  // const filteredIssues = useMemo(() => {
-  //   return allIssues.filter(
-  //     (issue) => statusFilter === "all" || issue.status === statusFilter
-  //   );
-  // }, [allIssues, statusFilter]);
+  } = useIssuesQuery(userId, userInternalNode);
 
   const filteredIssues = useMemo(() => {
     const safeIssues = Array.isArray(allIssues?.issues)
