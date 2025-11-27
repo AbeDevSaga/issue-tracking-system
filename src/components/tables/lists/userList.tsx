@@ -16,6 +16,7 @@ import {
   useDeleteUserMutation,
   User,
 } from "../../../redux/services/userApi";
+import { useAuth } from "../../../contexts/AuthContext";
 
 interface UserListProps {
   user_type?: string;
@@ -125,9 +126,9 @@ export default function UserList({
       },
     },
   ].filter(Boolean);
-
+  const { user } = useAuth();
   const { data, isLoading, isError } = useGetUsersQuery({
-    institute_id: inistitute_id,
+    institute_id: user?.institute?.institute_id || inistitute_id,
     user_type_id: user_type_id,
   });
   // useGetUsersByInstituteIdQuery

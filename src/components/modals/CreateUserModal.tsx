@@ -24,6 +24,7 @@ import {
   Institute,
 } from "../../redux/services/instituteApi";
 import { XIcon } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface CreateUserModalProps {
   logged_user_type: string;
@@ -42,6 +43,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  const { user } = useAuth();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -56,17 +58,9 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
 
   // Set initial ID on modal open
   useEffect(() => {
-    if (isOpen) {
-      setInstituteId(inistitute_id || "");
-    }
-  }, [isOpen, inistitute_id]);
-
-  // Restore initial ID after institutes load (avoid resetting user-selected value)
-  useEffect(() => {
-    if (isOpen && institutes && inistitute_id && instituteId === "") {
-      setInstituteId(inistitute_id);
-    }
-  }, [institutes, isOpen, inistitute_id]);
+    const id = user?.institute?.institute_id || inistitute_id || "";
+    setInstituteId(id);
+  }, [user, inistitute_id]);
 
   const handleSubmit = async () => {
     if (!fullName || !email || !user_type_id) {
