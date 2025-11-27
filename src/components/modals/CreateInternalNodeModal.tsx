@@ -19,6 +19,7 @@ import {
   useCreateInternalNodeMutation,
   useGetInternalTreeQuery,
 } from "../../redux/services/internalNodeApi";
+import { shortenText } from "../../utils/shortenText";
 
 interface HierarchyCreateionProps {
   isOpen: boolean;
@@ -94,6 +95,7 @@ export function CreateInternalNodeModal({
       }
       return newStack;
     });
+    setHasSelectedParent(false);
   };
 
   const resetNavigation = () => {
@@ -171,9 +173,9 @@ export function CreateInternalNodeModal({
 
       setName("");
       setDescription("");
-      resetNavigation();
-      setHasSelectedParent(false);
-      onClose();
+      // resetNavigation();
+      // setHasSelectedParent(false);
+      // onClose();
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to create structure");
     }
@@ -181,7 +183,11 @@ export function CreateInternalNodeModal({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-[700px] max-h-[85vh] overflow-y-auto">
+      <div
+        className={`bg-white p-6 rounded-lg shadow-lg ${
+          hasSelectedParent ? "w-[1000px]" : "min-w-[700px]"
+        } max-h-[85vh] overflow-y-auto`}
+      >
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-[#094C81]">
             Create Issue Flow
@@ -204,13 +210,15 @@ export function CreateInternalNodeModal({
           Debug Data
         </button>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className={`flex gap-10`}>
-            {(  
+        <form onSubmit={handleSubmit} className="">
+          <div className={`flex gap-10 `}>
+            {
               <div
-                className={`flex flex-col transition-all duration-500 ${
-                  hasSelectedParent ? "w-1/2" : "w-full"
-                }`}
+                className={`
+            flex flex-col 
+            transition-all duration-500 ease-in-out
+            ${hasSelectedParent ? "w-1/2" : "w-full"}
+          `}
               >
                 {/* Structure Selection */}
                 <Label className="block text-sm text-[#094C81] font-medium mb-2">
@@ -279,8 +287,12 @@ export function CreateInternalNodeModal({
                             <div
                               key={node.internal_node_id}
                               className={`flex border border-gray-300 rounded-md items-center
-                                hover:bg-blue-100 
-                                ${selectedParentNode === node.internal_node_id ? "bg-blue-200 border border-[#094C81] text-blue-800 " : ""}`}
+                                hover:bg-blue-100  pr-3
+                                ${
+                                  selectedParentNode === node.internal_node_id
+                                    ? "bg-blue-200 border border-[#094C81] text-blue-800 "
+                                    : ""
+                                }`}
                             >
                               <button
                                 type="button"
@@ -288,7 +300,9 @@ export function CreateInternalNodeModal({
                                   handleNodeSelect(node.internal_node_id)
                                 }
                                 className={`block text-left w-full py-2 px-3 rounded-md mb-2 transition-colors ${
-                                  selectedParentNode === node.internal_node_id ? "text-blue-800" : ""
+                                  selectedParentNode === node.internal_node_id
+                                    ? "text-blue-800"
+                                    : ""
                                 }`}
                               >
                                 <div className="flex w-full items-center text-sm text-[#094C81] font-medium">
@@ -301,7 +315,7 @@ export function CreateInternalNodeModal({
                                     </div>
                                     {node.description && (
                                       <div className="text-sm text-gray-600 truncate">
-                                        {node.description}
+                                        {shortenText(node.description,40)}
                                       </div>
                                     )}
                                     <div className="text-xs text-gray-500 mt-1">
@@ -312,13 +326,17 @@ export function CreateInternalNodeModal({
                                 </div>
                               </button>
                               <div className="flex justify-center items-center">
-                                {selectedParentNode === node.internal_node_id && (
+                                {selectedParentNode ===
+                                  node.internal_node_id && (
                                   <CheckCircleIcon className="w-5 h-5 text-green-500 mr-2" />
                                 )}
                                 {node.children && node.children.length > 0 && (
                                   <button
                                     type="button"
-                                    onClick={() => enterStructure(node)}
+                                    onClick={() => {
+                                      enterStructure(node);
+                                      setHasSelectedParent(false);
+                                    }}
                                     className="bg-transparent border-none w-fit opacity-70 pr-2 group-hover:opacity-100 transition-opacity"
                                     title={`Explore ${node.name} structure`}
                                   >
@@ -330,42 +348,31 @@ export function CreateInternalNodeModal({
                           ))
                         )}
                       </div>
-
-                      {/* Selected parent info */}
-                      {/* {selectedParentNode && (
-                        <div className="mt-3 p-2 bg-blue-50 rounded-md text-sm border border-blue-200">
-                          <div className="flex items-center text-[#094C81] font-medium">
-                            <span className="mr-2">
-                              <CheckIcon className="w-4 h-4" />
-                            </span>
-                            <div>
-                              <strong>Selected Parent:</strong>{" "}
-                              {getSelectedNode()?.name || "Unknown"}
-                            </div>
-                          </div>
-                        </div>
-                      )} */}
                     </>
                   )}
                 </div>
-                
               </div>
-            )}
+            }
             {/* Name and Description Fields - Show with animation when parent is selected */}
             {
               <div
-                className={`flex flex-col px-2 gap-4 transition-all duration-500 ease-in-out overflow-hidden ${
+                className={`
+                flex flex-col px-2 gap-4
+                transition-all duration-500 ease-in-out
+                overflow-hidden pb-10
+                ${
                   hasSelectedParent
-                    ? `w-1/2 opacity-100 max-h-[500px] translate-x-0`
-                    : `w-0 opacity-0 max-h-0 translate-x-[-20px] pointer-events-none`
-                }`}
+                    ? "w-1/2 opacity-100 max-h-[600px] translate-x-0"
+                    : "w-0 opacity-0 max-h-0 -translate-x-5 pointer-events-none"
+                }
+              `}
               >
                 {/* Node Name */}
                 <div className="w-full">
                   <Label className="block text-sm text-[#094C81] font-medium mb-2">
                     Structure Name *
                   </Label>
-                  <Input
+                  <input
                     id="structure-name"
                     placeholder="Enter structure name"
                     value={name}
@@ -407,6 +414,7 @@ export function CreateInternalNodeModal({
               type="button"
               variant="outline"
               onClick={onClose}
+              className="min-w-[100px] border border-gray-300 text-gray-500 hover:bg-gray-100 rounded-md px-4 py-2"
               disabled={isCreatingNode}
             >
               Cancel
@@ -414,9 +422,9 @@ export function CreateInternalNodeModal({
 
             <Button
               type="submit"
-              className="bg-[#094C81] hover:bg-[#094C81]/80 text-white"
+              className="bg-[#094C81] min-w-[100px] hover:bg-[#094C81]/80 text-white"
             >
-              {isCreatingNode ? "Creating..." : "Create Structure"}
+              {isCreatingNode ? "Creating..." : "Create "}
             </Button>
           </div>
         </form>

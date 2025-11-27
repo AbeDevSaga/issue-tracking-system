@@ -77,9 +77,7 @@ interface Props {
   internal_node_name: string;
 }
 
-// =======================
-// COMPONENT
-// =======================
+
 export default function InternalNodeUsersListConfig({
   projectId,
   internal_node_id,

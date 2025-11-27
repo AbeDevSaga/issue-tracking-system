@@ -174,6 +174,20 @@ const AppSidebar: React.FC = () => {
       icon: <Users />,
       name: "User Management",
       path: "/users",
+      subItems: [
+        {
+          name: "User List",
+          path: "/users",
+        },
+        {
+          name: "Role Management",
+          path: "/role",
+        },
+        {
+          name: "Permission Management",
+          path: "/permission",
+        },
+      ],
     },
     {
       icon: <Building2 />,
