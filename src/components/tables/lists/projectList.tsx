@@ -36,6 +36,11 @@ export default function ProjectList({
   // --- Define table columns ---
   const ProjectTableColumns = [
     {
+      id: "serial",
+      header: "#",
+      cell: ({ row }: any) => <div>{row.index + 1}</div>,
+    },
+    {
       accessorKey: "name",
       header: "Project Name",
       cell: ({ row }: any) => (

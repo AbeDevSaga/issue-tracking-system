@@ -17,6 +17,11 @@ import { useGetCurrentUserQuery } from "../../../redux/services/authApi";
 // --- Define table columns ---
 const IssueTableColumns = [
   {
+    id: "serial",
+    header: "#",
+    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+  },
+  {
     accessorKey: "priority.name",
     header: "Priority",
     cell: ({ row }: any) => <div>{row.original.priority?.name || "N/A"}</div>,

@@ -166,7 +166,7 @@ export default function Login() {
                   : "text-gray-600 hover:text-gray-900"
               }`}
             >
-              {t("login.email")}
+              {t("Login by Email")}
             </button>
             <button
               type="button"
@@ -177,7 +177,7 @@ export default function Login() {
                   : "text-gray-600 hover:text-gray-900"
               }`}
             >
-              {t("login.phone")}
+              {t("Login Phone")}
             </button>
           </div>
         </div>
@@ -193,8 +193,8 @@ export default function Login() {
               className="block text-base font-medium text-[#0C4A6E] mb-1"
             >
               {loginMethod === "email"
-                ? t("login.email")
-                : t("login.phone_number")}
+                ? t("Login Email")
+                : t("ogin.phone_number")}
             </Label>
 
             {loginMethod === "email" ? (

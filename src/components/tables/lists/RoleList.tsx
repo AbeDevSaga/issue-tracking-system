@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Eye } from "lucide-react";
+import { Plus, Eye, Edit, Trash2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -14,7 +14,15 @@ import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
 
-const RoleTableColumns = (handleDelete: (id: string) => void) => [
+const RoleTableColumns = (
+  handleDelete: (id: string) => void,
+  handleEdit: (role: any) => void
+) => [
+  {
+    id: "serial",
+    header: "#",
+    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+  },
   {
     accessorKey: "name",
     header: "Role Name",
@@ -50,24 +58,32 @@ const RoleTableColumns = (handleDelete: (id: string) => void) => [
       const role = row.original;
       return (
         <div className="flex items-center space-x-2">
+          {/* View */}
           <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
             <Link to={`/role/${role.role_id}`}>
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
-          {/* <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/role/${role.role_id}`}>
-              <Edit className="h-4 w-4" />
-            </Link>
-          </Button>
+
+          {/* Edit */}
+          {/* <Button
+            variant="outline"
+            size="sm"
+            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+            onClick={() => handleEdit(role)}
+          >
+            <Edit className="h-4 w-4" />
+          </Button> */}
+
+          {/* Delete */}
           <Button
             variant="outline"
             size="sm"
-            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
             onClick={() => handleDelete(role.role_id)}
           >
             <Trash2 className="h-4 w-4" />
-          </Button> */}
+          </Button>
         </div>
       );
     },
@@ -103,7 +119,9 @@ export default function RoleList() {
       icon: <Plus className="h-4 w-4" />,
       variant: "default",
       size: "default",
-      onClick: () => {navigate("/role/create")},  
+      onClick: () => {
+        navigate("/role/create");
+      },
     },
   ];
 
@@ -166,7 +184,6 @@ export default function RoleList() {
           currentIndex={pageDetail.pageIndex}
         />
       </PageLayout>
-
     </>
   );
 }

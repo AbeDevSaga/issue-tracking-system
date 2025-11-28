@@ -1,29 +1,23 @@
-
 import { baseApi } from "../baseApi";
 
+// Update your notification interface to match backend
 export interface Notification {
   notification_id: string;
-  user_id: string;
-  issue_id?: string;
-  project_id?: string;
+  recipient_id: string; // Changed from user_id to recipient_id
+  user_id: string; // The user who triggered the notification
+  reference_type: string;
+  reference_id: string;
+  type: string;
   title: string;
-  message: string;
-  type:
-    | "ISSUE_CREATED"
-    | "ISSUE_ESCALATED"
-    | "ISSUE_ASSIGNED"
-    | "ISSUE_RESOLVED"
-    | "COMMENT_ADDED"
-    | "SYSTEM";
+  body: string;
   is_read: boolean;
-  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
-  metadata?: any;
+  delivered_at?: string;
   created_at: string;
-  read_at?: string;
+  payload?: any;
+  // Include related data if your backend provides it
   issue?: {
     issue_id: string;
     title: string;
-    status: string;
   };
   project?: {
     project_id: string;

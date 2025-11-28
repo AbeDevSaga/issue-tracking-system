@@ -14,7 +14,13 @@ export interface Institute {
   description?: string;
   is_active?: boolean;
 }
-
+export interface Role {
+  role_id: string;
+  name: string;
+  description?: string;
+  created_at?: string;
+  updated_at?: string;
+}
 export interface HierarchyNode {
   hierarchy_node_id: string;
   name: string;
@@ -41,6 +47,7 @@ export interface User {
   userType?: UserType;
   institute?: Institute;
   hierarchyNode?: HierarchyNode;
+  roles?: Role[];
 }
 
 export interface CreateUserDto {

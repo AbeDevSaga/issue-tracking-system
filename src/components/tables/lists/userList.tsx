@@ -10,7 +10,7 @@ import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
 import { CreateUserModal } from "../../modals/CreateUserModal";
-
+import { EditUserModal } from "../../modals/EditUserModal";
 import {
   useGetUsersQuery,
   useDeleteUserMutation,
@@ -18,8 +18,12 @@ import {
 } from "../../../redux/services/userApi";
 
 // --- Define table columns ---
-// --- Define table columns ---
-const UserTableColumns = [
+const UserTableColumns = (handleEdit: (user: User) => void) => [
+  {
+    id: "serial",
+    header: "#",
+    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+  },
   {
     accessorKey: "full_name",
     header: "Full Name",
@@ -37,20 +41,10 @@ const UserTableColumns = [
   {
     accessorKey: "phone_number",
     header: "Phone",
-    cell: ({ row }: any) => <div>{row.getValue("phone_number")}</div>,
+    cell: ({ row }: any) => <div>{row.getValue("phone_number") || "N/A"}</div>,
   },
-  // {
-  //   accessorKey: "position",
-  //   header: "Position",
-  //   cell: ({ row }: any) => <div>{row.getValue("position") || "N/A"}</div>,
-  // },
-
-  // "institute": {
-  //               "institute_id": "66aa142b-dc70-44cb-8082-8835e049d6a0",
-  //               "name": "Bole Airport International"
-  //           },
   {
-    accessorKey: "institute.name", // ✅ Access nested userType name
+    accessorKey: "institute.name",
     header: "Institute",
     cell: ({ row }: any) => {
       const inst = row.original.institute?.name || "N/A";
@@ -62,7 +56,7 @@ const UserTableColumns = [
     },
   },
   {
-    accessorKey: "userType.name", // ✅ Access nested userType name
+    accessorKey: "userType.name",
     header: "User Type",
     cell: ({ row }: any) => {
       const userType = row.original.userType?.name || "N/A";
@@ -103,11 +97,13 @@ const UserTableColumns = [
       const [deleteUser] = useDeleteUserMutation();
 
       const handleDelete = async () => {
-        try {
-          await deleteUser(user.user_id).unwrap();
-          toast.success("User deleted successfully!");
-        } catch (err: any) {
-          toast.error(err?.data?.message || "Failed to delete user");
+        if (confirm(`Are you sure you want to delete ${user.full_name}?`)) {
+          try {
+            await deleteUser(user.user_id).unwrap();
+            toast.success("User deleted successfully!");
+          } catch (err: any) {
+            toast.error(err?.data?.message || "Failed to delete user");
+          }
         }
       };
 
@@ -118,19 +114,22 @@ const UserTableColumns = [
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
-          {/* <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/users/${user.user_id}`}>
-              <Edit className="h-4 w-4" />
-            </Link>
-          </Button> */}
-          {/* <Button
+          <Button
             variant="outline"
             size="sm"
-            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+            onClick={() => handleEdit(user)}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
             onClick={handleDelete}
           >
             <Trash2 className="h-4 w-4" />
-          </Button> */}
+          </Button>
         </div>
       );
     },
@@ -138,16 +137,17 @@ const UserTableColumns = [
 ];
 
 interface UserListProps {
-  inistitute_id?: string;
+  institute_id?: string;
 }
 
-export default function UserList() {
-  const { data, isLoading, isError } = useGetUsersQuery();
-  // useGetUsersByInstituteIdQuery
+export default function UserList({ institute_id }: UserListProps) {
+  const { data, isLoading, isError, refetch } = useGetUsersQuery();
   const [response, setResponse] = useState<User[]>([]);
   const [filteredResponse, setFilteredResponse] = useState<User[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [isModalOpen, setModalOpen] = useState(false);
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   const [pageDetail, setPageDetail] = useState({
     pageIndex: 0,
@@ -157,9 +157,14 @@ export default function UserList() {
 
   // --- Convert API data to array ---
   useEffect(() => {
-    if (!isError && !isLoading && data?.data) {
-      setResponse(data.data);
-      setFilteredResponse(data.data);
+    if (!isError && !isLoading && data) {
+      const usersArray = Array.isArray(data) ? data : data.data || [];
+      setResponse(usersArray);
+      setFilteredResponse(usersArray);
+      setPageDetail((prev) => ({
+        ...prev,
+        pageCount: Math.ceil(usersArray.length / prev.pageSize),
+      }));
     }
   }, [data, isError, isLoading]);
 
@@ -172,10 +177,36 @@ export default function UserList() {
       return true;
     });
     setFilteredResponse(filtered);
+    setPageDetail((prev) => ({
+      ...prev,
+      pageCount: Math.ceil(filtered.length / prev.pageSize),
+      pageIndex: 0,
+    }));
   }, [response, statusFilter]);
+
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user);
+    setEditModalOpen(true);
+  };
 
   const handlePagination = (pageIndex: number, pageSize: number) => {
     setPageDetail({ ...pageDetail, pageIndex, pageSize });
+  };
+
+  const handleUserCreated = () => {
+    refetch();
+    toast.success("User created successfully!");
+  };
+
+  const handleUserUpdated = () => {
+    refetch();
+    setEditModalOpen(false);
+    setSelectedUser(null);
+  };
+
+  const handleCloseEditModal = () => {
+    setEditModalOpen(false);
+    setSelectedUser(null);
   };
 
   const actions: ActionButton[] = [
@@ -184,7 +215,7 @@ export default function UserList() {
       icon: <Plus className="h-4 w-4" />,
       variant: "default",
       size: "default",
-      onClick: () => setModalOpen(true),
+      onClick: () => setCreateModalOpen(true),
     },
   ];
 
@@ -192,18 +223,23 @@ export default function UserList() {
     {
       key: "status",
       label: "Status",
-      type: "multiselect",
+      type: "select",
       options: [
+        { label: "All", value: "all" },
         { label: "Active", value: "active" },
         { label: "Inactive", value: "inactive" },
       ],
       value: statusFilter,
       onChange: (val: string | string[]) => {
         setStatusFilter(Array.isArray(val) ? val[0] : val);
-        setPageDetail({ ...pageDetail, pageIndex: 0 });
       },
     },
   ];
+
+  // Calculate paginated data
+  const startIndex = pageDetail.pageIndex * pageDetail.pageSize;
+  const endIndex = startIndex + pageDetail.pageSize;
+  const paginatedData = filteredResponse.slice(startIndex, endIndex);
 
   return (
     <>
@@ -211,21 +247,34 @@ export default function UserList() {
         filters={filterFields}
         filterColumnsPerRow={1}
         actions={actions}
+        title="User Management"
+        description="Manage system users and their permissions"
       >
         <DataTable
-          columns={UserTableColumns}
-          data={filteredResponse}
+          columns={UserTableColumns(handleEditUser)}
+          data={paginatedData}
           handlePagination={handlePagination}
           tablePageSize={pageDetail.pageSize}
           totalPageCount={pageDetail.pageCount}
           currentIndex={pageDetail.pageIndex}
+          isLoading={isLoading}
         />
       </PageLayout>
 
       <CreateUserModal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
+        isOpen={isCreateModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        onUserCreated={handleUserCreated}
       />
+
+      {selectedUser && (
+        <EditUserModal
+          isOpen={isEditModalOpen}
+          onClose={handleCloseEditModal}
+          userId={selectedUser.user_id}
+          onUserUpdated={handleUserUpdated}
+        />
+      )}
     </>
   );
 }

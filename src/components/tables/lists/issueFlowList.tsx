@@ -21,6 +21,11 @@ import { CreateInternalNodeModal } from "../../modals/CreateInternalNodeModal";
 // ------------------- Table Columns -------------------
 const InternalNodeTableColumns = (deleteNode: any) => [
   {
+    id: "serial",
+    header: "#",
+    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+  },
+  {
     accessorKey: "name",
     header: "Node Name",
     cell: ({ row }: any) => (
