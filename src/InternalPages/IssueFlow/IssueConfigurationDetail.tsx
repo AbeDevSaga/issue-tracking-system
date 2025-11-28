@@ -162,7 +162,7 @@ const IssueConfigurationDetail = () => {
                   <span className="h-4 w-4">
                     <Plus className="h-4 w-4" />
                   </span>
-                  <span>Add Child Node</span>
+                  <span>Add Child</span>
                 </Button>
               </div>
 
@@ -192,7 +192,7 @@ const IssueConfigurationDetail = () => {
                   </div>
                 )}
 
-                {issueFlow.created_at && (
+                {/* {issueFlow.created_at && (
                   <div className="flex items-center gap-1.5">
                     <CalendarIcon className="h-3.5 w-3.5 text-[#1E516A]" />
                     <span className="text-xs font-medium text-[#1E516A]">
@@ -202,7 +202,7 @@ const IssueConfigurationDetail = () => {
                       {formatDateShort(issueFlow.created_at)}
                     </span>
                   </div>
-                )}
+                )} */}
               </div>
 
               {/* Deleted At - Compact Alert */}

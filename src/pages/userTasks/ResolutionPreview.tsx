@@ -55,6 +55,14 @@ export default function ResolutionPreview({
         <p className="text-white text-sm mt-1">Upload files related to the resolution</p>
       </div>
       <div className="flex flex-col px-4 gap-3">
+
+      <h4 className="font-semibold text-[#1E516A] mt-4">Summary</h4>
+        <textarea
+          className="w-full border border-[#BFD7EA] rounded-lg p-3 text-sm h-32 focus:outline-none focus:ring-2 focus:ring-[#1E516A]"
+          placeholder="Explain how this issue was resolved"
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+        />
         <FileUploadField
         className="flex flex-col gap-1 font-bold"
           id="resolution_attachments"
@@ -66,13 +74,6 @@ export default function ResolutionPreview({
           labelClass="text-sm  text-[#1E516A] "
         />
 
-        <h4 className="font-semibold text-[#1E516A] mt-4">Summary</h4>
-        <textarea
-          className="w-full border border-[#BFD7EA] rounded-lg p-3 text-sm h-32 focus:outline-none focus:ring-2 focus:ring-[#1E516A]"
-          placeholder="Explain how this issue was resolved"
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-        />
 
         <div className="w-full flex justify-end gap-3 mt-3">
         <button

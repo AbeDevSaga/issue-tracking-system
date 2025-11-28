@@ -43,7 +43,7 @@
 //       {/* Stat Cards */}
 //       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 //         <StatCard title="Total Hierarchies" value="4" icon={<Layers className="text-blue-500" />} />
-//         <StatCard title="Total Branches" value="5" icon={<Building2 className="text-green-500" />} />
+//         <StatCard title="Total Branches" value="5" icon={<Building2 className="text-green-800" />} />
 //         <StatCard title="Main Organization" value="MESOB" icon={<Network className="text-purple-500" />} />
 //         <StatCard title="Active Levels" value="Central → Woreda" icon={<MapPin className="text-orange-500" />} />
 //       </div>

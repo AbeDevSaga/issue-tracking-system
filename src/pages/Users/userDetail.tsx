@@ -227,7 +227,7 @@ const UserDetail = () => {
               </div>
 
               {/* Timestamps */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="bg-gray-50 rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <CalendarIcon className="h-4 w-4 text-[#1E516A]" />
@@ -241,7 +241,7 @@ const UserDetail = () => {
                 </div>
 
                 
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

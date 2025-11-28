@@ -107,7 +107,7 @@ export default function AssignUserModal({
       <DialogContent className="max-w-2xl bg-white max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader>
           <DialogTitle className="text-[#094C81]">
-            Assign User to {hierarchy_node_name} Node
+            Assign User to {hierarchy_node_name} Structure
           </DialogTitle>
         </DialogHeader>
 

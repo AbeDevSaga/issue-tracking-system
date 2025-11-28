@@ -45,7 +45,7 @@ const ProjectUserTableColumns = (deleteUser: any) => [
   },
   {
     accessorKey: "hierarchyNode.name",
-    header: "Assigned Node",
+    header: "Assigned Structure",
     cell: ({ row }: any) => (
       <div>{row.original.hierarchyNode?.name || "N/A"}</div>
     ),

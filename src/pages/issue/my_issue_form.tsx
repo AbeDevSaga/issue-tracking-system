@@ -1,7 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
-import { Info, FileText, Image as ImageIcon, AlertTriangle, HelpCircle } from "lucide-react";
+import {
+  Info,
+  FileText,
+  Image as ImageIcon,
+  AlertTriangle,
+  HelpCircle,
+  Check,
+} from "lucide-react";
 
 // import Select from "../../components/form/Select";
 import { useTranslation } from "react-i18next";
@@ -110,24 +117,22 @@ export default function AddIssue() {
         singleProject.hierarchyNode?.hierarchy_node_id ?? null
       );
     }
-  
+
     // Auto-select category if only one available
     if (categories.length === 1 && !formValues.issue_category_id) {
       handleChange("issue_category_id", categories[0].category_id);
     }
-  
+
     // Auto-select priority if only one available
     if (priorities.length === 1 && !formValues.priority_id) {
       handleChange("priority_id", priorities[0].priority_id);
     }
     // Auto-fill current date/time on initial load
-if (!formValues.issue_occured_time) {
-  handleChange("issue_occured_time", maxDateTime);
-}
+    if (!formValues.issue_occured_time) {
+      handleChange("issue_occured_time", maxDateTime);
+    }
+  }, [userProjects, categories, priorities]);
 
-  }, [userProjects, categories, priorities ]);
-  
-  
   // Submit form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -198,40 +203,40 @@ if (!formValues.issue_occured_time) {
     { id: "description", label: "Description", type: "textarea" },
   ];
 
-// Guidelines data
-const guidelines = [
-  {
-    title: "Be Specific:",
-    description:
-      "Clearly describe what went wrong, when it happened, and what you were trying to do.",
-    icon: Info,
-  },
-  {
-    title: "Include Details:",
-    description:
-      "Provide error messages, browser/device information, and steps to reproduce the issue.",
-    icon: FileText,
-  },
-  {
-    title: "Attach Evidence:",
-    description:
-      "Screenshots or logs help our team understand the problem faster.",
-    icon: ImageIcon,
-  },
-  {
-    title: "Set Correct Severity:",
-    description:
-      "Critical = system down, High = major functionality broken, Medium = partial functionality affected, Low = minor issue.",
-    icon: AlertTriangle,
-  },
-];
+  // Guidelines data
+  const guidelines = [
+    {
+      title: "Be Specific:",
+      description:
+        "Clearly describe what went wrong, when it happened, and what you were trying to do.",
+      icon: Info,
+    },
+    {
+      title: "Include Details:",
+      description:
+        "Provide error messages, browser/device information, and steps to reproduce the issue.",
+      icon: FileText,
+    },
+    {
+      title: "Attach Evidence:",
+      description:
+        "Screenshots or logs help our team understand the problem faster.",
+      icon: ImageIcon,
+    },
+    {
+      title: "Set Correct Severity:",
+      description:
+        "Critical = system down, High = major functionality broken, Medium = partial functionality affected, Low = minor issue.",
+      icon: AlertTriangle,
+    },
+  ];
 
   const maxDateTime = format(new Date(), "yyyy-MM-dd'T'HH:mm");
 
   return (
     <div className="w-full p-6 bg-white rounded-2xl border border-gray-200 dark:bg-gray-900">
       <div className="mb-5">
-        <h2 className="text-xl font-bold text-[#094C81]">Add New Issue</h2>
+        <h2 className="text-xl font-bold text-[#094C81]">Create New Issue</h2>
         <DetailHeader breadcrumbs={[]} />
       </div>
 
@@ -266,7 +271,7 @@ const guidelines = [
                       );
                     }}
                   >
-                    <SelectTrigger className="w-full border h-10 border-gray-300 bg-white p-2 rounded mt-1 text-[#094C81]">
+                    <SelectTrigger className="w-full border h-10 border-gray-300 bg-white p-2 rounded mt-1 text-gray-700">
                       <SelectValue placeholder="Select Project" />
                     </SelectTrigger>
 
@@ -289,7 +294,7 @@ const guidelines = [
                         handleChange("issue_category_id", v)
                       }
                     >
-                      <SelectTrigger className="w-full h-10 border border-gray-300 bg-white p-2 rounded mt-1 text-[#094C81]">
+                      <SelectTrigger className="w-full h-10 border border-gray-300 bg-white p-2 rounded mt-1 text-gray-700">
                         <SelectValue placeholder="Select Category" />
                       </SelectTrigger>
 
@@ -308,7 +313,7 @@ const guidelines = [
                     value={formValues.priority_id}
                     onValueChange={(v) => handleChange("priority_id", v)}
                   >
-                    <SelectTrigger className="w-full h-10 border border-gray-300 bg-white p-2 rounded mt-1 text-[#094C81]">
+                    <SelectTrigger className="w-full h-10 border border-gray-300 bg-white p-2 rounded mt-1  text-gray-700">
                       <SelectValue placeholder="Select Priority" />
                     </SelectTrigger>
 
@@ -361,17 +366,33 @@ const guidelines = [
           <div className=" w-full col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex w-full grid-cols-1 flex-col gap-4">
               <div className="flex w-fit gap-2 ">
-                <input
-                  type="checkbox"
-                  className="border border-gray-300 bg-white rounded px-2 py-2 text-[#094C81] h-5 w-5"
-                  checked={formValues.action_taken_checkbox}
-                  onChange={(e) =>
-                    handleChange("action_taken_checkbox", e.target.checked)
-                  }
-                />
-                <Label className="text-sm text-start w-fit font-medium text-[#094C81]">
-                  Was any action taken?
-                </Label>
+                <label className="flex w-fit gap-2 items-center cursor-pointer select-none">
+                  {/* Hidden input */}
+                  <input
+                    type="checkbox"
+                    checked={formValues.action_taken_checkbox}
+                    onChange={(e) =>
+                      handleChange("action_taken_checkbox", e.target.checked)
+                    }
+                    className="hidden peer"
+                  />
+
+                  {/* Custom checkbox UI */}
+                  <div
+                    className=" h-5 w-5 rounded border border-gray-300 flex items-center justify-center  peer-checked:bg-[#094C81] peer-checked:border-[#094C81] transition-colors
+    "
+                  >
+                    {/* Checkmark */}
+                    {
+                      formValues.action_taken_checkbox ? <Check className="text-white" /> : null
+                    }
+                  </div>
+
+                  {/* Label */}
+                  <span className="text-sm font-medium text-[#094C81]">
+                    Was any action taken?
+                  </span>
+                </label>
               </div>
 
               {formValues.action_taken_checkbox && (
@@ -407,7 +428,7 @@ const guidelines = [
             <button
               type="button"
               onClick={handleReset}
-              className="px-6 py-2 bg-gray-300 text-gray-700 rounded"
+              className="px-6 py-2 bg-gray-200 text-gray-700 rounded"
             >
               Reset
             </button>
@@ -497,5 +518,3 @@ function GuidelinesAccordion({
     </div>
   );
 }
-
-
