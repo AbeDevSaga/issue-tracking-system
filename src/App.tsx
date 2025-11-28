@@ -32,6 +32,7 @@ import Roles from "./pages/role/role";
 import Subroles from "./pages/subRole/subRole";
 // import Users from "./pages/Tables/Users";
 import BaseData from "./pages/Basedata/Basedata";
+import Metrics from "./pages/metrics/Metrics";
 import OrgStructure from "./pages/org_structure/org_structure";
 import ProtectedRoute from "./ProtectedRoute";
 import MyissueForm from "./pages/issue/my_issue_form";
@@ -190,7 +191,8 @@ function AppContent() {
           />
           <Route path="/org_structure" element={<OrgStructure />} />
           <Route path="/org_structure/:id" element={<OrgStructureDetail />} />
-
+          {/* Metrics */}
+          <Route path="/metrics" element={<Metrics />} />
           <Route path="/basedata" element={<BaseData />} />
           <Route path="/subroles" element={<Subroles />} />
 
@@ -227,10 +229,7 @@ export default function App() {
     <Provider store={store}>
       <AuthProvider>
         <AppContent />
-        <Toaster
-          position="top-right"
-          richColors
-        />
+        <Toaster position="top-right" richColors />
       </AuthProvider>
     </Provider>
   );

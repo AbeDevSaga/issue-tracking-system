@@ -8,6 +8,12 @@ export interface UserType {
   description?: string;
 }
 
+export interface UserPosition {
+  user_position_id: string;
+  name: string;
+  description?: string;
+}
+
 export interface Institute {
   institute_id: string;
   name: string;
@@ -39,6 +45,7 @@ export interface User {
   assigned_by?: string;
   assigned_at?: string;
   userType?: UserType;
+  userPosition?: UserPosition;
   institute?: Institute;
   hierarchyNode?: HierarchyNode;
 }
@@ -47,6 +54,7 @@ export interface CreateUserDto {
   full_name: string;
   email: string;
   user_type_id: string;
+  user_position_id?: string;
   institute_id?: string;
   hierarchy_node_id?: string;
   position?: string;
@@ -67,6 +75,7 @@ export interface UpdateUserDto {
 export interface GetUsersParams {
   institute_id?: string;
   user_type_id?: string;
+  user_position_id?: string;
   hierarchy_node_id?: string;
   is_active?: boolean;
   search?: string;
@@ -240,6 +249,11 @@ export const userApi = baseApi.injectEndpoints({
       query: () => `/users/user-types`,
       providesTags: ["User"],
     }),
+    // Get all user positions
+    getUserPositions: builder.query<UserPosition[], void>({
+      query: () => `/users/user-positions`,
+      providesTags: ["User"],
+    }),
   }),
   overrideExisting: false,
 });
@@ -262,4 +276,5 @@ export const {
   useToggleUserStatusMutation,
   useResetUserPasswordMutation,
   useGetUserTypesQuery,
+  useGetUserPositionsQuery,
 } = userApi;

@@ -25,6 +25,7 @@ import {
 } from "../../redux/services/instituteApi";
 import { XIcon } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
+import { getUserPositionId } from "../../utils/helper/userPosition";
 
 interface CreateUserModalProps {
   logged_user_type: string;
@@ -60,7 +61,8 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
   useEffect(() => {
     const id = user?.institute?.institute_id || inistitute_id || "";
     setInstituteId(id);
-  }, [user, inistitute_id]);
+  }, [user, inistitute_id, isOpen]);
+  const positionId = getUserPositionId(logged_user_type, user_type, true);
 
   const handleSubmit = async () => {
     if (!fullName || !email || !user_type_id) {
@@ -68,10 +70,14 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
       return;
     }
 
-    if (user_type === "external_user" && !instituteId) {
-      toast.error("Please select an institute for external users");
-      return;
+    if (user_type === "external_user") {
+      const finalInstituteId = user?.institute?.institute_id || instituteId;
+      if (!finalInstituteId) {
+        toast.error("Please select an institute for external users");
+        return;
+      }
     }
+    const finalInstituteId = user?.institute?.institute_id || instituteId;
 
     const payload: CreateUserDto = {
       full_name: fullName,
@@ -80,7 +86,8 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
       user_type_id: user_type_id,
       position: position || undefined,
       ...(user_type === "external_user" && {
-        institute_id: instituteId,
+        institute_id: finalInstituteId,
+        user_position_id: positionId,
       }),
     };
 
@@ -109,6 +116,10 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
 
   if (!isOpen) return null;
 
+  // Determine if institute selection should be shown
+  const showInstituteSelect =
+    logged_user_type === "internal_user" && user_type === "external_user";
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
@@ -129,37 +140,36 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
         {/* Content */}
         <div className="w-full flex flex-col space-y-4">
           <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4  mt-2 pr-2">
-            {logged_user_type === "internal_user" &&
-              user_type === "external_user" && (
-                <div className="space-y-2">
-                  <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                    Institute *
-                  </Label>
-                  <Select
-                    value={instituteId}
-                    onValueChange={setInstituteId}
-                    disabled={loadingInstitutes}
-                  >
-                    <SelectTrigger className=" h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
-                      <SelectValue
+            {showInstituteSelect && (
+              <div className="space-y-2">
+                <Label className="block text-sm text-[#094C81] font-medium mb-2">
+                  Institute *
+                </Label>
+                <Select
+                  value={instituteId}
+                  onValueChange={setInstituteId}
+                  disabled={loadingInstitutes}
+                >
+                  <SelectTrigger className=" h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
+                    <SelectValue
+                      className="text-sm text-[#094C81] font-medium"
+                      placeholder="Select Institute"
+                    />
+                  </SelectTrigger>
+                  <SelectContent className="text-sm bg-white text-[#094C81] font-medium">
+                    {institutes?.map((inst: Institute) => (
+                      <SelectItem
                         className="text-sm text-[#094C81] font-medium"
-                        placeholder="Select Institute"
-                      />
-                    </SelectTrigger>
-                    <SelectContent className="text-sm bg-white text-[#094C81] font-medium">
-                      {institutes?.map((inst: Institute) => (
-                        <SelectItem
-                          className="text-sm text-[#094C81] font-medium"
-                          key={inst.institute_id}
-                          value={inst.institute_id}
-                        >
-                          {inst.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+                        key={inst.institute_id}
+                        value={inst.institute_id}
+                      >
+                        {inst.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-2">
               <Label className="block text-sm text-[#094C81] font-medium mb-2">
                 Full Name *
