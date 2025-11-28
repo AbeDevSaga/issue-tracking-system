@@ -59,6 +59,14 @@ export default function Basedata() {
       icon: <FaFlag size={26} color={"#094C81"} />,
       route: "/priority_level",
     },
+    {
+      title: t("basedata.project_metrics_management"),
+      description: t("basedata.subtitle", {
+        title: t("basedata.project_metrics"),
+      }),
+      icon: <FaFlag size={26} color={"#094C81"} />,
+      route: "/metrics",
+    },
 
     {
       title: t("basedata.issue_category_management"),
@@ -68,7 +76,6 @@ export default function Basedata() {
       icon: <FaExclamationTriangle size={26} color={"#094C81"} />,
       route: "/issue_category",
     },
-     
   ];
 
   return (

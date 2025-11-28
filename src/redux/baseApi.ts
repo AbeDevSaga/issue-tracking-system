@@ -57,6 +57,7 @@ export const baseApi = createApi({
     "Escalation",
     "Attachment",
     "IssueAttachment",
+    "ProjectMetrics",
   ],
   endpoints: () => ({}),
 });
