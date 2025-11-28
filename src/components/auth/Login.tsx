@@ -88,8 +88,13 @@ export default function Login() {
                 alt="Ethiopian Artificial Intelligence Institute"
                 className="h-30 mx-auto mb-1"
               />
-              <p className="text-[12px] text-[#0C4A6E] font-bold text-center uppercase tracking-wide">
-                {t("login.title")}
+              <p className="text-[12px] flex flex-col text-[#0C4A6E] font-bold text-center uppercase tracking-wide">
+              <span className="text-sm">
+              {t("login.title_am")}
+              </span>
+              <span className="text-[12px]">
+              {t("login.title")}
+              </span>
               </p>
             </div>
             {/* Error */}

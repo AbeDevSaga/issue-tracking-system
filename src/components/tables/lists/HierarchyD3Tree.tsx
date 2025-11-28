@@ -190,7 +190,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({
               }}
               className="w-full bg-[#094C81] hover:bg-[#073954] text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 text-xs"
             >
-              Add Child Node
+              Add Child
             </button>
           </div>
         </div>

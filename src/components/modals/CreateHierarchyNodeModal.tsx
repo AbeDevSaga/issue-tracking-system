@@ -13,7 +13,6 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   CheckCircleIcon,
-  CheckIcon,
   GitForkIcon,
   XIcon,
 } from "lucide-react";
@@ -289,7 +288,7 @@ export function CreateHierarchyNodeModal({
                               </button>
                               <div className="flex justify-center items-center">
                               {selectedParentNode === node.hierarchy_node_id && (
-                                    <CheckCircleIcon className="w-5 h-5 text-green-500 mr-2" />
+                                    <CheckCircleIcon className="w-5 h-5 text-green-800 mr-2" />
                                   )}
                               {node.children && node.children.length > 0 && (
                                 <button

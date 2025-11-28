@@ -163,7 +163,10 @@ function AppContent() {
           <Route path="/issue_category/:id" element={<IssueCategoryDetail />} />
           <Route path="/my_issue" element={<MyIssue />} />
           <Route path="/issue_configuration" element={<IssueFlowConfig />} />
-          <Route path="/issue_configuration/:id" element={<IssueConfigurationDetail />} />
+          <Route
+            path="/issue_configuration/:id"
+            element={<IssueConfigurationDetail />}
+          />
           <Route path="/issue_flow/:id" element={<IssueFlow />} />
           {/* IssueFlowConfig */}
           <Route path="/add_issue" element={<MyissueForm />} />
@@ -224,7 +227,10 @@ export default function App() {
     <Provider store={store}>
       <AuthProvider>
         <AppContent />
-        <Toaster position="top-right" />
+        <Toaster
+          position="top-right"
+          richColors
+        />
       </AuthProvider>
     </Provider>
   );

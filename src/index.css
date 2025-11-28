@@ -175,6 +175,24 @@ layer(base);
   If we ever want to remove these styles, we need to add an explicit border
   color utility to any element that depends on these defaults.
 */
+
+/* Success Toast */
+.sonner-toast[data-type="success"] {
+  background: #e6f7ee;
+  color: #0c6b3e;
+  border: 1px solid #a9e5c1;
+  font-weight: 500;
+}
+
+/* Error Toast */
+.sonner-toast[data-type="error"] {
+  background: #fde8e8;
+  color: #b91c1c;
+  border: 1px solid #f5b5b5;
+  font-weight: 500;
+}
+
+
 @layer base {
   *,
   ::after,

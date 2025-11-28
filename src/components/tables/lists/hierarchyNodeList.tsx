@@ -21,7 +21,7 @@ import HierarchyD3Tree from "./HierarchyD3Tree";
 const HierarchyNodeTableColumns = (deleteNode: any) => [
   {
     accessorKey: "name",
-    header: "Node Name",
+    header: "Structure Name",
     cell: ({ row }: any) => (
       <div className="font-medium text-blue-600">{row.getValue("name")}</div>
     ),
@@ -48,7 +48,7 @@ const HierarchyNodeTableColumns = (deleteNode: any) => [
   // },
   {
     accessorKey: "parent",
-    header: "Parent Node",
+    header: "Parent Structure",
     cell: ({ row }: any) => {
       const parent = row.original.parent;
       return <div>{parent?.name || "No Parent"}</div>;

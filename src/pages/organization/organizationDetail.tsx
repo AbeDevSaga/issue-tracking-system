@@ -172,7 +172,7 @@ const OrganizationDetail = () => {
               </div>
 
               {/* Details - Horizontal Compact Layout */}
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+              {/* <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
                 <div className="flex items-center gap-1.5">
                   <CalendarIcon className="h-3.5 w-3.5 text-[#1E516A]" />
                   <span className="text-xs font-medium text-[#1E516A]">
@@ -182,7 +182,7 @@ const OrganizationDetail = () => {
                     {formatDateShort(organizationDetail.created_at)}
                   </span>
                 </div>
-              </div>
+              </div> */}
 
               {/* Deleted At - Compact Alert */}
               {organizationDetail.deleted_at && (
