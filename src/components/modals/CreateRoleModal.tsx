@@ -509,7 +509,7 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
                       Creating...
                     </>
                   ) : (
-                    "Create Role"
+                    "Create"
                   )}
                 </Button>
               </div>

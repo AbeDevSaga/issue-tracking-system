@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useCreateInstituteMutation } from "../../redux/services/instituteApi";
 import { XIcon } from "lucide-react";
 import { Button } from "../../components/ui/cn/button";
-
+import { toast } from "sonner";
 interface CreateInstituteModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -23,7 +23,10 @@ export const BunchCreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
   const [createInstitute, { isLoading }] = useCreateInstituteMutation();
 
   const handleSubmit = async () => {
-    if (!name.trim()) return alert("Name is required");
+    if (!name.trim()) {
+      toast.error("Name is required");
+      return;
+    }
 
     try {
       const res = await createInstitute({
@@ -132,7 +135,7 @@ export const BunchCreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
                 <span>Creating...</span>
               </div>
             ) : (
-              "Create Organization"
+              "Create"
             )}
           </Button>
         </div>

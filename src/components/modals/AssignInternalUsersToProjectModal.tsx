@@ -211,7 +211,7 @@ export default function AssignInternalUsersModal({
       <DialogContent className="max-w-4xl bg-white max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader>
           <DialogTitle className="text-[#094C81]">
-            Assign User to {internal_node_name} Node
+            Assign User to  Project
           </DialogTitle>
         </DialogHeader>
 
@@ -273,7 +273,7 @@ export default function AssignInternalUsersModal({
             >
               {/* Structure Selection */}
               <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                Select Parent Structure {!hasSelectedParent && "(required)"}
+                Select Parent Issue Flow {!hasSelectedParent && "(required)"}
               </Label>
 
               <div className=" rounded-lg">
@@ -377,7 +377,7 @@ export default function AssignInternalUsersModal({
                             <div className="flex justify-center items-center">
 
                             {selectedParentNode === node.internal_node_id && (
-                                  <CheckCircleIcon className="w-5 h-5 text-green-500 mr-2" />
+                                  <CheckCircleIcon className="w-5 h-5 text-green-800 mr-2" />
                                 )}
                             {node.children && node.children.length > 0 && (
                               <button

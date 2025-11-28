@@ -72,6 +72,7 @@ import ForgotPassword from "./components/auth/ForgotPassword";
 import ResetPassword from "./components/auth/ResetPassword";
 import InternalAppLayout from "./layout/InternalLayout/InternalAppLayout";
 import IssueFlow from "./InternalPages/IssueFlow/IssueFlow";
+import IssueConfigurationDetail from "./InternalPages/IssueFlow/IssueConfigurationDetail";
 import ForgotPasswordByEmail from "./components/auth/ForgotPasswordByEmail";
 import Notifications from "./components/header/Notifications";
 const AuthLoader = () => {
@@ -166,6 +167,11 @@ function AppContent() {
           <Route path="/issue_category/:id" element={<IssueCategoryDetail />} />
           <Route path="/my_issue" element={<MyIssue />} />
           <Route path="/issue_configuration" element={<IssueFlowConfig />} />
+          <Route
+            path="/issue_configuration/:id"
+            element={<IssueConfigurationDetail />}
+          />
+          <Route path="/issue_flow/:id" element={<IssueFlow />} />
           {/* IssueFlowConfig */}
           <Route path="/add_issue" element={<MyissueForm />} />
           <Route path="/qa_tasks" element={<QATask />} />
@@ -231,7 +237,10 @@ export default function App() {
     <Provider store={store}>
       <AuthProvider>
         <AppContent />
-        <Toaster position="top-right" />
+        <Toaster
+          position="top-right"
+          richColors
+        />
       </AuthProvider>
     </Provider>
   );

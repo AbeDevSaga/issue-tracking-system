@@ -18,6 +18,7 @@ import { Button } from "../../components/ui/cn/button";
 import { useState } from "react";
 import { CreateChildInternalNodeModal } from "../../components/modals/CreateChildInternalNodeModal";
 import HierarchyUsersList from "../../components/tables/lists/HierarchyUsersList";
+import InternalNodeUsersList from "../../components/tables/lists/InternalNodeUsersList";
 
 const IssueFlow = () => {
   const { id } = useParams<{ id: string }>();
@@ -161,7 +162,7 @@ const IssueFlow = () => {
                   <span className="h-4 w-4">
                     <Plus className="h-4 w-4" />
                   </span>
-                  <span>Add Child Node</span>
+                  <span>Add Child</span>
                 </Button>
               </div>
 
@@ -190,7 +191,7 @@ const IssueFlow = () => {
                     </span>
                   </div>
                 )}
-
+{/* 
                 {issueFlow.created_at && (
                   <div className="flex items-center gap-1.5">
                     <CalendarIcon className="h-3.5 w-3.5 text-[#1E516A]" />
@@ -201,7 +202,7 @@ const IssueFlow = () => {
                       {formatDateShort(issueFlow.created_at)}
                     </span>
                   </div>
-                )}
+                )} */}
               </div>
 
               {/* Deleted At - Compact Alert */}
@@ -226,11 +227,10 @@ const IssueFlow = () => {
             onClose={() => setModalOpen(false)}
           />
           {/* Assigned Users */}
-          <HierarchyUsersList
-            projectId=""
-            inistitute_id=""
-            hierarchy_node_id={id || ""}
-            hierarchy_node_name={issueFlow.name || ""}
+          <InternalNodeUsersList
+            projectId={localStorage.getItem("current_project_id") || ""}
+            internal_node_id={id || ""}
+            internal_node_name={issueFlow.name || ""}
           />
         </div>
       </div>

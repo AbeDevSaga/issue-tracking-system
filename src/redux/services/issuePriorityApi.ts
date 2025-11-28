@@ -6,6 +6,8 @@ export interface IssuePriority {
   priority_id: string;
   name: string;
   description?: string;
+  color_value: string;
+  response_time: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -14,6 +16,8 @@ export interface IssuePriority {
 export interface CreateIssuePriorityDto {
   name: string;
   description?: string;
+  color_value: string;
+  response_time: string;
 }
 
 // Inject endpoints into baseApi

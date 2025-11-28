@@ -1,26 +1,14 @@
-// import ComponentCard from "../../components/common/ComponentCard";
-// import PageMeta from "../../components/common/PageMeta";
-// import ProjectTable from "../../components/tables/BasicTables/projectTable";
-
 import ProjectList from "../../components/tables/lists/projectList";
+import { useGetCurrentUserQuery } from "../../redux/services/authApi";
 
-// import { useTranslation } from "react-i18next";
 export default function Project() {
-  // const { t } = useTranslation();
+  const { data: loggedUser, isLoading: userLoading } = useGetCurrentUserQuery();
+
+  const id = loggedUser?.user?.institute?.institute_id;
 
   return (
     <>
-      <ProjectList />
-      {/* <PageMeta
-        title={t("basedata.project_management")}
-        description={t("basedata.subtitle", { title: t("basedata.project") })}
-      />
-    
-      <div className="space-y-1">
-        <ComponentCard title={t("basedata.project_management")}>
-          <ProjectTable />
-        </ComponentCard>
-      </div> */}
+      <ProjectList insistitute_id={id || ""} userType="external_user" />
     </>
   );
 }

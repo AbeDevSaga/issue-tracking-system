@@ -68,22 +68,7 @@ export default function Basedata() {
       icon: <FaExclamationTriangle size={26} color={"#094C81"} />,
       route: "/issue_category",
     },
-    {
-      title: t("basedata.role_management"),
-      description: t("basedata.subtitle", {
-        title: t("basedata.role"),
-      }),
-      icon: <FaUserTie size={26} color={"#094C81"} />,
-      route: "/role",
-    },
-    {
-      title: t("basedata.permission_management"),
-      description: t("basedata.subtitle", {
-        title: t("basedata.permission"),
-      }),
-      icon: <FaLock size={26} color={"#094C81"} />,
-      route: "/permission",
-    },
+     
   ];
 
   return (
@@ -97,7 +82,7 @@ export default function Basedata() {
           {t("basedata.first_subtitle")}
         </p>
 
-        <div className="grid grid-cols-1  sm:grid-cols-2  gap-x-10 gap-y-5 mt-10">
+        <div className="grid grid-cols-1  sm:grid-cols-2 md:grid-cols-3  gap-x-10 gap-y-5 mt-10">
           {cards.map((card, index) => (
             <InfoCard
               key={index}

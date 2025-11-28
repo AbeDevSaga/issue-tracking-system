@@ -86,6 +86,12 @@ export const issueApi = baseApi.injectEndpoints({
       providesTags: ["Issue"],
     }),
 
+    // ⭐ NEW — Get issues assigned via IssueAssignment
+    getAssignedIssues: builder.query<Issue[], string>({
+      query: (user_id) => `/issues/assigned/${user_id}`,
+      providesTags: ["Issue"],
+    }),
+
     getIssuesByHierarchyAndProject: builder.query<
       Issue[],
       IssuesByHierarchyAndProjectParams
@@ -171,6 +177,7 @@ export const {
   useGetIssuesQuery,
   useGetIssueByIdQuery,
   useGetIssuesByUserIdQuery,
+  useGetAssignedIssuesQuery,
   useGetEscalatedIssuesWithNullTierQuery,
   useCreateIssueMutation,
   useAcceptIssueMutation,

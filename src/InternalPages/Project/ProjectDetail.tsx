@@ -17,7 +17,7 @@ import {
   ArrowLeftIcon,
   BuildingOfficeIcon,
 } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import DeleteModal from "../../components/common/DeleteModal";
@@ -37,6 +37,13 @@ export default function ProjectDetail() {
   const [activeTab, setActiveTab] = useState<"issueFlow" | "users">(
     "issueFlow"
   );
+
+  // Save project ID to localStorage on every load/update
+  useEffect(() => {
+    if (id) {
+      localStorage.setItem("current_project_id", id);
+    }
+  }, [id]);
 
   const actions: ActionButton[] = [
     {
@@ -207,7 +214,7 @@ export default function ProjectDetail() {
                     </span>
                   </div>
                 )}
-                {project.created_at && (
+                {/* {project.created_at && (
                   <div className="flex items-center gap-1.5">
                     <CalendarIcon className="h-3.5 w-3.5 text-[#1E516A]" />
                     <span className="text-xs font-medium text-[#1E516A]">
@@ -217,7 +224,7 @@ export default function ProjectDetail() {
                       {formatDateShort(project.created_at)}
                     </span>
                   </div>
-                )}
+                )} */}
                 {project && (
                   <div className="flex items-center gap-1.5">
                     <CalendarIcon className="h-3.5 w-3.5 text-[#1E516A]" />
@@ -252,7 +259,10 @@ export default function ProjectDetail() {
 
           {/* Project Hierarchy */}
           {activeTab === "issueFlow" && (
-            <IssueFlowList toggleActions={actions} parent_hierarchy_node_id={project.hierarchy_node_id} />
+            <IssueFlowList
+              toggleActions={actions}
+              parent_hierarchy_node_id={project.hierarchy_node_id}
+            />
           )}
 
           {activeTab === "users" && (

@@ -5,6 +5,7 @@ import api from "../../../services/api";
 import Button from "../../ui/button/Button";
 import { Role } from "./RoleListTable";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 interface PermissionModalProps {
   isOpen: boolean;
@@ -66,7 +67,7 @@ export default function PermissionModal({
         setGroupedPermissions(grouped);
       } catch (err) {
         console.error("Failed to fetch permissions", err);
-        alert("Failed to load permissions");
+        toast.error("Failed to load permissions");
       } finally {
         setPermissionsLoading(false);
       }
@@ -122,12 +123,12 @@ export default function PermissionModal({
   const handleAddPermissions = async () => {
     const roleId = getRoleId();
     if (!role || !roleId) {
-      alert('No role selected or role ID not found');
+      toast.error('No role selected or role ID not found');
       return;
     }
     
     if (selectedPermissions.size === 0) {
-      alert('Please select at least one permission');
+      toast.error('Please select at least one permission');
       return;
     }
 
@@ -151,11 +152,11 @@ export default function PermissionModal({
       });
 
       if (response.data.success) {
-        alert(`✅ ${response.data.message || `Permissions assigned to role "${role.role_name}" successfully!`}`);
+        toast.success(`${response.data.message || `Permissions assigned to role "${role.role_name}" successfully!`}`);
         onSave(); // Refresh the data
         onClose(); // Close the modal
       } else {
-        alert(`❌ ${response.data.message || 'Failed to assign permissions'}`);
+        toast.error(`${response.data.message || 'Failed to assign permissions'}`);
       }
     } catch (err: any) {
       console.error('Assign permissions error:', err);
@@ -167,7 +168,7 @@ export default function PermissionModal({
         errorMessage = err.message;
       }
       
-      alert(`❌ ${errorMessage}`);
+      toast.error(`${errorMessage}`);
     } finally {
       setLoading(false);
     }

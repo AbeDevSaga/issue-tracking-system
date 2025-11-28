@@ -205,7 +205,7 @@ export default function ProjectDetail() {
                     </span>
                   </div>
                 )}
-                {project.created_at && (
+                {/* {project.created_at && (
                   <div className="flex items-center gap-1.5">
                     <CalendarIcon className="h-3.5 w-3.5 text-[#1E516A]" />
                     <span className="text-xs font-medium text-[#1E516A]">
@@ -215,7 +215,7 @@ export default function ProjectDetail() {
                       {formatDateShort(project.created_at)}
                     </span>
                   </div>
-                )}
+                )} */}
                 {project && (
                   <div className="flex items-center gap-1.5">
                     <CalendarIcon className="h-3.5 w-3.5 text-[#1E516A]" />

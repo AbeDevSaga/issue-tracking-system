@@ -23,6 +23,7 @@ export interface ActionButton {
   disabled?: boolean;
   loading?: boolean;
   permissions?: string[];
+  allowedFor?: string[];
 }
 
 export interface FilterField {
