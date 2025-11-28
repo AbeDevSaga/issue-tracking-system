@@ -17,11 +17,13 @@ import {
   User,
 } from "../../../redux/services/userApi";
 import { useAuth } from "../../../contexts/AuthContext";
+import { getUserPositionId } from "../../../utils/helper/userPosition";
 
 interface UserListProps {
   user_type?: string;
   logged_user_type?: string;
   user_type_id?: string;
+  user_position_id?: string;
   inistitute_id?: string;
   toggleActions?: ActionButton[];
 }
@@ -30,6 +32,7 @@ export default function UserList({
   user_type,
   logged_user_type,
   user_type_id,
+  user_position_id,
   inistitute_id,
   toggleActions,
 }: UserListProps) {
@@ -127,8 +130,12 @@ export default function UserList({
     },
   ].filter(Boolean);
   const { user } = useAuth();
+  const positionId = getUserPositionId(logged_user_type, user_type, false);
+
+  // user_position_id
   const { data, isLoading, isError } = useGetUsersQuery({
     institute_id: user?.institute?.institute_id || inistitute_id,
+    user_position_id: user_position_id || positionId,
     user_type_id: user_type_id,
   });
   // useGetUsersByInstituteIdQuery
