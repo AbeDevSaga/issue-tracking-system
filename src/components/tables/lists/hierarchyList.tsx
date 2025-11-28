@@ -17,6 +17,11 @@ import { CreateHierarchyModal } from "../../modals/CreateHierarchyModal";
 // --- Define table columns ---
 const HierarchyTableColumns = [
   {
+    id: "serial",
+    header: "#",
+    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+  },
+  {
     accessorKey: "name",
     header: "Hierarchy Name",
     cell: ({ row }: any) => (

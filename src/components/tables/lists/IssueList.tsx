@@ -20,6 +20,14 @@ const IssueTableColumns = [
     accessorKey: "project.name",
     header: "Project",
     cell: ({ row }: any) => <div>{row.original.project?.name || "N/A"}</div>,
+    id: "serial",
+    header: "#",
+    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+  },
+  {
+    accessorKey: "priority.name",
+    header: "Priority",
+    cell: ({ row }: any) => <div>{row.original.priority?.name || "N/A"}</div>,
   },
   {
     accessorKey: "category.name",

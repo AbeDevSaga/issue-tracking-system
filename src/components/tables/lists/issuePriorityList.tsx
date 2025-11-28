@@ -30,6 +30,11 @@ export default function IssuePriorityList() {
 // --- Define table columns ---
 const PriorityTableColumns = [
   {
+    id: "serial",
+    header: "#",
+    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+  },
+  {
     accessorKey: "name",
     header: "Priority Name",
     cell: ({ row }: any) => (
@@ -81,7 +86,6 @@ const PriorityTableColumns = [
           >
             <Trash2 className="h-4 w-4" />
           </Button>
-
         </div>
       );
     },

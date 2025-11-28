@@ -17,15 +17,26 @@ import { useIssuesQuery } from "../../../hooks/useIssueQuery";
 
 const TaskTableColumns = [
   {
-    accessorKey: "priority.name",
-    header: "Priority",
-    cell: ({ row }: any) => row.original.priority?.name || "N/A",
+    id: "serial",
+    header: "#",
+    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+  },
+  {
+    accessorKey: "project.name",
+    header: "Project",
+    cell: ({ row }: any) => row.original.project?.name || "N/A",
   },
   {
     accessorKey: "category.name",
     header: "Category",
     cell: ({ row }: any) => row.original.category?.name || "N/A",
   },
+  {
+    accessorKey: "priority.name",
+    header: "Priority",
+    cell: ({ row }: any) => row.original.priority?.name || "N/A",
+  },
+
   {
     accessorKey: "reporter.full_name",
     header: "Created By",
@@ -37,11 +48,6 @@ const TaskTableColumns = [
     cell: ({ row }: any) => row.original.hierarchyNode?.name || "N/A",
   },
 
-  {
-    accessorKey: "project.name",
-    header: "Project",
-    cell: ({ row }: any) => row.original.project?.name || "N/A",
-  },
   {
     accessorKey: "issue_occured_time",
     header: "Occurred Time",

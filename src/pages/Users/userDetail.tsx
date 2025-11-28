@@ -13,11 +13,11 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   ArrowLeftIcon,
+  ShieldCheckIcon,
+  UserGroupIcon,
+  MapPinIcon,
 } from "@heroicons/react/24/outline";
-import {
-  Card,
-  CardContent,
-} from "../../components/ui/cn/card";
+import { Card, CardContent } from "../../components/ui/cn/card";
 import { getFileUrl } from "../../utils/fileUrl";
 import DetailHeader from "../../components/common/DetailHeader";
 import { Edit, Trash2, User2Icon } from "lucide-react";
@@ -34,23 +34,31 @@ interface UserApiResponse {
   data: User;
 }
 
+interface Role {
+  role_id: string;
+  name: string;
+  description?: string;
+}
+
 const UserDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { data: user, isLoading, isError } = useGetUserByIdQuery(id!);
-  const [deleteUser, { isLoading: deletingUserLoading }] = useDeleteUserMutation();
+  const [deleteUser, { isLoading: deletingUserLoading }] =
+    useDeleteUserMutation();
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+
   const handleDelete = async () => {
     try {
       await deleteUser(id!).unwrap();
       setIsOpen(false);
       toast.success("User deleted successfully");
       navigate(-1);
-    }
-    catch (error: any) {
+    } catch (error: any) {
       toast.error(error?.data?.message || "Failed to delete user");
     }
-  }
+  };
+
   const formatDate = (dateString?: string | null) => {
     if (!dateString) return "N/A";
     try {
@@ -99,9 +107,16 @@ const UserDetail = () => {
   // Handle wrapped response if API returns { success, message, data }
   const userData = (user as unknown as UserApiResponse).data || (user as User);
 
+  // Extract roles from user data
+  const userRoles: Role[] =
+    userData.roles || userData.user_roles?.map((ur: any) => ur.role) || [];
+
+  const userTypeName = userData.userType?.name || "N/A";
+  const isInternalUser = userTypeName === "internal_user";
+
   return (
     <>
-    <DeleteModal
+      <DeleteModal
         message="Are you sure you want to delete this user? This action cannot be undone."
         onCancel={() => setIsOpen(false)}
         onDelete={handleDelete}
@@ -118,16 +133,19 @@ const UserDetail = () => {
           <div className="flex justify-between">
             <DetailHeader
               breadcrumbs={[
-                { title: "Users", link: "" },
+                { title: "Users", link: "/users" },
                 { title: userData.full_name, link: "" },
               ]}
             />
             <div className="flex justify-center items-end gap-4">
-              <span>
+              <Link to={`/users/${userData.user_id}/edit`}>
                 <Edit className="h-5 w-5 text-[#094C81] hover:text-[#073954] cursor-pointer text-bold" />
-              </span>
+              </Link>
               <span>
-                <Trash2 onClick={() => setIsOpen(true)} className="h-5 w-5 text-[#B91C1C] hover:text-[#991B1B] cursor-pointer text-bold" />
+                <Trash2
+                  onClick={() => setIsOpen(true)}
+                  className="h-5 w-5 text-[#B91C1C] hover:text-[#991B1B] cursor-pointer text-bold"
+                />
               </span>
             </div>
           </div>
@@ -146,7 +164,7 @@ const UserDetail = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <User2Icon className="h-12 w-12 bg-white" />
+                    <User2Icon className="h-12 w-12 text-[#094C81]" />
                   )}
                 </div>
 
@@ -155,11 +173,16 @@ const UserDetail = () => {
                     {userData.full_name}
                   </h2>
                   <p className="text-gray-600 text-sm">{userData.email}</p>
+                  {userData.position && (
+                    <p className="text-gray-500 text-sm mt-1">
+                      {userData.position}
+                    </p>
+                  )}
                 </div>
               </div>
 
               {/* Status Badge */}
-              <div>
+              <div className="flex flex-col items-end gap-2">
                 <Badge
                   variant="light"
                   color={userData.is_active ? "success" : "error"}
@@ -177,6 +200,17 @@ const UserDetail = () => {
                       Inactive
                     </>
                   )}
+                </Badge>
+
+                {/* User Type Badge */}
+                <Badge
+                  variant="light"
+                  color={isInternalUser ? "primary" : "warning"}
+                  size="sm"
+                  className="text-xs"
+                >
+                  <UserGroupIcon className="h-3 w-3 mr-1" />
+                  {userTypeName.replace("_", " ")}
                 </Badge>
               </div>
             </div>
@@ -211,9 +245,21 @@ const UserDetail = () => {
                   </p>
                 </div>
 
+                {/* User Type */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <UserGroupIcon className="h-4 w-4 text-[#1E516A]" />
+                    <p className="text-xs font-semibold text-[#1E516A] uppercase tracking-wide">
+                      User Type
+                    </p>
+                  </div>
+                  <p className="text-gray-700 font-medium capitalize">
+                    {userTypeName.replace("_", " ")}
+                  </p>
+                </div>
 
                 {/* Institute */}
-                <div className="bg-gray-50 rounded-lg p-4">
+                {/* <div className="bg-gray-50 rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <BuildingOfficeIcon className="h-4 w-4 text-[#1E516A]" />
                     <p className="text-xs font-semibold text-[#1E516A] uppercase tracking-wide">
@@ -221,27 +267,83 @@ const UserDetail = () => {
                     </p>
                   </div>
                   <p className="text-gray-700 font-medium">
-                    {userData.institute?.name || "EAII"}
+                    {userData.institute?.name ||
+                      (isInternalUser ? "EAII" : "N/A")}
                   </p>
-                </div>
-              </div>
+                </div> */}
 
-              {/* Timestamps */}
-              {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <CalendarIcon className="h-4 w-4 text-[#1E516A]" />
-                    <p className="text-xs font-semibold text-[#1E516A] uppercase tracking-wide">
-                      Created At
+                {/* Hierarchy Node */}
+                {userData.hierarchyNode && (
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <MapPinIcon className="h-4 w-4 text-[#1E516A]" />
+                      <p className="text-xs font-semibold text-[#1E516A] uppercase tracking-wide">
+                        Hierarchy Node
+                      </p>
+                    </div>
+                    <p className="text-gray-700 font-medium">
+                      {userData.hierarchyNode.name}
                     </p>
                   </div>
-                  <p className="text-gray-700 font-medium">
-                    {formatDate(userData.created_at)}
-                  </p>
-                </div>
+                )}
+                {/* Roles Section */}
+                {userRoles.length > 0 && (
+                  <div className="mb-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <ShieldCheckIcon className="h-5 w-5 text-[#1E516A]" />
+                      <h3 className="text-lg font-semibold text-[#1E516A]">
+                        User Roles
+                      </h3>
+                      <Badge variant="light" color="primary" size="sm">
+                        {userRoles.length} role(s)
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3">
+                      {userRoles.map((role) => (
+                        <div
+                          key={role.role_id}
+                          className="bg-blue-50 border border-blue-200 rounded-lg p-4"
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-semibold text-blue-800 text-sm">
+                              {role.name}
+                            </h4>
+                            {/* <Badge variant="light" color="primary" size="xs">
+                              Role
+                            </Badge> */}
+                          </div>
+                          {/* {role.description && (
+                            <p className="text-blue-600 text-xs">
+                              {role.description}
+                            </p>
+                          )} */}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-                
-              </div> */}
+                {/* No Roles Message */}
+                {userRoles.length === 0 && (
+                  <div className="mb-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <ShieldCheckIcon className="h-5 w-5 text-gray-400" />
+                      <h3 className="text-lg font-semibold text-gray-600">
+                        User Roles
+                      </h3>
+                    </div>
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+                      <ShieldCheckIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                      <p className="text-gray-500 font-medium">
+                        No roles assigned
+                      </p>
+                      <p className="text-gray-400 text-sm mt-1">
+                        This user doesn't have any roles assigned yet.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

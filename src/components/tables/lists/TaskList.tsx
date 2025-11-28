@@ -13,6 +13,11 @@ import { useMultipleIssuesQueries } from "../../../hooks/useMultipleIssuesQuerie
 
 const TaskTableColumns = [
   {
+    id: "serial",
+    header: "#",
+    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+  },
+  {
     accessorKey: "priority.name",
     header: "Priority",
     cell: ({ row }: any) => row.original.priority?.name || "N/A",

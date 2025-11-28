@@ -21,6 +21,11 @@ import { useGetUsersAssignedToProjectQuery } from "../../../redux/services/userA
 // ------------------- Table Columns -------------------
 const ProjectUserTableColumns = (deleteUser: any) => [
   {
+    id: "serial",
+    header: "#",
+    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+  },
+  {
     accessorKey: "user.full_name",
     header: "Full Name",
     cell: ({ row }: any) => (

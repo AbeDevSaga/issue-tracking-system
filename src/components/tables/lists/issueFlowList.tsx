@@ -43,6 +43,11 @@ export default function IssueFlowList({ toggleActions }: IssueFlowListProps) {
 // ------------------- Table Columns -------------------
 const InternalNodeTableColumns = (deleteNode: any) => [
   {
+    id: "serial",
+    header: "#",
+    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+  },
+  {
     accessorKey: "name",
     header: "Issue Flow Name",
     cell: ({ row }: any) => (
