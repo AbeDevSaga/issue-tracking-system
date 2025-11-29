@@ -29,28 +29,28 @@ const CategoryTableColumns = [
     header: "Description",
     cell: ({ row }: any) => <div>{row.getValue("description") || "N/A"}</div>,
   },
-  {
-    accessorKey: "created_at",
-    header: "Created At",
-    cell: ({ row }: any) => (
-      <div>
-        {row.getValue("created_at")
-          ? format(new Date(row.getValue("created_at")), "PPP p")
-          : "N/A"}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "updated_at",
-    header: "Updated At",
-    cell: ({ row }: any) => (
-      <div>
-        {row.getValue("updated_at")
-          ? format(new Date(row.getValue("updated_at")), "PPP p")
-          : "N/A"}
-      </div>
-    ),
-  },
+  // {
+  //   accessorKey: "created_at",
+  //   header: "Created At",
+  //   cell: ({ row }: any) => (
+  //     <div>
+  //       {row.getValue("created_at")
+  //         ? format(new Date(row.getValue("created_at")), "PPP p")
+  //         : "N/A"}
+  //     </div>
+  //   ),
+  // },
+  // {
+  //   accessorKey: "updated_at",
+  //   header: "Updated At",
+  //   cell: ({ row }: any) => (
+  //     <div>
+  //       {row.getValue("updated_at")
+  //         ? format(new Date(row.getValue("updated_at")), "PPP p")
+  //         : "N/A"}
+  //     </div>
+  //   ),
+  // },
   {
     id: "actions",
     header: "Actions",

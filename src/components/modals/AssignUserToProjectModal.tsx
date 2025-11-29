@@ -30,6 +30,7 @@ import {
   SelectItem,
 } from "../ui/cn/select";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface AssignUserModalProps {
   inistitute_id?: string;
@@ -51,6 +52,8 @@ export default function AssignUserModal({
   // const { data: usersResponse } = useGetUsersQuery(
   //   inistitute_id ? { institute_id: inistitute_id } : undefined
   // );
+  const { user } = useAuth();
+  console.log("User in isPermittedActionButton:", user);
 
   const { data: usersResponse, isLoading } =
     useGetUsersNotAssignedToProjectQuery(
@@ -76,7 +79,7 @@ export default function AssignUserModal({
   }));
 
   const handleAssign = async () => {
-    if (!selectedUser || !selectedRole) {
+    if (!selectedUser) {
       toast.error("Select user and role first");
       return;
     }
@@ -85,8 +88,8 @@ export default function AssignUserModal({
       await assignUserToProject({
         project_id: project_id,
         user_id: selectedUser,
-        role_id: selectedRole,
-        sub_role_id: selectedSubRole || undefined,
+        // role_id: selectedRole,
+        // sub_role_id: selectedSubRole || undefined,
         hierarchy_node_id: hierarchy_node_id,
       }).unwrap();
 
@@ -104,7 +107,7 @@ export default function AssignUserModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-white max-h-[90vh] overflow-y-auto p-6">
+      <DialogContent className="max-w-[400px] bg-white max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader>
           <DialogTitle className="text-[#094C81]">
             Assign User to {hierarchy_node_name} Structure
@@ -115,7 +118,7 @@ export default function AssignUserModal({
           {/* LEFT SIDE — FORM */}
           <div className="flex justify-between w-full gap-4">
             {/* USER */}
-            <div className="w-1/2">
+            <div className="w-full">
               <Label className="text-sm font-medium text-[#094C81]">
                 Select User
               </Label>
@@ -135,7 +138,7 @@ export default function AssignUserModal({
             </div>
 
             {/* ROLE */}
-            <div className="w-1/2">
+            {/* <div className="w-1/2">
               <Label className="text-sm font-medium text-[#094C81]">
                 Select Role
               </Label>
@@ -158,7 +161,7 @@ export default function AssignUserModal({
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
           </div>
         </div>
 

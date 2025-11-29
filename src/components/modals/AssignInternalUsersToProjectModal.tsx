@@ -2,17 +2,7 @@
 
 import { useState } from "react";
 
-import {
-  useAssignInternalUserToProjectMutation,
-  useAssignUserToProjectMutation,
-} from "../../redux/services/projectApi";
-
-import {
-  useGetInternalUsersNotAssignedToProjectQuery,
-  useGetUsersNotAssignedToProjectQuery,
-  useGetUsersQuery,
-} from "../../redux/services/userApi";
-import { useGetRolesQuery } from "../../redux/services/roleApi";
+import { useAssignInternalUserToProjectMutation } from "../../redux/services/projectApi";
 
 import {
   Dialog,
@@ -33,15 +23,17 @@ import {
   SelectContent,
   SelectItem,
 } from "../ui/cn/select";
-import { skipToken } from "@reduxjs/toolkit/query";
-import { useGetInternalTreeQuery } from "../../redux/services/internalNodeApi";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
   CheckCircleIcon,
-  CheckIcon,
   GitForkIcon,
 } from "lucide-react";
+import {
+  useGetProjectProjectMetricsQuery,
+  useGetMetricUsersQuery,
+} from "../../redux/services/projectMetricApi";
+import { useGetInternalTreeQuery } from "../../redux/services/internalNodeApi";
 
 interface AssignUserModalProps {
   internal_node_id?: string;
@@ -54,44 +46,43 @@ interface AssignUserModalProps {
 export default function AssignInternalUsersModal({
   project_id,
   internal_node_id,
-  internal_node_name,
   isOpen,
   onClose,
 }: AssignUserModalProps) {
-  // const { data: usersResponse } = useGetUsersQuery(
-  //   inistitute_id ? { institute_id: inistitute_id } : undefined
-  // );
   const [selectedParentNode, setSelectedParentNode] = useState<string | null>(
     null
   );
+  const [selectedParentNodeName, setSelectedParentNodeName] = useState<
+    string | null
+  >(null);
   const [hasSelectedParent, setHasSelectedParent] = useState(false);
+  const [selectedMetric, setSelectedMetric] = useState("");
+  const [selectedUser, setSelectedUser] = useState("");
 
   const [navigationStack, setNavigationStack] = useState<any[]>([]);
 
-  const { data: internalUsers, isLoading } =
-    useGetInternalUsersNotAssignedToProjectQuery(project_id, {
+  // Get project metrics assigned to this project
+  const { data: projectMetricsData, isLoading: loadingMetrics } =
+    useGetProjectProjectMetricsQuery(project_id, {
       skip: !project_id,
     });
 
-  // Fetch all nodes of a project - skip if parent_hierarchy_node_id is provided
+  // Get users assigned to the selected metric
+  const { data: metricUsersData, isLoading: loadingMetricUsers } =
+    useGetMetricUsersQuery(selectedMetric, {
+      skip: !selectedMetric,
+    });
+
+  // Fetch internal tree structure
   const { data: parentNodesData, isFetching: isFetchingParents } =
     useGetInternalTreeQuery();
-  const { data: rolesResponse } = useGetRolesQuery(undefined);
 
   const [assignUserToProject] = useAssignInternalUserToProjectMutation();
 
-  const users = internalUsers?.data || [];
-  const roles = rolesResponse?.data || [];
+  const projectMetrics = projectMetricsData?.metrics || [];
+  const metricUsers = metricUsersData?.assigned_users || [];
 
   const tree = parentNodesData?.nodes || [];
-
-  const [selectedUser, setSelectedUser] = useState("");
-  const [selectedRole, setSelectedRole] = useState("");
-
-  const rolesMap = roles.map((r: any) => ({
-    ...r,
-    subRoles: r?.roleSubRoles?.map((s: any) => s.subRole) || [],
-  }));
 
   // Get current level nodes based on navigation stack
   const getCurrentLevelNodes = () => {
@@ -136,15 +127,16 @@ export default function AssignInternalUsersModal({
     });
   };
 
-  const resetNavigation = () => {
-    setNavigationStack([]);
-    setSelectedParentNode(null);
-    setHasSelectedParent(false);
-  };
-
   // Handle node selection
   const handleNodeSelect = (nodeId: string | null) => {
     setSelectedParentNode(nodeId);
+    setSelectedParentNodeName(
+      nodeId
+        ? currentLevelNodes.find(
+            (node: any) => node.internal_node_id === nodeId
+          )?.name || null
+        : "Root"
+    );
     setHasSelectedParent(true);
   };
 
@@ -154,36 +146,22 @@ export default function AssignInternalUsersModal({
     return navigationStack.map((node) => node.name).join(" → ");
   };
 
-  // Get the full selected node object including from nested structures
-  const getSelectedNode = () => {
-    if (!selectedParentNode) return null;
-
-    // First check current level
-    const currentNode = currentLevelNodes?.find(
-      (node: any) => node.internal_node_id === selectedParentNode
+  // Get selected metric details
+  const getSelectedMetricDetails = () => {
+    return projectMetrics.find(
+      (metric: any) => metric.project_metric_id === selectedMetric
     );
-    if (currentNode) return currentNode;
+  };
 
-    // If not found in current level, search through the entire tree
-    const searchInTree = (nodes: any[]): any => {
-      for (const node of nodes) {
-        if (node.internal_node_id === selectedParentNode) {
-          return node;
-        }
-        if (node.children && node.children.length > 0) {
-          const found = searchInTree(node.children);
-          if (found) return found;
-        }
-      }
-      return null;
-    };
-
-    return searchInTree(tree);
+  // Reset user selection when metric changes
+  const handleMetricChange = (metricId: string) => {
+    setSelectedMetric(metricId);
+    setSelectedUser(""); // Reset user selection when metric changes
   };
 
   const handleAssign = async () => {
-    if (!selectedUser || !selectedRole) {
-      toast.error("Select user and role first");
+    if (!selectedUser || !selectedMetric) {
+      toast.error("Select metric and user first");
       return;
     }
 
@@ -191,14 +169,19 @@ export default function AssignInternalUsersModal({
       await assignUserToProject({
         project_id: project_id,
         user_id: selectedUser,
-        role_id: selectedRole,
+        project_metric_id: selectedMetric,
         internal_node_id: internal_node_id || selectedParentNode || "",
       }).unwrap();
 
       toast.success("User assigned successfully");
 
+      // Reset form
+      setSelectedMetric("");
       setSelectedUser("");
-      setSelectedRole("");
+      setSelectedParentNode(null);
+      setSelectedParentNodeName(null);
+      setHasSelectedParent(false);
+      setNavigationStack([]);
 
       onClose();
     } catch (err: any) {
@@ -211,72 +194,124 @@ export default function AssignInternalUsersModal({
       <DialogContent className="max-w-4xl bg-white max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader>
           <DialogTitle className="text-[#094C81]">
-            Assign User to  Project
+            Assign User to Project
           </DialogTitle>
         </DialogHeader>
 
         <div className="flex gap-2 mt-4">
-          {/* LEFT SIDE — FORM */}
-          <div className="w-1/2 flex flex-col  gap-4">
-            {/* USER */}
+          {/* LEFT SIDE — METRIC AND USER SELECTION */}
+          <div className="w-1/2 flex flex-col gap-4">
+            {/* PROJECT METRIC SELECTION */}
             <div className="w-full">
               <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                Select User
+                Select Project Metric
               </Label>
 
-              <Select value={selectedUser} onValueChange={setSelectedUser}>
-              <SelectTrigger className=" h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
-                  <SelectValue placeholder="Select user" />
+              <Select value={selectedMetric} onValueChange={handleMetricChange}>
+                <SelectTrigger className="h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
+                  <SelectValue placeholder="Select project metric" />
                 </SelectTrigger>
-                <SelectContent className="text-[#094C81] *: bg-white">
-                  {users.map((u) => (
-                    <SelectItem key={u.user_id} value={u.user_id}>
-                      {u.full_name} ({u.email})
+                <SelectContent className="text-[#094C81] bg-white">
+                  {loadingMetrics ? (
+                    <SelectItem value="loading" disabled>
+                      Loading metrics...
                     </SelectItem>
-                  ))}
+                  ) : projectMetrics.length === 0 ? (
+                    <SelectItem value="no-metrics" disabled>
+                      No metrics assigned to this project
+                    </SelectItem>
+                  ) : (
+                    projectMetrics.map((metric: any) => (
+                      <SelectItem
+                        key={metric.project_metric_id}
+                        value={metric.project_metric_id}
+                      >
+                        {metric.name}
+                        {metric.description && ` - ${metric.description}`}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
+
+              {/* Metric Details */}
+              {/* {selectedMetric && (
+                // <div className="mt-2 p-3 bg-blue-50 rounded-md border border-blue-200">
+                //   <div className="text-sm text-[#094C81]">
+                //     <div className="font-semibold">
+                //       {getSelectedMetricDetails()?.name}
+                //     </div>
+                //     {getSelectedMetricDetails()?.description && (
+                //       <div className="text-gray-600 mt-1">
+                //         {getSelectedMetricDetails()?.description}
+                //       </div>
+                //     )}
+                //     {getSelectedMetricDetails()?.weight && (
+                //       <div className="text-gray-600 mt-1">
+                //         Weight: {getSelectedMetricDetails()?.weight}
+                //       </div>
+                //     )}
+                //   </div>
+                // </div>
+              )} */}
             </div>
 
-            {/* ROLE */}
+            {/* USER SELECTION BASED ON METRIC */}
             <div className="w-full">
               <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                Select Role
+                Select User from Metric
               </Label>
 
               <Select
-                value={selectedRole}
-                onValueChange={(value) => {
-                  setSelectedRole(value);
-                }}
+                value={selectedUser}
+                onValueChange={setSelectedUser}
+                disabled={!selectedMetric || loadingMetricUsers}
               >
-                <SelectTrigger className=" h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
-                  <SelectValue placeholder="Select role" />
+                <SelectTrigger className="h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
+                  <SelectValue
+                    placeholder={
+                      !selectedMetric
+                        ? "Select a metric first"
+                        : loadingMetricUsers
+                        ? "Loading users..."
+                        : "Select user"
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent className="text-[#094C81] bg-white">
-                  {rolesMap.map((r) => (
-                    <SelectItem key={r.role_id} value={r.role_id}>
-                      {r.name}
+                  {!selectedMetric ? (
+                    <SelectItem value="select-metric-first" disabled>
+                      Please select a metric first
                     </SelectItem>
-                  ))}
+                  ) : loadingMetricUsers ? (
+                    <SelectItem value="loading" disabled>
+                      Loading users...
+                    </SelectItem>
+                  ) : metricUsers.length === 0 ? (
+                    <SelectItem value="no-users" disabled>
+                      No users assigned to this metric
+                    </SelectItem>
+                  ) : (
+                    metricUsers.map((user: any) => (
+                      <SelectItem key={user.user_id} value={user.user_id}>
+                        {user.full_name} ({user.email})
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          {/* RIGHT SIDE-FORM */}
-          <div className="w-1/2 ">
-            <div
-              className={`w-full flex flex-col transition-all duration-500 ${
-                hasSelectedParent ? "w-1/2" : "w-full"
-              }`}
-            >
+          {/* RIGHT SIDE - NODE SELECTION */}
+          <div className="w-1/2">
+            <div className="w-full flex flex-col">
               {/* Structure Selection */}
               <Label className="block text-sm text-[#094C81] font-medium mb-2">
                 Select Parent Issue Flow {!hasSelectedParent && "(required)"}
               </Label>
 
-              <div className=" rounded-lg">
+              <div className="rounded-lg">
                 {isFetchingParents ? (
                   <p className="text-sm text-gray-500">Loading structures...</p>
                 ) : (
@@ -290,7 +325,7 @@ export default function AssignInternalUsersModal({
                       >
                         <ArrowLeftIcon className="w-4 h-4 mr-2 text-[#094C81]" />
                         <span className="text-sm text-[#094C81] font-medium">
-                          Back{" "}
+                          Back
                         </span>
                       </button>
                     )}
@@ -352,11 +387,11 @@ export default function AssignInternalUsersModal({
                               }
                               className={`block text-left  w-full py-2 px-3 rounded-md mb-2 transition-colors ${
                                 selectedParentNode === node.internal_node_id
-                                  ? "    text-blue-800"
-                                  : "hover:bg-gray-100 "
+                                  ? "text-blue-800"
+                                  : "hover:bg-gray-100"
                               }`}
                             >
-                              <div className="flex  w-full items-center text-sm text-[#094C81] font-medium">
+                              <div className="flex w-full items-center text-sm text-[#094C81] font-medium">
                                 <span className="mr-2 mt-0.5">
                                   <GitForkIcon className="w-4 h-4" />
                                 </span>
@@ -375,40 +410,24 @@ export default function AssignInternalUsersModal({
                               </div>
                             </button>
                             <div className="flex justify-center items-center">
-
-                            {selectedParentNode === node.internal_node_id && (
-                                  <CheckCircleIcon className="w-5 h-5 text-green-800 mr-2" />
-                                )}
-                            {node.children && node.children.length > 0 && (
-                              <button
-                                type="button"
-                                onClick={() => enterStructure(node)}
-                                className="bg-transparent border-none opacity-70 group-hover:opacity-100 transition-opacity ml-2"
-                                title={`Explore ${node.name} structure`}
-                              >
-                                <ArrowRightIcon className="w-6 h-6 hover:text-[#094C81]" />
-                              </button>
-                            )}
+                              {selectedParentNode === node.internal_node_id && (
+                                <CheckCircleIcon className="w-5 h-5 text-green-800 mr-2" />
+                              )}
+                              {node.children && node.children.length > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => enterStructure(node)}
+                                  className="bg-transparent border-none opacity-70 group-hover:opacity-100 transition-opacity ml-2"
+                                  title={`Explore ${node.name} structure`}
+                                >
+                                  <ArrowRightIcon className="w-6 h-6 hover:text-[#094C81]" />
+                                </button>
+                              )}
                             </div>
                           </div>
                         ))
                       )}
                     </div>
-
-                    {/* Selected parent info */}
-                    {/* {selectedParentNode && (
-                      <div className="mt-3 p-2 bg-blue-50 rounded-md text-sm border border-blue-200">
-                        <div className="flex items-center text-[#094C81] font-medium">
-                          <span className="mr-2">
-                            <CheckIcon className="w-4 h-4" />
-                          </span>
-                          <div>
-                            <strong>Selected Parent:</strong>{" "}
-                            {getSelectedNode()?.name || "Unknown"}
-                          </div>
-                        </div>
-                      </div>
-                    )} */}
                   </>
                 )}
               </div>
@@ -416,11 +435,46 @@ export default function AssignInternalUsersModal({
           </div>
         </div>
 
+        {/* Selected Selections Summary */}
+        {(selectedMetric || selectedUser || selectedParentNode) && (
+          <div className="mt-4 p-4 bg-gray-50 rounded-md border">
+            <h4 className="text-sm font-semibold text-[#094C81] mb-2">
+              Selection Summary:
+            </h4>
+            <div className="grid grid-cols-3 gap-4 text-sm">
+              <div>
+                <span className="font-medium">Metric:</span>
+                <div className="text-gray-600">
+                  {selectedMetric
+                    ? getSelectedMetricDetails()?.name
+                    : "Not selected"}
+                </div>
+              </div>
+              <div>
+                <span className="font-medium">User:</span>
+                <div className="text-gray-600">
+                  {selectedUser
+                    ? metricUsers.find((u: any) => u.user_id === selectedUser)
+                        ?.full_name
+                    : "Not selected"}
+                </div>
+              </div>
+              <div>
+                <span className="font-medium">Node:</span>
+                <div className="text-gray-600">
+                  {selectedParentNodeName ?? "Not selected"}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Assign Button */}
         <div className="flex justify-end mt-4">
           <Button
             onClick={handleAssign}
-            className="bg-[#094C81] hover:bg-[#094C81]/90 text-white"
+            disabled={!selectedMetric || !selectedUser}
+            className="bg-[#094C81] hover:bg-[#094C81]/90 text-white disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             Assign User
           </Button>

@@ -17,6 +17,16 @@ import { useGetCurrentUserQuery } from "../../../redux/services/authApi";
 // --- Define table columns ---
 const IssueTableColumns = [
   {
+    accessorKey: "ticket_no",
+    header: "Issue No",
+    cell: ({ row }: any) => {
+      const index = row.index + 1;
+      const year = new Date().getFullYear();
+      const padded = index.toString().padStart(5, "0");
+      return `TCK-${year}-${padded}`;
+    },
+  },
+  {
     accessorKey: "project.name",
     header: "Project",
     cell: ({ row }: any) => <div>{row.original.project?.name || "N/A"}</div>,
@@ -31,7 +41,6 @@ const IssueTableColumns = [
     header: "Priority",
     cell: ({ row }: any) => <div>{row.original.priority?.name || "N/A"}</div>,
   },
-
 
   {
     accessorKey: "status",
@@ -98,7 +107,7 @@ export default function IssueList() {
 
   const actions: ActionButton[] = [
     {
-      label: "Add Issue",
+      label: "Create Issue",
       icon: <Plus className="h-4 w-4" />,
       variant: "default",
       size: "default",
