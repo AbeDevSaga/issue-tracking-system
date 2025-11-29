@@ -13,6 +13,21 @@ import { useMultipleIssuesQueries } from "../../../hooks/useMultipleIssuesQuerie
 
 const TaskTableColumns = [
   {
+    accessorKey: "#",
+    header: "Task No",
+    cell: ({ row }: any) => {
+      const index = row.index + 1;
+      const year = new Date().getFullYear();
+      const padded = index.toString().padStart(5, "0");
+      return `TCK-${year}-${padded}`;
+    },
+  },
+  {
+    accessorKey: "project.name",
+    header: "Project",
+    cell: ({ row }: any) => row.original.project?.name || "N/A",
+  },
+  {
     accessorKey: "priority.name",
     header: "Priority",
     cell: ({ row }: any) => row.original.priority?.name || "N/A",
@@ -33,11 +48,6 @@ const TaskTableColumns = [
     cell: ({ row }: any) => row.original.hierarchyNode?.name || "N/A",
   },
 
-  {
-    accessorKey: "project.name",
-    header: "Project",
-    cell: ({ row }: any) => row.original.project?.name || "N/A",
-  },
   {
     accessorKey: "issue_occured_time",
     header: "Occurred Time",

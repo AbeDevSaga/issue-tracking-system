@@ -60,8 +60,8 @@ export default function Basedata() {
       route: "/priority_level",
     },
     {
-      title: t("basedata.project_metrics_management"),
-      description: t("basedata.subtitle", {
+      title: t("Metrics Management"),
+      description: t("Metrics Management", {
         title: t("basedata.project_metrics"),
       }),
       icon: <FaFlag size={26} color={"#094C81"} />,

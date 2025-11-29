@@ -3,7 +3,9 @@ import { baseApi } from "../baseApi";
 
 export const projectMetricApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // ===== Create a new Project Metric =====
+    // ===== CRUD Operations =====
+
+    // Create a new Project Metric
     createProjectMetric: builder.mutation({
       query: (body) => ({
         url: "/project-metrics",
@@ -13,7 +15,7 @@ export const projectMetricApi = baseApi.injectEndpoints({
       invalidatesTags: ["ProjectMetrics"],
     }),
 
-    // ===== Get all Project Metrics =====
+    // Get all Project Metrics
     getProjectMetrics: builder.query({
       query: () => ({
         url: "/project-metrics",
@@ -22,7 +24,7 @@ export const projectMetricApi = baseApi.injectEndpoints({
       providesTags: ["ProjectMetrics"],
     }),
 
-    // ===== Get a specific Project Metric by ID =====
+    // Get a specific Project Metric by ID
     getProjectMetricById: builder.query({
       query: (id: string) => ({
         url: `/project-metrics/${id}`,
@@ -31,7 +33,7 @@ export const projectMetricApi = baseApi.injectEndpoints({
       providesTags: (_result, _error, id) => [{ type: "ProjectMetrics", id }],
     }),
 
-    // ===== Update a specific Project Metric =====
+    // Update a specific Project Metric
     updateProjectMetric: builder.mutation({
       query: ({ id, ...body }) => ({
         url: `/project-metrics/${id}`,
@@ -44,7 +46,7 @@ export const projectMetricApi = baseApi.injectEndpoints({
       ],
     }),
 
-    // ===== Delete a specific Project Metric =====
+    // Delete a specific Project Metric
     deleteProjectMetric: builder.mutation({
       query: (id: string) => ({
         url: `/project-metrics/${id}`,
@@ -53,23 +55,101 @@ export const projectMetricApi = baseApi.injectEndpoints({
       invalidatesTags: ["ProjectMetrics"],
     }),
 
-    // ===== Get Metrics Assigned to a Project =====
+    // ===== User Metric Assignment Operations =====
+
+    // Assign multiple metrics to a user
+    assignMetricsToUser: builder.mutation({
+      query: ({ user_id, ...body }) => ({
+        url: `/project-metrics/users/${user_id}/assign-metrics`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["ProjectMetrics"],
+    }),
+
+    // Remove multiple metrics from a user
+    removeMetricsFromUser: builder.mutation({
+      query: ({ user_id, ...body }) => ({
+        url: `/project-metrics/users/${user_id}/remove-metrics`,
+        method: "DELETE",
+        body,
+      }),
+      invalidatesTags: ["ProjectMetrics"],
+    }),
+
+    // Get all metrics assigned to a specific user
+    getUserMetrics: builder.query({
+      query: (user_id: string) => ({
+        url: `/project-metrics/users/${user_id}/metrics`,
+        method: "GET",
+      }),
+      providesTags: ["ProjectMetrics"],
+    }),
+
+    // ===== Project Metric Assignment Operations =====
+
+    // Assign multiple metrics to a project
+    assignMetricsToProject: builder.mutation({
+      query: ({ project_id, ...body }) => ({
+        url: `/project-metrics/projects/${project_id}/assign-metrics`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["ProjectMetrics"],
+    }),
+
+    // Remove multiple metrics from a project
+    removeMetricsFromProject: builder.mutation({
+      query: ({ project_id, ...body }) => ({
+        url: `/project-metrics/projects/${project_id}/remove-metrics`,
+        method: "DELETE",
+        body,
+      }),
+      invalidatesTags: ["ProjectMetrics"],
+    }),
+
+    // Get all metrics assigned to a specific project
+    getProjectProjectMetrics: builder.query({
+      query: (project_id: string) => ({
+        url: `/project-metrics/projects/${project_id}/metrics`,
+        method: "GET",
+      }),
+      providesTags: ["ProjectMetrics"],
+    }),
+
+    // ===== User Metric Value Management =====
+
+    // Update specific metric value for a user
+    updateUserMetricValue: builder.mutation({
+      query: ({ user_id, metric_id, ...body }) => ({
+        url: `/project-metrics/users/${user_id}/metrics/${metric_id}/value`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["ProjectMetrics"],
+    }),
+
+    // ===== Legacy/Compatibility Endpoints (if needed) =====
+
+    // Get Metrics Assigned to a Project (legacy - consider using getProjectProjectMetrics instead)
     getMetricsByProject: builder.query({
       query: (projectId: string) => ({
         url: `/projects/${projectId}/metrics`,
         method: "GET",
       }),
+      providesTags: ["ProjectMetrics"],
     }),
 
-    // ===== Get User Metrics for a project metric =====
+    // Get User Metrics for a project metric (legacy)
     getMetricUsers: builder.query({
-      query: (metricId: string) => ({
-        url: `/project-metrics/${metricId}/users`,
+      query: (metric_id: string) => ({
+        url: `/project-metrics/metrics/${metric_id}`,
         method: "GET",
       }),
+      providesTags: ["ProjectMetrics"],
     }),
 
-    // ===== Assign User to a Project Metric =====
+    // Assign User to a Project Metric (legacy - consider using assignMetricsToUser instead)
     assignUserToMetric: builder.mutation({
       query: (body) => ({
         url: "/project-metric-users",
@@ -79,7 +159,7 @@ export const projectMetricApi = baseApi.injectEndpoints({
       invalidatesTags: ["ProjectMetrics"],
     }),
 
-    // ===== Update User Metric Value =====
+    // Update User Metric Value (legacy - consider using updateUserMetricValue instead)
     updateMetricUserValue: builder.mutation({
       query: ({ id, ...body }) => ({
         url: `/project-metric-users/${id}`,
@@ -89,7 +169,7 @@ export const projectMetricApi = baseApi.injectEndpoints({
       invalidatesTags: ["ProjectMetrics"],
     }),
 
-    // ===== Remove User from Metric =====
+    // Remove User from Metric (legacy - consider using removeMetricsFromUser instead)
     deleteMetricUser: builder.mutation({
       query: (id: string) => ({
         url: `/project-metric-users/${id}`,
@@ -103,13 +183,27 @@ export const projectMetricApi = baseApi.injectEndpoints({
 });
 
 export const {
+  // CRUD Operations
   useCreateProjectMetricMutation,
   useGetProjectMetricsQuery,
   useGetProjectMetricByIdQuery,
   useUpdateProjectMetricMutation,
   useDeleteProjectMetricMutation,
 
-  // Additional metric relations
+  // User Metric Assignment Operations
+  useAssignMetricsToUserMutation,
+  useRemoveMetricsFromUserMutation,
+  useGetUserMetricsQuery,
+
+  // Project Metric Assignment Operations
+  useAssignMetricsToProjectMutation,
+  useRemoveMetricsFromProjectMutation,
+  useGetProjectProjectMetricsQuery,
+
+  // User Metric Value Management
+  useUpdateUserMetricValueMutation,
+
+  // Legacy/Compatibility Endpoints
   useGetMetricsByProjectQuery,
   useGetMetricUsersQuery,
   useAssignUserToMetricMutation,
