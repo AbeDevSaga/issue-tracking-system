@@ -50,7 +50,7 @@ export default function ProjectMetricsList() {
         const metric = row.original;
 
         return (
-          <div className="flex items-center justify-around space-x-2">
+          <div className="flex items-center  space-x-2">
             <Button
               variant="outline"
               size="sm"

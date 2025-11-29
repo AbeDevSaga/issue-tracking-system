@@ -98,7 +98,7 @@ export default function IssueList() {
 
   const actions: ActionButton[] = [
     {
-      label: "Add Issue",
+      label: "Create Issue",
       icon: <Plus className="h-4 w-4" />,
       variant: "default",
       size: "default",

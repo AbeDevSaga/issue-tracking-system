@@ -195,7 +195,7 @@ export default function ReportList() {
               type="submit"
               className="px-4 py-2 rounded bg-blue-900 text-white"
             >
-              Add Issue
+              Create Issue
             </button>
           </div>
         </form>

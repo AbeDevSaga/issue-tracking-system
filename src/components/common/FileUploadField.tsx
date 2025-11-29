@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Label } from "../../components/ui/cn/label";
 import { Button } from "../../components/ui/cn/button";
-import { Trash2, Upload, Loader2 } from "lucide-react";
+import { Trash2, Upload, Loader2, Eye } from "lucide-react";
 import { toast } from "sonner";
 import {
   useUploadAttachmentsMutation,
@@ -138,6 +138,7 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
           <div className="flex flex-col items-center justify-center space-y-2">
             <Upload className="w-6 h-6 text-gray-500" />
             <p className="text-sm text-gray-600">Click or drag to upload</p>
+            <p className="text-sm text-gray-600">Supported formats: pdf, feet, jpeg, jpg, docx, doc</p>
           </div>
         )}
       </div>
@@ -162,6 +163,15 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
                   {file.file_name}
                 </span>
               </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => handleView(file.attachment_id)}
+                className="w-8 h-8 text-red-600 hover:bg-red-50"
+              >
+                <Eye className="w-5 h-5" />
+              </Button>
               <Button
                 type="button"
                 variant="ghost"

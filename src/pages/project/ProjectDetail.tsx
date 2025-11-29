@@ -45,7 +45,7 @@ export default function ProjectDetail() {
       onClick: () => setActiveTab("hierarchy"),
     },
     {
-      label: "Project Users",
+      label: "Assigned Users",
       icon: <Users className="h-4 w-4" />,
       variant: activeTab === "users" ? "default" : "outline",
       size: "default",

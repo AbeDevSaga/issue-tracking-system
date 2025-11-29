@@ -211,7 +211,7 @@ export default function AssignInternalUsersModal({
       <DialogContent className="max-w-4xl bg-white max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader>
           <DialogTitle className="text-[#094C81]">
-            Assign User to  Project
+            Assign User
           </DialogTitle>
         </DialogHeader>
 

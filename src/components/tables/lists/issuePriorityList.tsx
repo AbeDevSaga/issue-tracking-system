@@ -41,7 +41,11 @@ const PriorityTableColumns = [
     header: "Description",
     cell: ({ row }: any) => <div>{row.getValue("description") || "N/A"}</div>,
   },
-
+  {
+    accessorKey: "response_time",
+    header: "Response Time",
+    cell: ({ row }: any) => <div>{row.getValue("response_time") || "N/A"}</div>,
+  },
   {
     id: "actions",
     header: "Actions",

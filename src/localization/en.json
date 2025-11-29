@@ -37,7 +37,7 @@
     "add_subrole":"Add SubRole",
     "select_role":"Select Role"
 
-  },
+    },
   "basedata": {
     "title": "Base Data",
 
@@ -75,7 +75,9 @@
     "org_structure": "Organization Structure",
     "org_structure_management": "Organization Structure Management",
     "color_code": "Color Code",
-    "user_management": "User Management"
+    "user_management": "User Management",
+    "project_metrics_management": "Project Metrics Management",
+    "project_metrics": "Project Metrics"
   },
   "org_structure": {
     "add_hierarchy": "Add Hierarchy"

@@ -188,7 +188,7 @@ export default function HierarchyNodeList({
   const handlePagination = (index: number, size: number) => {
     setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
   };
-  console.log("toggleHierarchyNode: ", toggleHierarchyNode);
+  console.log("filteredNodes: ", filteredNodes);
   return (
     <>
       <PageLayout

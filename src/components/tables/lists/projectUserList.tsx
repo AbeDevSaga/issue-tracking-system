@@ -7,15 +7,12 @@ import { toast } from "sonner";
 
 import {
   useDeleteHierarchyNodeMutation,
-  useGetHierarchyNodesByProjectIdQuery,
+
 } from "../../../redux/services/hierarchyNodeApi";
 
-import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
-import { CreateHierarchyNodeModal } from "../../modals/CreateHierarchyNodeModal";
-import HierarchyD3Tree from "./HierarchyD3Tree";
 import { useGetUsersAssignedToProjectQuery } from "../../../redux/services/userApi";
 
 // ------------------- Table Columns -------------------
@@ -220,7 +217,6 @@ export default function ProjectUserList({
           // or keep the hierarchy tree if it makes sense for your use case
           <div className="p-4">
             <p>User list visualization not implemented yet</p>
-            {/* <HierarchyD3Tree data={filteredUsers} isLoading={isLoading} /> */}
           </div>
         )}
       </PageLayout>

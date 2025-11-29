@@ -112,8 +112,15 @@ const CustomNode: React.FC<CustomNodeProps> = ({
             <h3 className="text-[#094C81] text-base font-semibold flex-1 pr-2 line-clamp-2">
               {nodeDatum.name.length > 28 ? `${nodeDatum.name.substring(0, 28)}...` : nodeDatum.name}
             </h3>
-            <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white whitespace-nowrap ${isActive ? 'bg-green-500' : 'bg-red-500'}`}>
-              {isActive ? 'Active' : 'Inactive'}
+            <span
+              className={`px-3 py-1 flex items-center justify-center rounded-full text-xs font-semibold text-white whitespace-nowrap ${
+                isActive
+                  ? 'bg-green-100'
+                  : 'bg-red-100'
+              }`}
+            >
+              
+              {isActive ? <span className="text-green-900 text-xs font-semibold">Active</span> : <span className="text-red-900 text-xs font-semibold">Inactive</span>}
             </span>
           </div>
 
@@ -130,6 +137,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({
             >
               Details
             </button>
+
             <button
               onClick={() => {
                 setSelectedParentNodeId(nodeDatum.attributes.internal_node_id);
