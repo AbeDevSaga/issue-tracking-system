@@ -125,7 +125,7 @@ const InternalNodeTableColumns = (deleteNode: any) => [
 ];
   const actions: ActionButton[] = [
     {
-      label: "Add Issue Flow",
+      label: "Add Support Request Flow",
       icon: <Plus className="h-4 w-4" />,
       variant: "default",
       size: "default",
@@ -167,9 +167,9 @@ const InternalNodeTableColumns = (deleteNode: any) => [
     setFilteredNodes(filtered);
   }, [nodes, statusFilter]);
 
-  const handlePagination = (index: number, size: number) => {
-    setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
-  };
+  // const handlePagination = (index: number, size: number) => {
+  //   setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
+  // };
 
   console.log(filteredNodes.length > 0 ? true : false,filteredNodes,"this is the filtered nodes");
   return (
@@ -179,11 +179,11 @@ const InternalNodeTableColumns = (deleteNode: any) => [
         filterColumnsPerRow={1}
         toggleActions={toggleActions}
         actions={actions}
-        showtoggle={true}
+        showtoggle={false}
         toggle={toggleView}
         onToggle={(value: string) => setToggleView(value)}
       >
-        {toggleView === "table" ? (
+        {/* {toggleView === "table" ? (
           <DataTable
             columns={InternalNodeTableColumns(deleteNode)}
             data={filteredNodes}
@@ -194,7 +194,9 @@ const InternalNodeTableColumns = (deleteNode: any) => [
           />
         ) : (
           <HierarchyD3TreeInstitute data={filteredNodes} isLoading={isLoading} />
-        )}
+        )} */}
+          <HierarchyD3TreeInstitute isAssignUsersToStructure={true} data={filteredNodes} isLoading={isLoading} />
+
       </PageLayout>
 
       <CreateInternalNodeModal

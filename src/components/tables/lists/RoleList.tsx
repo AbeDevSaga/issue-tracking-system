@@ -13,6 +13,7 @@ import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
+import DetailHeader from "../../common/DetailHeader";
 
 const RoleTableColumns = (handleDelete: (id: string) => void) => [
   {
@@ -152,6 +153,8 @@ export default function RoleList() {
 
   return (
     <>
+    {/* <DetailHeader className="mb-5 mt-2" breadcrumbs={[{ title: "Roles", link: "" }]} /> */}
+
       <PageLayout
         filters={filterFields}
         filterColumnsPerRow={1}

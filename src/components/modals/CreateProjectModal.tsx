@@ -2,12 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Input } from "../ui/cn/input";
 import { Label } from "../ui/cn/label";
 import { Button } from "../ui/cn/button";
 import DatePicker from "react-datepicker";
 import { useCreateProjectMutation } from "../../redux/services/projectApi";
-import { XIcon, CalendarIcon, Check, Square } from "lucide-react";
+import { XIcon, CalendarIcon, Check } from "lucide-react";
 import { Textarea } from "../ui/cn/textarea";
 
 // Import react-datepicker styles
@@ -138,20 +137,60 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     if (e.target === e.currentTarget) onClose();
   };
 
-  // Custom input component for DatePicker to match your design
-  const CustomDateInput = React.forwardRef<HTMLButtonElement, any>(
-    ({ value, onClick }, ref) => (
-      <button
-        type="button"
-        className="w-full min-w-[330px] h-12 border border-gray-300 px-4 py-2 rounded-md shadow-sm focus:ring-2 focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none flex items-center justify-between bg-white text-left"
-        onClick={onClick}
-        ref={ref}
-      >
-        <span className={value ? "text-gray-900" : "text-gray-500"}>
-          {value || "Select date"}
-        </span>
-        <CalendarIcon className="w-4 h-4 text-gray-500" />
-      </button>
+  // Handle manual date input parsing
+  const parseDateInput = (inputValue: string): Date | null => {
+    if (!inputValue) return null;
+    
+    // Try parsing MM/DD/YYYY format
+    const dateMatch = inputValue.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (dateMatch) {
+      const month = parseInt(dateMatch[1], 10) - 1; // Month is 0-indexed
+      const day = parseInt(dateMatch[2], 10);
+      const year = parseInt(dateMatch[3], 10);
+      const date = new Date(year, month, day);
+      
+      // Validate the date
+      if (
+        date.getFullYear() === year &&
+        date.getMonth() === month &&
+        date.getDate() === day
+      ) {
+        return date;
+      }
+    }
+    
+    // Try parsing as ISO date string
+    const isoDate = new Date(inputValue);
+    if (!isNaN(isoDate.getTime())) {
+      return isoDate;
+    }
+    
+    return null;
+  };
+
+  // Custom input component for DatePicker to allow manual input
+  const CustomDateInput = React.forwardRef<HTMLInputElement, any>(
+    ({ value, onClick, onChange, onBlur }, ref) => (
+      <div className="relative w-full">
+        <input
+          type="text"
+          value={value || ""}
+          onChange={onChange}
+          onBlur={onBlur}
+          onClick={onClick}
+          ref={ref}
+          placeholder="MM/DD/YYYY "
+          className="w-full min-w-[330px] h-12 border border-gray-300 px-4 py-2 pr-10 rounded-md shadow-sm focus:ring-2 focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none bg-white text-gray-900"
+        />
+        <button
+          type="button"
+          onClick={onClick}
+          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+          tabIndex={-1}
+        >
+          <CalendarIcon className="w-4 h-4" />
+        </button>
+      </div>
     )
   );
   CustomDateInput.displayName = "CustomDateInput";
@@ -179,7 +218,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
           <div className="flex w-full gap-4">
             {/* Left Panel: Project Info (without title) */}
 
-            <div className="w-1/2 border flex flex-col gap-6 p-4 shadow-md rounded-md">
+            <div className="w-1/2 border flex flex-col gap-6 p-4 shadow-sm rounded-md">
               <h3 className="text-[#094C81] font-semibold text-lg ">
                 Project Info
               </h3>
@@ -192,7 +231,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter project name"
-                  className="w-full border border-gray-300 px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none"
+                  className="w-full border border-gray-300 px-4 py-3 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none"
                 />
               </div>
 
@@ -211,7 +250,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
             </div>
 
             {/* Right Panel: Maintenance Timeline (keep title) */}
-            <div className="w-1/2 border flex flex-col gap-6 p-4 shadow-md rounded-md">
+            <div className="w-1/2 border flex flex-col gap-6 p-4 shadow-sm rounded-md">
               <h3 className="text-[#094C81] font-semibold text-lg ">
                 Maintenance and Support Timeline
               </h3>
@@ -223,12 +262,29 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                 <DatePicker
                   selected={maintenanceStart}
                   onChange={(date) => setMaintenanceStart(date)}
+                  onChangeRaw={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    if (e && e.target) {
+                      const inputValue = e.target.value;
+                      const parsedDate = parseDateInput(inputValue);
+                      if (parsedDate && parsedDate >= new Date()) {
+                        setMaintenanceStart(parsedDate);
+                      }
+                    }
+                  }}
                   selectsStart
                   startDate={maintenanceStart}
                   endDate={maintenanceEnd}
                   customInput={<CustomDateInput />}
-                  placeholderText="Select start date"
-                  dateFormat="MMMM d, yyyy"
+                  dateFormat="MM/dd/yyyy"
+                  showYearDropdown
+                  showMonthDropdown
+                  dropdownMode="select"
+                  allowSameDay={false}
+                  minDate={new Date()}
+                  yearDropdownItemNumber={100}
+                  scrollableYearDropdown
+                  strictParsing={false}
+                  openToDate={maintenanceStart || new Date()}
                 />
               </div>
 
@@ -239,85 +295,118 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                 <DatePicker
                   selected={maintenanceEnd}
                   onChange={(date) => setMaintenanceEnd(date)}
+                  onChangeRaw={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    if (e && e.target) {
+                      const inputValue = e.target.value;
+                      const parsedDate = parseDateInput(inputValue);
+                      const minDate = maintenanceStart || new Date();
+                      if (parsedDate && parsedDate >= minDate) {
+                        setMaintenanceEnd(parsedDate);
+                      }
+                    }
+                  }}
                   selectsEnd
                   startDate={maintenanceStart}
                   endDate={maintenanceEnd}
                   minDate={maintenanceStart || new Date()}
                   customInput={<CustomDateInput />}
-                  placeholderText="Select end date"
-                  dateFormat="MMMM d, yyyy"
+                  dateFormat="MM/dd/yyyy"
+                  showYearDropdown
+                  showMonthDropdown
+                  dropdownMode="select"
+                  allowSameDay={false}
+                  yearDropdownItemNumber={100}
+                  scrollableYearDropdown
+                  strictParsing={false}
+                  openToDate={maintenanceEnd || maintenanceStart || new Date()}
                 />
               </div>
             </div>
           </div>
           {/* Bottom Panel: Project Metrics Selection */}
-
-          <div className="w-full border flex flex-col gap-6 p-4 shadow-md rounded-md">
-            <div className="flex items-center justify-between">
-              <h3 className="text-[#094C81] font-semibold text-lg ">
-                Project Metrics
-              </h3>
-              <>
-                {/* Global Select All Checkbox */}
+          <div className="w-full border border-gray-200 flex flex-col gap-4 p-5 shadow-sm rounded-lg">
+            {/* Header with count */}
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-3">
+                <h3 className="text-[#094C81] font-semibold text-lg">
+                  Project Human Resources
+                </h3>
+              </div>
+              {/* Global Select All Checkbox */}
+              {metrics.length > 0 && (
                 <div
-                  className="flex items-center gap-3 p-3  hover:bg-gray-50 cursor-pointer transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-[#094C81]/10 cursor-pointer transition-all duration-200 border border-gray-200 bg-white"
                   onClick={handleSelectAll}
                 >
                   <div
-                    className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-colors ${
+                    className={`w-4 h-4 border-2 rounded flex items-center justify-center transition-all duration-200 ${
                       selectAll
                         ? "bg-[#094C81] border-[#094C81] text-white"
-                        : "border-gray-300 text-transparent"
+                        : "border-gray-300 bg-white"
                     }`}
                   >
-                    {selectAll ? <Check className="w-3 h-3" /> : null}
+                    {selectAll ? <Check className="w-3 h-3 stroke-3" /> : null}
                   </div>
-                  <span className="font-medium text-[#094C81]">
-                    Select All Metrics
+                  <span className="font-medium text-sm text-[#094C81]">
+                    Select All
                   </span>
                 </div>
-              </>
+              )}
             </div>
 
             {loadingMetrics ? (
-              <div className="text-center py-4 text-gray-500">
-                Loading metrics...
+              <div className="text-center py-8 text-gray-500 text-sm">
+                <div className="animate-pulse">Loading human resources...</div>
               </div>
             ) : isError ? (
-              <div className="text-center py-4 text-red-500">
-                Failed to load metrics
+              <div className="text-center py-8 text-red-500 text-sm bg-red-50 rounded-md border border-red-200">
+                Failed to load human resources. Please try again.
               </div>
             ) : metrics.length === 0 ? (
-              <div className="text-center py-4 text-gray-500">
-                No metrics available
+              <div className="text-center py-8 text-gray-500 text-sm bg-gray-50 rounded-md border border-gray-200">
+                No human resources available
               </div>
             ) : (
-              <div className="grid grid-cols-3 gap-4 max-h-60 overflow-y-auto">
-                {/* Metrics List */}
-                {metrics.map((metric) => (
-                  <div
-                    key={metric.project_metric_id}
-                    className="flex items-center gap-3 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer transition-colors"
-                    onClick={() => handleMetricSelect(metric.project_metric_id)}
-                  >
+              <div className="relative">
+                {/* Scrollable container with better height */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 max-h-[400px] overflow-y-auto overflow-x-hidden pr-2 pb-2 custom-scrollbar">
+                  {/* Human Resources List */}
+                  {metrics.map((metric) => (
                     <div
-                      className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-colors ${
+                      key={metric.project_metric_id}
+                      className={`flex items-center gap-2.5 p-2.5 border rounded-md cursor-pointer transition-all duration-200 ${
                         projectMetricsIds.includes(metric.project_metric_id)
-                          ? "bg-[#094C81] border-[#094C81] text-white"
-                          : "border-gray-300 text-transparent"
+                          ? "bg-[#094C81]/10 border-[#094C81] shadow-sm"
+                          : "bg-white border-gray-200 hover:border-[#094C81]/50 hover:bg-gray-50"
                       }`}
+                      onClick={() => handleMetricSelect(metric.project_metric_id)}
                     >
-                      {projectMetricsIds.includes(metric.project_metric_id) ? (
-                        <Check className="w-3 h-3" />
-                      ) : null}
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900">
-                        {metric.name}
+                      <div
+                        className={`w-4 h-4 border-2 rounded flex items-center justify-center transition-all duration-200 shrink-0 ${
+                          projectMetricsIds.includes(metric.project_metric_id)
+                            ? "bg-[#094C81] border-[#094C81] text-white"
+                            : "border-gray-300 bg-white"
+                        }`}
+                      >
+                        {projectMetricsIds.includes(metric.project_metric_id) ? (
+                          <Check className="w-2.5 h-2.5 stroke-3" />
+                        ) : null}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div 
+                          className="font-medium text-sm text-gray-900 truncate leading-tight"
+                          title={metric.name}
+                        >
+                          {metric.name}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+                {/* Scroll indicator hint for many items */}
+                {metrics.length > 12 && (
+                  <div className="absolute bottom-0 left-0 right-2 h-8 bg-gradient-to-t from-gray-50/50 to-transparent pointer-events-none rounded-b-lg" />
+                )}
               </div>
             )}
           </div>

@@ -30,6 +30,7 @@ import {
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Textarea } from "../../components/ui/cn/textarea";
 import { AnimatePresence, motion } from "framer-motion";
+import DetailHeader from "../../components/common/DetailHeader";
 
 interface Permission {
   permission_id: string;
@@ -330,8 +331,12 @@ export default function CreateRole() {
   }
 
   return (
+    <>
+    <DetailHeader className="mb-5 mt-2" breadcrumbs={[{ title: "Roles", link: "" },{ title: isEditMode ? "Edit Role" : "Create New Role", link: "" }]} />
+
     <div className="w-full flex items-center justify-center bg-white rounded-lg p-4">
       <div className=" w-full" onClick={(e) => e.stopPropagation()}>
+
         {/* Header */}
         <div className="flex rounded-t-lg items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
           <div className="flex items-center space-x-3">
@@ -615,5 +620,6 @@ export default function CreateRole() {
         </form>
       </div>
     </div>
+    </>
   );
 }

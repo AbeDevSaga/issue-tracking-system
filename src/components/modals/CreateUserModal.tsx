@@ -219,7 +219,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
             {showInstituteSelect && (
               <div className="space-y-2">
                 <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                  Institute *
+                  Institute <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={instituteId}
@@ -248,7 +248,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
             )}
             <div className="space-y-2">
               <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                Full Name *
+                Full Name <span className="text-red-500">*</span>
               </Label>
               <Input
                 value={fullName}
@@ -259,18 +259,18 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
             </div>
             <div className="space-y-2">
               <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                Phone Number
+                Phone Number <span className="text-red-500">*</span>
               </Label>
               <Input
                 value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
+                onChange={(e) => setPhoneNumber(e.target.value)}  
                 placeholder="+251 9xxxxxxx"
                 className="w-full h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
-              />
+              />  
             </div>
             <div className="space-y-2">
               <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                Email *
+                Email <span className="text-red-500">*</span>
               </Label>
               <Input
                 type="email"
@@ -282,7 +282,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
             </div>
             {/* ROLE */}
             <div className="w-full space-y-2">
-              <Label className="text-sm font-medium text-[#094C81]">Role</Label>
+              <Label className="text-sm font-medium text-[#094C81]">Role <span className="text-red-500">*</span></Label>
 
               <Select
                 value={selectedRole}
@@ -305,76 +305,94 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
           </div>
           {/* metrics panel */}
           {showMetricsSelect && (
-            <div className="w-full border flex flex-col gap-6 p-4 shadow-md rounded-md">
-              <div className="flex items-center justify-between">
-                <h3 className="text-[#094C81] font-semibold text-lg ">
-                  User Skill
-                </h3>
-                <>
-                  {/* Global Select All Checkbox */}
+            <div className="w-full border border-gray-200 flex flex-col gap-4 p-5 shadow-sm rounded-lg">
+              {/* Header with count */}
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-3">
+                  <h3 className="text-[#094C81] font-semibold text-lg">
+                    User Skills
+                  </h3>
+                   
+                </div>
+                {/* Global Select All Checkbox */}
+                {metrics.length > 0 && (
                   <div
-                    className="flex items-center gap-3 p-3  hover:bg-gray-50 cursor-pointer transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-[#094C81]/10 cursor-pointer transition-all duration-200 border border-gray-200 bg-white"
                     onClick={handleSelectAll}
                   >
                     <div
-                      className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-colors ${
+                      className={`w-4 h-4 border-2 rounded flex items-center justify-center transition-all duration-200 ${
                         selectAll
                           ? "bg-[#094C81] border-[#094C81] text-white"
-                          : "border-gray-300 text-transparent"
+                          : "border-gray-300 bg-white"
                       }`}
                     >
-                      {selectAll ? <Check className="w-3 h-3" /> : null}
+                      {selectAll ? <Check className="w-3 h-3 stroke-3" /> : null}
                     </div>
-                    <span className="font-medium text-[#094C81]">
-                      Select All Skills
+                    <span className="font-medium text-sm text-[#094C81]">
+                      Select All
                     </span>
                   </div>
-                </>
+                )}
               </div>
 
               {loadingMetrics ? (
-                <div className="text-center py-4 text-gray-500">
-                  Loading metrics...
+                <div className="text-center py-8 text-gray-500 text-sm">
+                  <div className="animate-pulse">Loading skills...</div>
                 </div>
               ) : isError ? (
-                <div className="text-center py-4 text-red-500">
-                  Failed to load metrics
+                <div className="text-center py-8 text-red-500 text-sm bg-red-50 rounded-md border border-red-200">
+                  Failed to load skills. Please try again.
                 </div>
               ) : metrics.length === 0 ? (
-                <div className="text-center py-4 text-gray-500">
-                  No metrics available
+                <div className="text-center py-8 text-gray-500 text-sm bg-gray-50 rounded-md border border-gray-200">
+                  No skills available
                 </div>
               ) : (
-                <div className="grid grid-cols-3 gap-4 max-h-60 overflow-y-auto">
-                  {/* Metrics List */}
-                  {metrics.map((metric) => (
-                    <div
-                      key={metric.project_metric_id}
-                      className="flex items-center gap-3 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer transition-colors"
-                      onClick={() =>
-                        handleMetricSelect(metric.project_metric_id)
-                      }
-                    >
+                <div className="relative">
+                  {/* Scrollable container with better height */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 max-h-[400px] overflow-y-auto overflow-x-hidden pr-2 pb-2 custom-scrollbar">
+                    {/* Metrics List */}
+                    {metrics.map((metric) => (
                       <div
-                        className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-colors ${
+                        key={metric.project_metric_id}
+                        className={`flex items-center gap-2.5 p-2.5 border rounded-md cursor-pointer transition-all duration-200 ${
                           projectMetricsIds.includes(metric.project_metric_id)
-                            ? "bg-[#094C81] border-[#094C81] text-white"
-                            : "border-gray-300 text-transparent"
+                            ? "bg-[#094C81]/10 border-[#094C81] shadow-sm"
+                            : "bg-white border-gray-200 hover:border-[#094C81]/50 hover:bg-gray-50"
                         }`}
+                        onClick={() =>
+                          handleMetricSelect(metric.project_metric_id)
+                        }
                       >
-                        {projectMetricsIds.includes(
-                          metric.project_metric_id
-                        ) ? (
-                          <Check className="w-3 h-3" />
-                        ) : null}
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900">
-                          {metric.name}
+                        <div
+                          className={`w-4 h-4 border-2 rounded flex items-center justify-center transition-all duration-200 shrink-0 ${
+                            projectMetricsIds.includes(metric.project_metric_id)
+                              ? "bg-[#094C81] border-[#094C81] text-white"
+                              : "border-gray-300 bg-white"
+                          }`}
+                        >
+                          {projectMetricsIds.includes(
+                            metric.project_metric_id
+                          ) ? (
+                            <Check className="w-2.5 h-2.5 stroke-3" />
+                          ) : null}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div 
+                            className="font-medium text-xs text-gray-900 truncate leading-tight"
+                            title={metric.name}
+                          >
+                            {metric.name}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                  {/* Scroll indicator hint for many items */}
+                  {metrics.length > 12 && (
+                    <div className="absolute bottom-0 left-0 right-2 h-8 bg-gradient-to-t from-gray-50/50 to-transparent pointer-events-none rounded-b-lg" />
+                  )}
                 </div>
               )}
             </div>

@@ -47,7 +47,7 @@ export default function ProjectDetail() {
 
   const actions: ActionButton[] = [
     {
-      label: "Issue Flow",
+      label: "Support Request Flow",
       icon: <FolderIcon className="h-4 w-4" />,
       variant: activeTab === "issueFlow" ? "default" : "outline",
       size: "default",
@@ -261,7 +261,7 @@ export default function ProjectDetail() {
           {activeTab === "issueFlow" && (
             <IssueFlowList
               toggleActions={actions}
-              parent_hierarchy_node_id={project.hierarchy_node_id}
+              // parent_hierarchy_node_id={project.hierarchy_node_id}
             />
           )}
 

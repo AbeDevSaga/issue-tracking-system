@@ -13,6 +13,8 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   ArrowLeftIcon,
+  AcademicCapIcon,
+  StarIcon,
 } from "@heroicons/react/24/outline";
 import {
   Card,
@@ -34,6 +36,35 @@ interface UserApiResponse {
   data: User;
 }
 
+// Extended User type with roles and metrics
+interface ExtendedUser extends User {
+  roles?: Array<{
+    role_id: string;
+    name: string;
+    description?: string;
+    is_active?: boolean;
+    created_at?: string;
+    updated_at?: string;
+    deleted_at?: string | null;
+  }>;
+  metrics?: Array<{
+    project_metric_id: string;
+    name: string;
+    description?: string;
+    weight?: number | null;
+    is_active?: boolean;
+    created_at?: string;
+    updated_at?: string;
+    ProjectMetricUser?: {
+      value?: number | null;
+    };
+  }>;
+  userType?: {
+    user_type_id: string;
+    name: string;
+  };
+}
+
 const UserDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { data: user, isLoading, isError } = useGetUserByIdQuery(id!);
@@ -47,8 +78,9 @@ const UserDetail = () => {
       toast.success("User deleted successfully");
       navigate(-1);
     }
-    catch (error: any) {
-      toast.error(error?.data?.message || "Failed to delete user");
+    catch (error: unknown) {
+      const errorMessage = (error as { data?: { message?: string } })?.data?.message || "Failed to delete user";
+      toast.error(errorMessage);
     }
   }
   const formatDate = (dateString?: string | null) => {
@@ -97,7 +129,12 @@ const UserDetail = () => {
   }
 
   // Handle wrapped response if API returns { success, message, data }
-  const userData = (user as unknown as UserApiResponse).data || (user as User);
+  const userData = ((user as unknown as UserApiResponse).data || user) as ExtendedUser;
+  
+  // Extract roles and metrics from the response
+  const roles = userData.roles || [];
+  const metrics = userData.metrics || [];
+  const userType = userData.userType;
 
   return (
     <>
@@ -185,18 +222,6 @@ const UserDetail = () => {
             <div className="p-6">
               {/* Personal Information Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                {/* Email */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <EnvelopeIcon className="h-4 w-4 text-[#1E516A]" />
-                    <p className="text-xs font-semibold text-[#1E516A] uppercase tracking-wide">
-                      Email Address
-                    </p>
-                  </div>
-                  <p className="text-gray-700 font-medium">
-                    {userData.email || "N/A"}
-                  </p>
-                </div>
 
                 {/* Phone */}
                 <div className="bg-gray-50 rounded-lg p-4">
@@ -211,6 +236,18 @@ const UserDetail = () => {
                   </p>
                 </div>
 
+                {/* User Type */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <UserCircleIcon className="h-4 w-4 text-[#1E516A]" />
+                    <p className="text-xs font-semibold text-[#1E516A] uppercase tracking-wide">
+                      User Type
+                    </p>
+                  </div>
+                  <p className="text-gray-700 font-medium capitalize">
+                    {userType?.name?.replace('_', ' ') || userData.userType?.name?.replace('_', ' ') || "N/A"}
+                  </p>
+                </div>
 
                 {/* Institute */}
                 <div className="bg-gray-50 rounded-lg p-4">
@@ -224,24 +261,87 @@ const UserDetail = () => {
                     {userData.institute?.name || "EAII"}
                   </p>
                 </div>
-              </div>
 
-              {/* Timestamps */}
-              {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <CalendarIcon className="h-4 w-4 text-[#1E516A]" />
-                    <p className="text-xs font-semibold text-[#1E516A] uppercase tracking-wide">
-                      Created At
+                {/* Position */}
+                {userData.position && (
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <BriefcaseIcon className="h-4 w-4 text-[#1E516A]" />
+                      <p className="text-xs font-semibold text-[#1E516A] uppercase tracking-wide">
+                        Position
+                      </p>
+                    </div>
+                    <p className="text-gray-700 font-medium">
+                      {userData.position}
                     </p>
                   </div>
-                  <p className="text-gray-700 font-medium">
-                    {formatDate(userData.created_at)}
-                  </p>
-                </div>
+                )}
 
-                
-              </div> */}
+              </div>
+
+              {/* Roles Section */}
+              {roles.length > 0 && (
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <AcademicCapIcon className="h-5 w-5 text-[#094C81]" />
+                    <h3 className="text-lg font-semibold text-[#094C81]">
+                      Roles
+                    </h3>
+                    <span className="text-sm text-gray-500">
+                      ({roles.length})
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {roles.map((role) => (
+                      <Badge
+                        key={role.role_id}
+                        variant="light"
+                        color="primary"
+                        size="md"
+                        className="text-sm"
+                      >
+                        {role.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Skills/Metrics Section */}
+              {metrics.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <StarIcon className="h-5 w-5 text-[#094C81]" />
+                    <h3 className="text-lg font-semibold text-[#094C81]">
+                      Skills
+                    </h3>
+                    <span className="text-sm text-gray-500">
+                      ({metrics.length})
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                    {metrics.map((metric) => (
+                      <div
+                        key={metric.project_metric_id}
+                        className="bg-gray-50 border border-gray-200 rounded-lg p-3 hover:border-[#094C81]/50 hover:bg-gray-100 transition-all duration-200"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm text-gray-900 truncate" title={metric.name}>
+                              {metric.name}
+                            </p>
+                            {metric.description && (
+                              <p className="text-xs text-gray-500 mt-1 line-clamp-2" title={metric.description}>
+                                {metric.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

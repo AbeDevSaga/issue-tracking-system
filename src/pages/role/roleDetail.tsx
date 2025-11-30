@@ -25,6 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from '../../components/ui/table/table';
+import DetailHeader from '../../components/common/DetailHeader';
 
 interface RolePermission {
   role_permission_id: string;
@@ -99,6 +100,8 @@ const role = data.data;
         title={`${role.name} - Role Details`}
         description={`View details for ${role.name}`}
       />
+    <DetailHeader className="mb-5 mt-2" breadcrumbs={[{ title: "Roles", link: "" }]} />
+
       <div className="min-h-screen bg-[#F9FBFC] p-6 pb-24">
         <div className="mx-auto space-y-6">
           {/* Header Section */}

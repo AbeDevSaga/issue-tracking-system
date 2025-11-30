@@ -7,6 +7,7 @@ import { CreateHierarchyNodeModal } from '../../modals/CreateHierarchyNodeModal'
 import { useParams } from 'react-router-dom';
 import { CreateInstituteHierarchyNodeModal } from '../../modals/CreateInstituteHierarchyNodeModal';
 import { shortenText } from '../../../utils/shortenText';
+import AssignInternalUsersToProjectHierarchyModal from '../../modals/AssignInternalUsersToProjectHierarchyModal';
 
 // ---------------------------
 // Types
@@ -39,6 +40,7 @@ interface D3TreeNode {
 interface HierarchyD3TreeProps {
   data: TreeNode[];
   isLoading?: boolean;
+  isAssignUsersToStructure?: boolean;
 }
 
 function convertToD3Tree(nodes: TreeNode[]): D3TreeNode[] {
@@ -62,6 +64,9 @@ interface CustomNodeProps {
   toggleNode: () => void;
   setModalOpen: (open: boolean) => void;
   setSelectedParentNodeId: (id: string) => void;
+  isAssignUsersToStructure: boolean;
+  setIsAssignUsersModalOpen: (open: boolean) => void;
+  setParentNodeName: (name: string) => void;
 }
 
 const CustomNode: React.FC<CustomNodeProps> = ({
@@ -69,6 +74,9 @@ const CustomNode: React.FC<CustomNodeProps> = ({
   toggleNode,
   setModalOpen,
   setSelectedParentNodeId,
+  setIsAssignUsersModalOpen,
+  isAssignUsersToStructure,
+  setParentNodeName,
 }) => {
   const hasChildren = nodeDatum.children && nodeDatum.children.length > 0;
   const isActive = nodeDatum.attributes.is_active;
@@ -80,9 +88,22 @@ const CustomNode: React.FC<CustomNodeProps> = ({
     e.stopPropagation();
     window.location.href = `/issue_configuration/${nodeDatum.attributes.internal_node_id}`;
   };
-
+  // if this component is hovered show the list of users assigned to this node
+  const [hovered, setHovered] = useState(false);
+  const [users, setUsers] = useState<string[]>([]);
+  useEffect(() => {
+    if (hovered) {
+      setUsers(["John Doe", "Jane Doe", "Jim Doe"]);
+    }
+  }, [hovered]);
+  const handleMouseEnter = () => {
+    setHovered(true);
+  };
+  const handleMouseLeave = () => {
+    setHovered(false);
+  };
   return (
-    <g>
+    <g onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       {hasChildren && (
         <g transform={`translate(-160, -70)`}>
           <foreignObject x={-10} y={-10} width={20} height={20}>
@@ -136,9 +157,19 @@ const CustomNode: React.FC<CustomNodeProps> = ({
               className="flex-1 bg-[#094C81] hover:bg-[#073954] text-white font-semibold py-2 rounded-lg transition-colors duration-200 text-xs"
             >
               Details
-            </button>
-
-            <button
+            </button>        
+            {isAssignUsersToStructure ? (
+              <button
+                onClick={() => {
+                  setSelectedParentNodeId(nodeDatum.attributes.internal_node_id);
+                  setParentNodeName(nodeDatum.name);
+                  setIsAssignUsersModalOpen(true);
+                }}
+                className="flex-1 bg-[#094C81] hover:bg-[#073954] text-white font-semibold py-2 rounded-lg transition-colors duration-200 text-xs"
+              >
+                Assign Users
+              </button>
+            ):(<button
               onClick={() => {
                 setSelectedParentNodeId(nodeDatum.attributes.internal_node_id);
                 setModalOpen(true);
@@ -146,7 +177,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({
               className="flex-1 bg-[#094C81] hover:bg-[#073954] text-white font-semibold py-2 rounded-lg transition-colors duration-200 text-xs"
             >
               Add Child
-            </button>
+            </button>)}
           </div>
         </div>
       </foreignObject>
@@ -154,7 +185,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({
   );
 };
 
-const HierarchyD3TreeInstitute: React.FC<HierarchyD3TreeProps> = ({ data, isLoading = false }) => {
+const HierarchyD3TreeInstitute: React.FC<HierarchyD3TreeProps> = ({ data, isLoading = false , isAssignUsersToStructure = false}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -162,7 +193,8 @@ const HierarchyD3TreeInstitute: React.FC<HierarchyD3TreeProps> = ({ data, isLoad
   const [selectedParentNodeId, setSelectedParentNodeId] = useState<string | null>(null);
   const { id: project_id } = useParams<{ id: string }>();
   const [isModalOpen, setModalOpen] = useState(false);
-
+  const [isAssignUsersModalOpen, setIsAssignUsersModalOpen] = useState(false);
+  const [parentNodeName, setParentNodeName] = useState<string>('');
   const buildTree = (nodes: TreeNode[]): TreeNode[] => {
     if (!nodes || nodes.length === 0) return [];
     const nodeMap = new Map<string, TreeNode>();
@@ -251,7 +283,7 @@ const HierarchyD3TreeInstitute: React.FC<HierarchyD3TreeProps> = ({ data, isLoad
                 transitionDuration={300}
                 renderCustomNodeElement={(rd3tProps: { nodeDatum: unknown; toggleNode: () => void }) => {
                   const nodeDatum = rd3tProps.nodeDatum as D3TreeNode & { __rd3t?: { collapsed?: boolean } };
-                  return (<CustomNode setSelectedParentNodeId={setSelectedParentNodeId} setModalOpen={setModalOpen} nodeDatum={nodeDatum} toggleNode={rd3tProps.toggleNode} />);
+                  return (<CustomNode isAssignUsersToStructure={isAssignUsersToStructure} setSelectedParentNodeId={setSelectedParentNodeId} setModalOpen={setModalOpen} setIsAssignUsersModalOpen={setIsAssignUsersModalOpen} setParentNodeName={setParentNodeName} nodeDatum={nodeDatum} toggleNode={rd3tProps.toggleNode} />);
                 }}
               />
             </div>
@@ -272,6 +304,13 @@ const HierarchyD3TreeInstitute: React.FC<HierarchyD3TreeProps> = ({ data, isLoad
         parent_hierarchy_node_id={selectedParentNodeId}
         isOpen={isModalOpen}
         onClose={() => { setModalOpen(false); setSelectedParentNodeId(null); }}
+      />
+      <AssignInternalUsersToProjectHierarchyModal
+        parent_node_id={selectedParentNodeId || ''}
+        project_id={project_id || ''}
+        isOpen={isAssignUsersModalOpen}
+        parent_node_name={parentNodeName || ''}
+        onClose={() => { setIsAssignUsersModalOpen(false); setSelectedParentNodeId(null); }}
       />
     </div>
   );

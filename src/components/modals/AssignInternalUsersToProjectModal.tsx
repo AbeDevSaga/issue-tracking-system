@@ -204,12 +204,12 @@ export default function AssignInternalUsersModal({
             {/* PROJECT METRIC SELECTION */}
             <div className="w-full">
               <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                Select Project Metric
+                Select Project Human Resource
               </Label>
 
               <Select value={selectedMetric} onValueChange={handleMetricChange}>
                 <SelectTrigger className="h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
-                  <SelectValue placeholder="Select project metric" />
+                  <SelectValue placeholder="Select project human resource" />
                 </SelectTrigger>
                 <SelectContent className="text-[#094C81] bg-white">
                   {loadingMetrics ? (
@@ -227,39 +227,19 @@ export default function AssignInternalUsersModal({
                         value={metric.project_metric_id}
                       >
                         {metric.name}
-                        {metric.description && ` - ${metric.description}`}
                       </SelectItem>
                     ))
                   )}
                 </SelectContent>
               </Select>
 
-              {/* Metric Details */}
-              {/* {selectedMetric && (
-                // <div className="mt-2 p-3 bg-blue-50 rounded-md border border-blue-200">
-                //   <div className="text-sm text-[#094C81]">
-                //     <div className="font-semibold">
-                //       {getSelectedMetricDetails()?.name}
-                //     </div>
-                //     {getSelectedMetricDetails()?.description && (
-                //       <div className="text-gray-600 mt-1">
-                //         {getSelectedMetricDetails()?.description}
-                //       </div>
-                //     )}
-                //     {getSelectedMetricDetails()?.weight && (
-                //       <div className="text-gray-600 mt-1">
-                //         Weight: {getSelectedMetricDetails()?.weight}
-                //       </div>
-                //     )}
-                //   </div>
-                // </div>
-              )} */}
+              
             </div>
 
             {/* USER SELECTION BASED ON METRIC */}
             <div className="w-full">
               <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                Select User from Metric
+                Select User from Human Resource
               </Label>
 
               <Select
@@ -271,7 +251,7 @@ export default function AssignInternalUsersModal({
                   <SelectValue
                     placeholder={
                       !selectedMetric
-                        ? "Select a metric first"
+                        ? "Select a human resource first"
                         : loadingMetricUsers
                         ? "Loading users..."
                         : "Select user"
@@ -281,7 +261,7 @@ export default function AssignInternalUsersModal({
                 <SelectContent className="text-[#094C81] bg-white">
                   {!selectedMetric ? (
                     <SelectItem value="select-metric-first" disabled>
-                      Please select a metric first
+                      Please select a human resource first
                     </SelectItem>
                   ) : loadingMetricUsers ? (
                     <SelectItem value="loading" disabled>
@@ -289,7 +269,7 @@ export default function AssignInternalUsersModal({
                     </SelectItem>
                   ) : metricUsers.length === 0 ? (
                     <SelectItem value="no-users" disabled>
-                      No users assigned to this metric
+                      No users assigned to this human resource
                     </SelectItem>
                   ) : (
                     metricUsers.map((user: any) => (
@@ -308,7 +288,7 @@ export default function AssignInternalUsersModal({
             <div className="w-full flex flex-col">
               {/* Structure Selection */}
               <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                Select Parent Issue Flow {!hasSelectedParent && "(required)"}
+                Select Parent Structure {!hasSelectedParent && "(required)"}
               </Label>
 
               <div className="rounded-lg">
@@ -443,7 +423,7 @@ export default function AssignInternalUsersModal({
             </h4>
             <div className="grid grid-cols-3 gap-4 text-sm">
               <div>
-                <span className="font-medium">Metric:</span>
+                <span className="font-medium">Human Resource:</span>
                 <div className="text-gray-600">
                   {selectedMetric
                     ? getSelectedMetricDetails()?.name
@@ -460,7 +440,7 @@ export default function AssignInternalUsersModal({
                 </div>
               </div>
               <div>
-                <span className="font-medium">Node:</span>
+                <span className="font-medium">Structure:</span>
                 <div className="text-gray-600">
                   {selectedParentNodeName ?? "Not selected"}
                 </div>
