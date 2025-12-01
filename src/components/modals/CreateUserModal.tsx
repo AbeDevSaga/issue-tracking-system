@@ -226,7 +226,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                   onValueChange={setInstituteId}
                   disabled={loadingInstitutes}
                 >
-                  <SelectTrigger className=" h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
+                  <SelectTrigger className="w-[300px] h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
                     <SelectValue
                       className="text-sm text-[#094C81] font-medium"
                       placeholder="Select Institute"

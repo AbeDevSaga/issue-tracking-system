@@ -88,23 +88,9 @@ const CustomNode: React.FC<CustomNodeProps> = ({
     e.stopPropagation();
     window.location.href = `/issue_configuration/${nodeDatum.attributes.internal_node_id}`;
   };
-  // if this component is hovered show the list of users assigned to this node
-  const [hovered, setHovered] = useState(false);
-  const [users, setUsers] = useState<string[]>([]);
-  useEffect(() => {
-    if (hovered) {
-      setUsers(["John Doe", "Jane Doe", "Jim Doe"]);
-    }
-  }, [hovered]);
-  const handleMouseEnter = () => {
-    setHovered(true);
-  }; 
-  
-  const handleMouseLeave = () => {
-    setHovered(false);
-  };
+ 
   return (
-    <g onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+    <g  >
       {hasChildren && (
         <g transform={`translate(-160, -70)`}>
           <foreignObject x={-10} y={-10} width={20} height={20}>

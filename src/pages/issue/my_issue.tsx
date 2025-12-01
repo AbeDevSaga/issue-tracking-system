@@ -15,7 +15,6 @@ export default function IssueCategory() {
         title={t("issue.myissue")}
         description={t("basedata.subtitle", { title: t("issue.myissue") })}
       />
-    
       <div className="space-y-1">
         <ComponentCard title={t("issue.issue_management")}>
           <MyIssueTable />

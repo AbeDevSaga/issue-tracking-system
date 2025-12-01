@@ -204,24 +204,13 @@ export default function AddIssue() {
       section: "Support Request Guidelines",
       items: [
         {
-          text: "Describe the issue clearly.",
-          sub: [
-            "Explain what went wrong.",
-            "Mention when it happened.",
-            "Describe what you were trying to do.",
-          ],
+          text: "Clearly describe what happened and when.",
         },
         {
-          text: "Provide helpful technical details.",
-          sub: [
-            "Include error messages.",
-            "Add browser/device information.",
-            "List steps to reproduce the issue.",
-          ],
+          text: "Include technical details like errors and device info.",
         },
         {
-          text: "Attach supporting materials.",
-          sub: ["Upload screenshots.", "Include logs if available."],
+          text: "Attach screenshots or logs.",
         },
         {
           text: "Select the correct severity level.",
@@ -235,6 +224,8 @@ export default function AddIssue() {
       ],
     },
   ];
+  
+  
 
   const maxDateTime = format(new Date(), "yyyy-MM-dd'T'HH:mm");
 
@@ -314,32 +305,39 @@ export default function AddIssue() {
                     </Select>
                   )}
 
-                {field.type === "select" && field.id === "priority_id" && (
-                  <Select
-                    value={formValues.priority_id}
-                    onValueChange={(value) => {
-                      if (value === "High" || value === "Critical") {
-                        setTempPriority(value);
-                        setShowPriorityModal(true);
-                      } else {
-                        handleChange("priority_id", value);
-                      }
-                    }}
-                  >
-                    <SelectTrigger className=" h-10 border border-gray-300 bg-white p-2 rounded mt-1  text-gray-700">
-                      <SelectValue placeholder="Select Priority" />
-                    </SelectTrigger>
+{field.type === "select" && field.id === "priority_id" && (
+  <Select
+    value={formValues.priority_id}
+    onValueChange={(value) => {
+      const selectedPriority = priorities.find(
+        (p) => p.priority_id === value
+      );
 
-                    <SelectContent className="text-[#094C81] *: bg-white">
-                      {priorities.map((p) => (
-                        <SelectItem key={p.priority_id} value={p.priority_id}>
-                          {p.name}
-                        </SelectItem>
-                      ))}
-                       
-                    </SelectContent>
-                  </Select>
-                )}
+      if (
+        selectedPriority?.name?.toLowerCase() === "high" ||
+        selectedPriority?.name?.toLowerCase() === "critical"
+      ) {
+        setTempPriority(selectedPriority.name);
+        setShowPriorityModal(true);
+      } else {
+        handleChange("priority_id", value);
+      }
+    }}
+  >
+    <SelectTrigger className=" h-10 border border-gray-300 bg-white p-2 rounded mt-1  text-gray-700">
+      <SelectValue placeholder="Select Priority" />
+    </SelectTrigger>
+
+    <SelectContent className="text-[#094C81] *: bg-white">
+      {priorities.map((p) => (
+        <SelectItem key={p.priority_id} value={p.priority_id}>
+          {p.name}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+)}
+
 
                 {field.type === "datetime" && (
                   <Input
@@ -494,8 +492,11 @@ export default function AddIssue() {
               </button>
 
               <button
-                onClick={() => {
-                  handleChange("priority_id", tempPriority);
+                onClick={() => {const priorityObj = priorities.find(
+                  (p) => p.name.toLowerCase() === tempPriority.toLowerCase()
+                );
+                handleChange("priority_id", priorityObj?.priority_id);
+                
                   setShowPriorityModal(false);
                 }}
                 className="px-4 py-2 rounded-lg bg-[#094C81] text-white hover:bg-[#07385f] transition shadow-sm"

@@ -261,6 +261,7 @@ export default function ProjectDetail() {
           {activeTab === "issueFlow" && (
             <IssueFlowList
               toggleActions={actions}
+              isAssignUsersToStructure={true}
               // parent_hierarchy_node_id={project.hierarchy_node_id}
             />
           )}
