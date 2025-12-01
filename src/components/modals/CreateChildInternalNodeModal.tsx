@@ -119,7 +119,6 @@ export function CreateChildInternalNodeModal({
             </Button>
 
             <Button
-              type="submit"
               disabled={isCreatingNode || !name.trim()}
               className="bg-[#094C81] hover:bg-[#094C81]/80 text-white"
             >

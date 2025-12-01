@@ -134,3 +134,19 @@ export const getNavItemsByUserType = (userType: string): NavItem[] => {
       return mainAllowed;
     });
 };
+
+export const getNavItemsCountByUserType = (userType: string): number => {
+  const items = getNavItemsByUserType(userType);
+
+  let count = 0;
+
+  items.forEach((item) => {
+    if (item.subItems && item.subItems.length > 0) {
+      count += item.subItems.length;
+    } else {
+      count += 1;
+    }
+  });
+
+  return count;
+};

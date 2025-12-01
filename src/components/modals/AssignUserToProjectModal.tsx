@@ -24,11 +24,12 @@ import {
   SelectItem,
 } from "../ui/cn/select";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface AssignUserModalProps {
   inistitute_id?: string;
   hierarchy_node_id: string;
-  hierarchy_node_name: string;
+  hierarchy_node_name?: string;
   project_id: string;
   isOpen: boolean;
   onClose: () => void;
@@ -42,12 +43,18 @@ export default function AssignUserModal({
   isOpen,
   onClose,
 }: AssignUserModalProps) {
-  // Fetch users not assigned to this project
-  const { data: usersResponse } = useGetUsersNotAssignedToProjectQuery(
-    inistitute_id && project_id
-      ? { institute_id: inistitute_id, project_id }
-      : skipToken
-  );
+  // const { data: usersResponse } = useGetUsersQuery(
+  //   inistitute_id ? { institute_id: inistitute_id } : undefined
+  // );
+  const { user } = useAuth();
+  console.log("User in isPermittedActionButton:", user);
+
+  const { data: usersResponse, isLoading } =
+    useGetUsersNotAssignedToProjectQuery(
+      inistitute_id && project_id
+        ? { institute_id: inistitute_id, project_id }
+        : skipToken
+    );
 
   // Fetch all roles
   const { data: rolesResponse } = useGetRolesQuery(undefined);
@@ -74,7 +81,7 @@ export default function AssignUserModal({
   }, [selectedUser, users, roles]);
 
   const handleAssign = async () => {
-    if (!selectedUser || !selectedRole) {
+    if (!selectedUser) {
       toast.error("Select user and role first");
       return;
     }
@@ -92,8 +99,9 @@ export default function AssignUserModal({
       await assignUserToProject({
         project_id,
         user_id: selectedUser,
-        role_id: selectedRole,
-        hierarchy_node_id: isExternal ? hierarchy_node_id : null,
+        // role_id: selectedRole,
+        // sub_role_id: selectedSubRole || undefined,
+        hierarchy_node_id: hierarchy_node_id,
       }).unwrap();
 
       toast.success("User assigned successfully");
@@ -104,23 +112,20 @@ export default function AssignUserModal({
       toast.error(err?.data?.message || "Failed to assign user");
     }
   };
-
+  console.log("project_id: ", project_id, "hierarchy_node_name: ", hierarchy_node_name, "hierarchy_node_id: ", hierarchy_node_id);
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent
-        className="max-w-2xl bg-white max-h-[90vh] overflow-y-auto p-6"
-        aria-describedby="assign-user-description"
-      >
+      <DialogContent className="max-w-[400px] bg-white max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader>
           <DialogTitle className="text-[#094C81]">
-            Assign User to {hierarchy_node_name} Structure
+            Assign User 
           </DialogTitle>
         </DialogHeader>
 
         <div className="flex gap-10 mt-4">
           <div className="flex justify-between w-full gap-4">
             {/* USER */}
-            <div className="w-1/2">
+            <div className="w-full">
               <Label className="text-sm font-medium text-[#094C81]">
                 Select User
               </Label>
@@ -148,7 +153,7 @@ export default function AssignUserModal({
             </div>
 
             {/* ROLE */}
-            <div className="w-1/2">
+            {/* <div className="w-1/2">
               <Label className="text-sm font-medium text-[#094C81]">
                 Select Role
               </Label>
@@ -173,7 +178,7 @@ export default function AssignUserModal({
                   )}
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -183,7 +188,7 @@ export default function AssignUserModal({
             onClick={handleAssign}
             className="bg-[#094C81] hover:bg-[#094C81]/90 text-white"
           >
-            Assign User
+            Assign  
           </Button>
         </div>
       </DialogContent>

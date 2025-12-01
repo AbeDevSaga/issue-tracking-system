@@ -18,6 +18,7 @@ export interface CreateProjectDto {
   description?: string;
   is_active?: boolean;
   institute_id?: string;
+  project_metrics_ids?: string[];
 }
 
 export const projectApi = baseApi.injectEndpoints({
@@ -80,8 +81,8 @@ export const projectApi = baseApi.injectEndpoints({
       {
         project_id: string;
         user_id: string;
-        role_id: string;
-        sub_role_id?: string;
+        // role_id: string;
+        // sub_role_id?: string;
         hierarchy_node_id?: string;
       }
     >({
@@ -99,7 +100,7 @@ export const projectApi = baseApi.injectEndpoints({
       {
         project_id: string;
         user_id: string;
-        role_id: string;
+        project_metric_id: string;
         internal_node_id?: string;
       }
     >({

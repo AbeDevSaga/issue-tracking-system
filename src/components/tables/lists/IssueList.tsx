@@ -15,11 +15,12 @@ import { ActionButton, FilterField } from "../../../types/layout";
 import { useGetCurrentUserQuery } from "../../../redux/services/authApi";
 
 // --- Define table columns ---
+// ticket_number
 const IssueTableColumns = [
   {
-    id: "serial",
-    header: "#",
-    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+    accessorKey: "project.ticket_number",
+    header: "Ticket Number",
+    cell: ({ row }: any) => <div>{row.original.ticket_number || "N/A"}</div>,
   },
   {
     accessorKey: "project.name",
@@ -107,7 +108,7 @@ export default function IssueList() {
 
   const actions: ActionButton[] = [
     {
-      label: "Add Issue",
+      label: "Create Issue",
       icon: <Plus className="h-4 w-4" />,
       variant: "default",
       size: "default",

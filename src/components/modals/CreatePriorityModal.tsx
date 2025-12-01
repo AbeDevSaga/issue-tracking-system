@@ -118,7 +118,7 @@ export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
                   value={responseTime}
                   onValueChange={(value) => setResponseTime(value)}
                 >
-                  <SelectTrigger className="h-11 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
+                  <SelectTrigger className="h-11 border w-[300px] border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
                     <SelectValue
                       className="text-sm text-[#094C81] font-medium"
                       placeholder="Select response time"

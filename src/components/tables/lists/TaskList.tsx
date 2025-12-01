@@ -13,9 +13,14 @@ import { useMultipleIssuesQueries } from "../../../hooks/useMultipleIssuesQuerie
 
 const TaskTableColumns = [
   {
-    id: "serial",
-    header: "#",
-    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+    accessorKey: "project.ticket_number",
+    header: "Ticket Number",
+    cell: ({ row }: any) => <div>{row.original.ticket_number || "N/A"}</div>,
+  },
+  {
+    accessorKey: "project.name",
+    header: "Project",
+    cell: ({ row }: any) => row.original.project?.name || "N/A",
   },
   {
     accessorKey: "priority.name",
@@ -38,11 +43,6 @@ const TaskTableColumns = [
     cell: ({ row }: any) => row.original.hierarchyNode?.name || "N/A",
   },
 
-  {
-    accessorKey: "project.name",
-    header: "Project",
-    cell: ({ row }: any) => row.original.project?.name || "N/A",
-  },
   {
     accessorKey: "issue_occured_time",
     header: "Occurred Time",

@@ -162,7 +162,8 @@ export function CreateHierarchyNodeModal({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-      <div className={`bg-white p-6 rounded-lg shadow-lg ${hasSelectedParent ? "w-[1000px]" : "min-w-[700px]"} max-h-[85vh] overflow-y-auto`}>
+      {/* parent_hierarchy_node_id is provided then show the modal with width 500px else hasSelectedParent is true then show the modal with width 1000px else show the modal with width 700px */}
+      <div className={`bg-white p-6 rounded-lg shadow-lg ${parent_hierarchy_node_id ? "w-[400px]" : hasSelectedParent ? "w-[1000px]" : "min-w-[700px]"} max-h-[85vh] overflow-y-auto`}>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-[#094C81]">
             Create Structure
@@ -326,7 +327,7 @@ export function CreateHierarchyNodeModal({
                 {/* Node Name */}
                 <div className="w-full">
                   <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                    Structure Name *
+                    Structure Name <span className="text-red-500">*</span>
                   </Label>
                   <input
                     id="structure-name"
@@ -338,32 +339,16 @@ export function CreateHierarchyNodeModal({
                   />
                 </div>
 
-                {/* Description */}
-                <div className="w-full">
-                  <Label
-                    htmlFor="structure-description"
-                    className="block text-sm text-[#094C81] font-medium mb-2"
-                  >
-                    Description
-                  </Label>
-                  <Textarea
-                    id="structure-description"
-                    placeholder="Enter structure description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
-                  />
-                </div>
               </div>
             )}
             
             {/* Show fields immediately if parent_hierarchy_node_id is provided */}
             {parent_hierarchy_node_id && (
-              <div className="flex gap-4 w-full">
+              <div className="flex gap-4 flex-col w-full">
                 {/* Node Name */}
-                <div className="flex-1 w-1/2">
+                <div className="flex-1 w-full ">
                   <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                    Structure Name *
+                    Structure Name <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="structure-name"
@@ -375,22 +360,7 @@ export function CreateHierarchyNodeModal({
                   />
                 </div>
 
-                {/* Description */}
-                <div className="flex-1 w-1/2">
-                  <Label
-                    htmlFor="structure-description"
-                    className="block text-sm text-[#094C81] font-medium mb-2"
-                  >
-                    Description
-                  </Label>
-                  <Textarea
-                    id="structure-description"
-                    placeholder="Enter structure description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
-                  />
-                </div>
+                 
               </div>
             )}
             
@@ -418,7 +388,7 @@ export function CreateHierarchyNodeModal({
               disabled={isCreatingNode || !name.trim()}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              {isCreatingNode ? "Creating..." : "Create Structure"}
+              {isCreatingNode ? "Creating..." : "Create "}
             </Button>
           </div>
         </form>

@@ -229,7 +229,6 @@ export default function ProjectAssignedUsers({
           // or keep the hierarchy tree if it makes sense for your use case
           <div className="p-4">
             <p>User list visualization not implemented yet</p>
-            {/* <HierarchyD3Tree data={filteredUsers} isLoading={isLoading} /> */}
           </div>
         )}
         <AssignInternalUsersModal

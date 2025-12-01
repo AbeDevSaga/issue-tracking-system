@@ -158,10 +158,11 @@ export function CreateInstituteHierarchyNodeModal({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-[700px] max-h-[85vh] overflow-y-auto">
+      {/* parent_hierarchy_node_id width 700px else width 400px */}
+      <div className={`bg-white p-6 rounded-lg shadow-lg ${parent_hierarchy_node_id ? "w-[400px]" : "w-[1000px]"} max-h-[85vh] overflow-y-auto`}>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-[#094C81]">
-            Create Institute Structure
+            Create Structure
           </h2>
           <button
             onClick={onClose}
@@ -304,25 +305,7 @@ export function CreateInstituteHierarchyNodeModal({
                         )}
                       </div>
 
-                      {/* Selected parent info */}
-                      {/* {selectedParentNode && (
-                        <div className="mt-3 p-2 bg-blue-50 rounded-md text-sm border border-blue-200">
-                          <div className="flex items-center text-[#094C81] font-medium">
-                            <span className="mr-2">
-                              <CheckIcon className="w-4 h-4" />
-                            </span>
-                            <div>
-                              <strong>Selected Parent:</strong>{" "}
-                              {
-                                currentLevelNodes?.find(
-                                  (n: any) =>
-                                    n.hierarchy_node_id === selectedParentNode
-                                )?.name
-                              }
-                            </div>
-                          </div>
-                        </div>
-                      )} */}
+                       
                     </>
                   )}
                 </div>
@@ -352,22 +335,7 @@ export function CreateInstituteHierarchyNodeModal({
                   />
                 </div>
 
-                {/* Description */}
-                <div className="w-full">
-                  <Label
-                    htmlFor="structure-description"
-                    className="block text-sm text-[#094C81] font-medium mb-2"
-                  >
-                    Description
-                  </Label>
-                  <Textarea
-                    id="structure-description"
-                    placeholder="Enter structure description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
-                  />
-                </div>
+                 
               </div>
             )}
             
@@ -389,22 +357,7 @@ export function CreateInstituteHierarchyNodeModal({
                   />
                 </div>
 
-                {/* Description */}
-                <div className="flex-1 w-1/2">
-                  <Label
-                    htmlFor="structure-description"
-                    className="block text-sm text-[#094C81] font-medium mb-2"
-                  >
-                    Description
-                  </Label>
-                  <Textarea
-                    id="structure-description"
-                    placeholder="Enter structure description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
-                  />
-                </div>
+                 
               </div>
             )}
             

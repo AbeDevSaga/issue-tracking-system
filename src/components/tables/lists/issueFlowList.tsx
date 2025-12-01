@@ -21,10 +21,11 @@ import { CreateInternalNodeModal } from "../../modals/CreateInternalNodeModal";
 
 interface IssueFlowListProps {
   toggleActions?: ActionButton[];
+  isAssignUsersToStructure?: boolean;
 }
 
 // ------------------- Component -------------------
-export default function IssueFlowList({ toggleActions }: IssueFlowListProps) {
+export default function IssueFlowList({ toggleActions, isAssignUsersToStructure }: IssueFlowListProps) {
   const { data, isLoading, isError } = useGetInternalNodesQuery();
   const [deleteNode] = useDeleteInternalNodeMutation();
 
@@ -130,7 +131,7 @@ const InternalNodeTableColumns = (deleteNode: any) => [
 ];
   const actions: ActionButton[] = [
     {
-      label: "Add Issue Flow",
+      label: "Add Support Request Flow",
       icon: <Plus className="h-4 w-4" />,
       variant: "default",
       size: "default",
@@ -198,8 +199,10 @@ const InternalNodeTableColumns = (deleteNode: any) => [
             currentIndex={pageDetail.pageIndex}
           />
         ) : (
-          <HierarchyD3TreeInstitute data={filteredNodes} isLoading={isLoading} />
+          <HierarchyD3TreeInstitute isAssignUsersToStructure={isAssignUsersToStructure} data={filteredNodes} isLoading={isLoading} />
         )}
+          {/* <HierarchyD3TreeInstitute isAssignUsersToStructure={isAssignUsersToStructure} data={filteredNodes} isLoading={isLoading} /> */}
+
       </PageLayout>
 
       <CreateInternalNodeModal

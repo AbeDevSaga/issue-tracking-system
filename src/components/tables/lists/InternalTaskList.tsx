@@ -9,22 +9,19 @@ import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { FilterField } from "../../../types/layout";
-import {
-  useGetAssignedIssuesQuery,
-  useGetEscalatedIssuesWithNullTierQuery,
-} from "../../../redux/services/issueApi";
+
 import { useIssuesQuery } from "../../../hooks/useIssueQuery";
 
 const TaskTableColumns = [
   {
-    id: "serial",
-    header: "#",
-    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+    accessorKey: "project.ticket_number",
+    header: "Ticket Number",
+    cell: ({ row }: any) => <div>{row.original.ticket_number || "N/A"}</div>,
   },
   {
-    accessorKey: "project.name",
-    header: "Project",
-    cell: ({ row }: any) => row.original.project?.name || "N/A",
+    accessorKey: "priority.name",
+    header: "Priority",
+    cell: ({ row }: any) => row.original.priority?.name || "N/A",
   },
   {
     accessorKey: "category.name",

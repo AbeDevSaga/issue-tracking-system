@@ -60,7 +60,7 @@ export function CreateChildHierarchyNodeModal({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-[700px] max-h-[85vh] overflow-y-auto">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-[400px] max-h-[85vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-[#094C81]">
             Create Child
@@ -75,9 +75,9 @@ export function CreateChildHierarchyNodeModal({
 
         <form onSubmit={handleSubmit} className="space-y-4  ">
           <div className="flex gap-10">
-            <div className="w-full flex justify-between gap-4">
+            <div className="w-full flex-col flex justify-between gap-4">
               {/* Node Name */}
-              <div className="w-1/2">
+              <div className="">
                 <Label className="block text-sm text-[#094C81] font-medium mb-2">
                   Structure Name *
                 </Label>
@@ -92,7 +92,7 @@ export function CreateChildHierarchyNodeModal({
               </div>
 
               {/* Description */}
-              <div className="w-1/2">
+              {/* <div className="">
                 <Label
                   htmlFor="structure-description"
                   className="block text-sm text-[#094C81] font-medium mb-2"
@@ -106,7 +106,7 @@ export function CreateChildHierarchyNodeModal({
                   onChange={(e) => setDescription(e.target.value)}
                   className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
                 />
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -126,7 +126,7 @@ export function CreateChildHierarchyNodeModal({
               disabled={isCreatingNode || !name.trim()}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              {isCreatingNode ? "Creating..." : "Create Structure"}
+              {isCreatingNode ? "Creating..." : "Create "}
             </Button>
           </div>
         </form>

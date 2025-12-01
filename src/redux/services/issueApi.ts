@@ -15,6 +15,10 @@ export interface IssuesByMultiplePairsParams {
   }>;
 }
 
+export interface IssueByTicketNumberParams {
+  ticket_number: string;
+}
+
 export interface Issue {
   issue_id: string;
   institute_project_id?: string | null;
@@ -80,6 +84,12 @@ export const issueApi = baseApi.injectEndpoints({
     getIssueById: builder.query<Issue, string>({
       query: (id) => `/issues/${id}`,
       providesTags: (result, error, id) => [{ type: "Issue", id }],
+    }),
+    getIssueByTicketNumber: builder.query<Issue, string>({
+      query: (ticket_number) => `/issues/ticket/${ticket_number}`,
+      providesTags: (result, error, ticket_number) => [
+        { type: "Issue", id: ticket_number },
+      ],
     }),
     getIssuesByUserId: builder.query<Issue[], string>({
       query: (userId) => `/issues/user/${userId}`,
@@ -176,6 +186,7 @@ export const issueApi = baseApi.injectEndpoints({
 export const {
   useGetIssuesQuery,
   useGetIssueByIdQuery,
+  useGetIssueByTicketNumberQuery,
   useGetIssuesByUserIdQuery,
   useGetAssignedIssuesQuery,
   useGetEscalatedIssuesWithNullTierQuery,

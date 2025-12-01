@@ -1,13 +1,11 @@
 // src/components/auth/SignInForm.tsx
-import { ChangeEvent, FormEvent, useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { EyeCloseIcon, EyeIcon } from "../../icons";
+import { useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Button from "../ui/button/Button";
 import { useTranslation } from "react-i18next";
 import Login_bg from "../../assets/login_bg.png";
-import { useLoginMutation } from "../../redux/services/authApi";
 import { EyeOffIcon } from "lucide-react";
 import { EyeOpenIcon } from "@radix-ui/react-icons";
 import {
@@ -15,111 +13,42 @@ import {
   SignInFormData,
 } from "../../utils/validation/loginSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, Controller } from "react-hook-form";
-
-interface FormData {
-  email: string;
-  phoneNumber: string;
-  password: string;
-}
+import { useForm } from "react-hook-form";
+import { useAuth } from "../../contexts/AuthContext"; // <-- IMPORTANT: Use AuthContext
 
 export default function Login() {
   const [loginMethod, setLoginMethod] = useState<"email" | "phone">("email");
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
-
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [loginMutation] = useLoginMutation();
+  const location = useLocation();
+  const { login, error: authError, clearError } = useAuth(); // <-- Use AuthContext
 
   const {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
-    setValue,
-    watch,
-    trigger,
-    resetField,
-  } = useForm({
+    setError: setFormError,
+  } = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
-    defaultValues: {
-      email: "",
-      phoneNumber: "",
-      password: "",
-    },
   });
 
-  // Load token and user from localStorage on mount
-  useEffect(() => {
-    const storedToken = localStorage.getItem("authToken");
-    const storedUser = localStorage.getItem("user");
-    if (storedToken && storedUser) {
-      setUser(JSON.parse(storedUser));
-      navigate("/dashboard");
-    }
-  }, [navigate]);
+  const from = location.state?.from?.pathname || "/dashboard";
 
-  // Format Ethiopian phone number to +251XXXXXXXXX
-  const formatEthiopianPhoneNumber = (value: string) => {
-    if (!value) return "";
-
-    // Remove all non-digit characters
-    let digits = value.replace(/\D/g, "");
-
-    // Remove leading zero if present
-    if (digits.startsWith("0")) {
-      digits = digits.slice(1);
-    }
-
-    // Limit to max 9 digits (Ethiopian mobile numbers without country code)
-    digits = digits.slice(0, 9);
-
-    return `+251${digits}`;
-  };
-
-  const handlePhoneNumberChange = (value: string) => {
-    const formattedValue = formatEthiopianPhoneNumber(value);
-    return formattedValue;
-  };
-
-  const handleLoginMethodChange = (method: "email" | "phone") => {
-    setLoginMethod(method);
-    // Clear both fields when switching methods
-    setValue("email", "");
-    setValue("phoneNumber", "");
-    setError(null);
-  };
-
-  const onSubmit = async (data: any) => {
-    setError(null);
+  const onSubmit = async (data: SignInFormData) => {
     try {
-      let loginData;
+      clearError(); // Clear any previous errors
+      await login(data); // Use AuthContext login
 
-      if (loginMethod === "email") {
-        loginData = {
-          email: data.email,
-          password: data.password,
-        };
-      } else {
-        // Clean phone number for API (remove formatting)
-        const cleanPhoneNumber = data.phoneNumber.replace(/\D/g, "");
-        loginData = {
-          phoneNumber: cleanPhoneNumber,
-          password: data.password,
-        };
-      }
-
-      const response = await loginMutation(loginData).unwrap();
-      if (response.token && response.user) {
-        navigate("/dashboard");
-      } else {
-        setError("Login failed: Invalid credentials");
-      }
+      // AuthContext will update its state, and AppLayout will detect it
+      // Navigate to the intended destination or dashboard
+      navigate(from, { replace: true });
     } catch (err: any) {
       console.error("Login error:", err);
-      setError(err?.data?.message || "Login failed");
+      // Error is already set in AuthContext, but you can also set form error
+      if (err.message) {
+        setFormError("root", { message: err.message });
+      }
     }
   };
 
@@ -129,7 +58,7 @@ export default function Login() {
       style={{ backgroundImage: `url(${Login_bg})` }}
     >
       <div className="relative w-full max-w-md min-h-[550px] flex flex-col justify-center items-center bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden">
-        <div className="p-6 pb-4 w-full ">
+        <div className="p-6 pb-4 w-full">
           <div className="flex items-center justify-center gap-4 flex-col space-x-4">
             <div className="text-center w-full flex justify-center items-center gap-2 flex-col">
               <img
@@ -142,40 +71,15 @@ export default function Login() {
                 <span className="text-[12px]">{t("login.title")}</span>
               </p>
             </div>
-            {/* Error */}
-            {error && (
-              <div className="rounded-md  w-full text-center ">
-                <div className="text-sm text-red-700">{error}</div>
+
+            {/* Display error from AuthContext */}
+            {(authError || errors.root) && (
+              <div className="rounded-md w-full text-center">
+                <div className="text-sm text-red-700">
+                  {authError || errors.root?.message}
+                </div>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Login Method Toggle */}
-        <div className="w-full px-6">
-          <div className="flex bg-gray-100 rounded-lg p-1">
-            <button
-              type="button"
-              onClick={() => handleLoginMethodChange("email")}
-              className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
-                loginMethod === "email"
-                  ? "bg-white text-[#0C4A6E] shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              {t("Login by Email")}
-            </button>
-            <button
-              type="button"
-              onClick={() => handleLoginMethodChange("phone")}
-              className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
-                loginMethod === "phone"
-                  ? "bg-white text-[#0C4A6E] shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              {t("Login By Phone")}
-            </button>
           </div>
         </div>
 
@@ -183,7 +87,7 @@ export default function Login() {
           onSubmit={handleSubmit(onSubmit)}
           className="p-6 pt-4 space-y-4 w-full"
         >
-          {/* Email or Phone Input */}
+          {/* Email */}
           <div>
             <Label
               htmlFor={loginMethod === "email" ? "email" : "phoneNumber"}
@@ -191,65 +95,18 @@ export default function Login() {
             >
               {loginMethod === "email" ? t(" Email") : t("Phone")}
             </Label>
-
-            {loginMethod === "email" ? (
-              <Controller
-                name="email"
-                control={control}
-                render={({ field }) => (
-                  <>
-                    <Input
-                      id="email"
-                      placeholder="example.xx@gov.et"
-                      value={field.value}
-                      onChange={(e) => {
-                        field.onChange(e.target.value);
-                        setValue("phoneNumber", ""); // Clear phone when using email
-                      }}
-                      className={`w-full px-3 py-2 border rounded-md text-sm ${
-                        errors.email ? "border-red-500" : "border-blue-300"
-                      }`}
-                    />
-                    {errors.email && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.email.message}
-                      </p>
-                    )}
-                  </>
-                )}
-              />
-            ) : (
-              <Controller
-                name="phoneNumber"
-                control={control}
-                render={({ field }) => (
-                  <>
-                    <Input
-                      id="phoneNumber"
-                      placeholder="+251912345678"
-                      value={field.value}
-                      onChange={(e) => {
-                        const formattedValue = formatEthiopianPhoneNumber(
-                          e.target.value
-                        );
-                        field.onChange(formattedValue);
-                        setValue("email", ""); // Clear email when using phone
-                      }}
-                      maxLength={13} // +251 + 9 digits
-                      className={`w-full px-3 py-2 border rounded-md text-sm ${
-                        errors.phoneNumber
-                          ? "border-red-500"
-                          : "border-blue-300"
-                      }`}
-                    />
-                    {errors.phoneNumber && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.phoneNumber.message}
-                      </p>
-                    )}
-                  </>
-                )}
-              />
+            <Input
+              id="email"
+              placeholder="example.xx@gov.et"
+              {...register("email")}
+              className={`w-full px-3 py-2 border rounded-md text-sm ${
+                errors.email ? "border-red-500" : "border-blue-300"
+              }`}
+            />
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -261,47 +118,40 @@ export default function Login() {
             >
               {t("login.password")}
             </Label>
-            <Controller
-              name="password"
-              control={control}
-              render={({ field }) => (
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="enter your password"
-                    value={field.value}
-                    onChange={field.onChange}
-                    className={`w-full px-3 py-2 pr-10 border rounded-md text-sm ${
-                      errors.password ? "border-red-500" : "border-blue-300"
-                    }`}
-                  />
-                  <button
-                    type="button"
-                    className="absolute top-1/2 -translate-y-1/2 inset-y-0 right-0 pr-3 flex items-center"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOpenIcon className="h-5 w-5 text-[#0C4A6E]" />
-                    ) : (
-                      <EyeOffIcon className="h-5 w-5 text-[#0C4A6E]" />
-                    )}
-                  </button>
-                  {errors.password && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.password.message}
-                    </p>
-                  )}
-                </div>
-              )}
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="enter your password"
+                {...register("password")}
+                className={`w-full px-3 py-2 pr-10 border rounded-md text-sm ${
+                  errors.password ? "border-red-500" : "border-blue-300"
+                }`}
+              />
+              <button
+                type="button"
+                className="absolute top-1/2 -translate-y-1/2 inset-y-0 right-0 pr-3 flex items-center"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOpenIcon className="h-5 w-5 text-[#0C4A6E]" />
+                ) : (
+                  <EyeOffIcon className="h-5 w-5 text-[#0C4A6E]" />
+                )}
+              </button>
+            </div>
+            {errors.password && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.password.message}
+              </p>
+            )}
           </div>
 
           {/* Forgot Password */}
           <div className="flex items-center w-full text-right justify-end text-sm">
             <Link
               to="/forgot-password"
-              className="text-[#0C4A6E] hover:text-[#083b56]  hover:font-medium hover:cursor-pointer "
+              className="text-[#0C4A6E] hover:text-[#083b56] hover:font-medium hover:cursor-pointer"
             >
               {t("login.forgot_password")}
             </Link>

@@ -382,22 +382,7 @@ export function CreateInternalNodeModal({
                   />
                 </div>
 
-                {/* Description */}
-                <div className="w-full">
-                  <Label
-                    htmlFor="structure-description"
-                    className="block text-sm text-[#094C81] font-medium mb-2"
-                  >
-                    Description
-                  </Label>
-                  <Textarea
-                    id="structure-description"
-                    placeholder="Enter structure description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
-                  />
-                </div>
+               
               </div>
             }
           </div>

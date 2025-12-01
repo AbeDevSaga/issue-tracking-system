@@ -40,7 +40,7 @@ export const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
 
     try {
       const response = await createCategory(formData).unwrap();
-      toast.success(`Category "${response.name}" created successfully`);
+      toast.success(`Category created successfully`);
       setFormData({ name: "", description: "" });
       onClose();
     } catch (error: any) {
@@ -55,7 +55,7 @@ export const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-[700px] rounded-2xl bg-white p-6 shadow-xl">
+      <div className="w-full max-w-[400px] rounded-2xl bg-white p-6 shadow-xl">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-[20px] font-bold text-[#094C81]">Create Issue Category</h2>
           <button
@@ -66,8 +66,8 @@ export const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
           </button>
         </div>
 
-        <div className="space-y-4 flex w-full gap-10">
-          <div className="w-1/2">
+        <div className="space-y-4 flex-col flex w-full ">
+          <div className="">
             <Label htmlFor="name" className="block text-sm text-[#094C81] font-medium mb-2">Category Name</Label>
             <Input
               id="name"
@@ -79,7 +79,7 @@ export const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
             />
           </div>
 
-          <div className="w-1/2">
+          <div className="">
             <Label htmlFor="description" className="block text-sm text-[#094C81] font-medium mb-2">Description</Label>
             <Textarea
               id="description"

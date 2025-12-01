@@ -10,6 +10,7 @@ import { useAuth } from "../../contexts/AuthContext";
 export default function UsersPage() {
   // const { t } = useTranslation();
   const { user } = useAuth();
+  console.log(user, "logged in user from users page");
   const { data: userTypesResponse, isLoading: loadingUserTypes } =
     useGetUserTypesQuery();
   const internalUserType = userTypesResponse?.data?.find(

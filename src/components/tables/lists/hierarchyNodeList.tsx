@@ -115,12 +115,14 @@ const HierarchyNodeTableColumns = (deleteNode: any) => [
 
 interface HierarchyNodeListProps {
   project_id: string;
+  inistitute_id?: string;
   toggleActions?: ActionButton[];
 }
 
 // ------------------- Component -------------------
 export default function HierarchyNodeList({
   project_id,
+  inistitute_id,
   toggleActions,
 }: HierarchyNodeListProps) {
   const [nodes, setNodes] = useState<any[]>([]);
@@ -188,7 +190,7 @@ export default function HierarchyNodeList({
   const handlePagination = (index: number, size: number) => {
     setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
   };
-  console.log("toggleHierarchyNode: ", toggleHierarchyNode);
+  console.log("filteredNodes: ", filteredNodes);
   return (
     <>
       <PageLayout
@@ -210,8 +212,15 @@ export default function HierarchyNodeList({
             currentIndex={pageDetail.pageIndex}
           />
         ) : (
-          <HierarchyD3Tree data={filteredNodes} isLoading={isLoading} />
+          <HierarchyD3Tree inistitute_id={inistitute_id} data={filteredNodes} isLoading={isLoading} />
         )}
+          {/* <HierarchyD3Tree
+            data={filteredNodes}
+            isLoading={isLoading}
+            // pass institute for AssignUserModal
+            inistitute_id={inistitute_id}
+          /> */}
+
       </PageLayout>
 
       <CreateHierarchyNodeModal

@@ -216,9 +216,9 @@ export default function AssignmentPreview({
                             <span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
                               {userAssignment.role.name}
                             </span>
-                            <span className="inline-block px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                            {/* <span className="inline-block px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
                               {userAssignment.internalNode.name}
-                            </span>
+                            </span> */}
                           </div>
                           {/* {isAssigned && userAssignmentData && (
                             <div className="mt-2 text-xs text-gray-500">

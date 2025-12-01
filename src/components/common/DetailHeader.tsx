@@ -5,13 +5,14 @@ import { ChevronRightIcon } from "lucide-react";
 interface Crumb {
   title?: string;
   link?: string; // if no link = not clickable
+  className?: string;
 }
 
-const DetailHeader = ({ breadcrumbs = [] }: { breadcrumbs: Crumb[] }) => {
+const DetailHeader = ({ breadcrumbs = [], className = "" }: { breadcrumbs: Crumb[], className?: string }) => {
   const navigate = useNavigate();
 
   return (
-    <div className="">
+    <div className={className}>
       {/* Breadcrumb Section */}
       <div className="flex items-center gap-2 text-sm text-gray-600 mb-5">
         {breadcrumbs.map((crumb, idx) => (
