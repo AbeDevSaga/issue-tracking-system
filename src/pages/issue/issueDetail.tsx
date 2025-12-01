@@ -25,6 +25,7 @@ import IssueHistoryLog from "../userTasks/IssueHistoryLog";
 import TimelineOpener from "../../components/common/TimelineOpener";
 import { Button } from "../../components/ui/cn/button";
 import { toast } from "sonner";
+import { formatStatus } from "../../utils/statusFormatter";
 
 export default function UserIssueDetail() {
   const { id } = useParams<{ id: string }>();
@@ -225,7 +226,7 @@ export default function UserIssueDetail() {
                 <div className="flex items-center gap-20">
                   {/* color resolved based on status */}
                 <span className={`text-base bg-green-100 text-green-900 px-2 py-1 rounded-md ${issue.status === "resolved" ? "text-green-900 " : issue.status === "in_progress" ? "text-blue-500" : issue.status === "closed" ? "text-red-500" : "text-gray-500"}`}>
-                  {issue.status}
+                  {formatStatus(issue.status)}
                 </span>
                 {!openTimeline && (
                   <TimelineOpener onOpen={() => setOpenTimeline(true)} />

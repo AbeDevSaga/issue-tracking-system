@@ -36,6 +36,7 @@ import IssueHistoryLog from "./IssueHistoryLog";
 import EscalationPreview from "./EscalationPreview";
 import ResolutionPreview from "./ResolutionPreview";
 import { toast } from "sonner";
+import { formatStatus } from "../../utils/statusFormatter";
 
 export default function UserTaskDetail() {
   const { id } = useParams<{ id: string }>();
@@ -310,7 +311,7 @@ export default function UserTaskDetail() {
                         : "text-gray-500"
                     }`}
                   >
-                    {issue.status}
+                    {formatStatus(issue.status)}
                   </span>
                   {!openTimeline && (
                     <TimelineOpener onOpen={() => setOpenTimeline(true)} />
