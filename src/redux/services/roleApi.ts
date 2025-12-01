@@ -14,11 +14,42 @@ export const roleApi = baseApi.injectEndpoints({
     }),
 
     // ===== Get all roles =====
+    // getRoles: builder.query({
+    //   query: () => ({
+    //     url: "/roles",
+    //     method: "GET",
+    //   }),
+    //   providesTags: ["Roles"],
+    // }),
+
+    // ===== Get all roles (with optional filters) =====
     getRoles: builder.query({
-      query: () => ({
-        url: "/roles",
-        method: "GET",
-      }),
+      query: (params?: { role_type?: string; is_active?: boolean }) => {
+        if (!params || Object.keys(params).length === 0) {
+          // No filters → fetch all roles
+          return {
+            url: "/roles",
+            method: "GET",
+          };
+        }
+
+        // Build query string from params
+        const queryString =
+          "?" +
+          new URLSearchParams(
+            Object.entries(params).reduce((acc, [key, value]) => {
+              if (value !== undefined && value !== null) {
+                acc[key] = String(value);
+              }
+              return acc;
+            }, {} as Record<string, string>)
+          ).toString();
+
+        return {
+          url: `/roles${queryString}`,
+          method: "GET",
+        };
+      },
       providesTags: ["Roles"],
     }),
 
