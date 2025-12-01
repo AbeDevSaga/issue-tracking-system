@@ -6,7 +6,7 @@ import Label from "../form/Label";
 import Checkbox from "../form/input/Checkbox";
 import Input from "../form/input/InputField";
 import Button from "../ui/button/Button";
-import { useLoginMutation } from "../../redux/services/authApi";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface FormData {
   email: string;
@@ -21,8 +21,11 @@ export default function SignInForm() {
     password: "",
   });
 
-  const [login, { isLoading, error }] = useLoginMutation();
+  const { login } = useAuth(); // <-- use AuthContext
   const navigate = useNavigate();
+
+  // const [login, { isLoading, error }] = useLoginMutation();
+  // const navigate = useNavigate();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -33,10 +36,7 @@ export default function SignInForm() {
     e.preventDefault();
 
     try {
-      const result = await login(formData).unwrap(); // unwrap to catch errors
-      console.log("Login result:", result);
-
-      // Navigate after login
+      await login(formData);
       navigate("/dashboard");
     } catch (err: any) {
       console.error("Login failed:", err?.data?.message || err.message);
@@ -62,15 +62,7 @@ export default function SignInForm() {
       <div className="mb-4 p-2 bg-yellow-100 border border-yellow-400 text-yellow-700 text-xs">
         <div>User: {user ? user.full_name : "None"}</div>
         <div>Authenticated: {user ? "YES" : "NO"}</div>
-        <div>Loading: {isLoading ? "YES" : "NO"}</div>
       </div>
-
-      {/* Error Message */}
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-          {(error as any).data?.message || "Login failed"}
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Username */}
@@ -139,9 +131,9 @@ export default function SignInForm() {
           type="submit"
           className="w-full bg-[#269A99] hover:bg-[#1d7d7d] disabled:opacity-50"
           size="md"
-          disabled={isLoading || !formData.email || !formData.password}
+          disabled={!formData.email || !formData.password}
         >
-          {isLoading ? "Signing In..." : "Sign In"}
+          {"Sign In"}
         </Button>
 
         {/* Don't have an account? */}
