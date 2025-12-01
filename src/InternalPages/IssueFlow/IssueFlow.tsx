@@ -67,7 +67,7 @@ const IssueFlow = () => {
           <CardContent className="pt-6 text-center">
             <XCircleIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-[#1E516A] mb-2">
-              Issue Flow Not Found
+              Support Request Flow Not Found
             </h2>
             <p className="text-gray-600 mb-4">
               The issue flow you're looking for doesn't exist or has been
@@ -78,7 +78,7 @@ const IssueFlow = () => {
               className="inline-flex items-center gap-2 text-[#094C81] hover:text-[#073954] font-medium"
             >
               <ArrowLeftIcon className="h-4 w-4" />
-              Back to Issue Flows
+              Back to Request Flows
             </Link>
           </CardContent>
         </Card>
@@ -89,7 +89,7 @@ const IssueFlow = () => {
   return (
     <>
       <PageMeta
-        title={`${issueFlow.name} - Issue Flow Details`}
+        title={`${issueFlow.name} - Support Request Flow Details`}
         description={`View details for ${issueFlow.name}`}
       />
       <div className="min-h-screen bg-[#F9FBFC] p-6 pb-24">
@@ -98,8 +98,8 @@ const IssueFlow = () => {
           <div className="flex justify-between">
             <DetailHeader
               breadcrumbs={[
-                { title: "Issue Flow", link: "" },
-                { title: "Issue Flow Details", link: "" },
+                { title: "Support Request Flow", link: "" },
+                { title: "Request Flow Details", link: "" },
               ]}
             />
             <div className="flex justify-center items-end gap-4">
@@ -112,7 +112,7 @@ const IssueFlow = () => {
             </div>
           </div>
 
-          {/* Issue Flow Info Card - Compact Design */}
+          {/* Support Request Flow Info Card - Compact Design */}
           <Card className="bg-white rounded-lg shadow-sm border border-[#BFD7EA] overflow-hidden">
             <CardContent className="p-4">
               {/* Header Row - Compact */}

@@ -45,7 +45,7 @@ export default function IssueFlowList({ toggleActions, isAssignUsersToStructure 
 const InternalNodeTableColumns = (deleteNode: any) => [
   {
     accessorKey: "name",
-    header: "Issue Flow Name",
+    header: "Support Request Flow Name",
     cell: ({ row }: any) => (
       <div className="font-medium text-blue-600">{row.getValue("name")}</div>
     ),
@@ -57,7 +57,7 @@ const InternalNodeTableColumns = (deleteNode: any) => [
   },
   {
     accessorKey: "parent",
-    header: "Parent Issue Flow",
+    header: "Parent Request Flow",
     cell: ({ row }: any) => {
       const parent = row.original.parent;
       return <div>{parent?.name || "No Parent"}</div>;

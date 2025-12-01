@@ -13,6 +13,7 @@ import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
 import { useGetCurrentUserQuery } from "../../../redux/services/authApi";
+import { formatStatus } from "../../../utils/statusFormatter";
 
 // --- Define table columns ---
 // ticket_number
@@ -52,7 +53,7 @@ const IssueTableColumns = [
         <span
           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bgClass}`}
         >
-          {status?.toUpperCase() || "N/A"}
+          {formatStatus(status) || "N/A"}
         </span>
       );
     },
@@ -103,7 +104,7 @@ export default function IssueList() {
 
   const actions: ActionButton[] = [
     {
-      label: "Create Issue",
+      label: "Create Support Request",
       icon: <Plus className="h-4 w-4" />,
       variant: "default",
       size: "default",

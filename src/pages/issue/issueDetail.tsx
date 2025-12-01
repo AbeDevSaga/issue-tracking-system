@@ -303,7 +303,7 @@ export default function UserIssueDetail() {
                   </div>
                 </div>
                 
-                {/* Issue Attachments */}
+                {/* Support Request Attachments */}
                 {issueFiles.length > 0 && (
                   <div className="bg-white border border-[#BFD7EA] rounded-lg p-3 flex-1 my-6">
                     <h4 className="font-semibold text-[#1E516A] mb-3">
@@ -322,7 +322,7 @@ export default function UserIssueDetail() {
                 )}
               </div>
 
-              {/* Issue Escalations Section */}
+              {/* Support Request Escalations Section */}
               {issue?.escalations && issue.escalations.length > 0 && (
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-4 p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200">
@@ -425,7 +425,8 @@ export default function UserIssueDetail() {
                                           ? "bg-yellow-100 text-yellow-800"
                                           : "bg-blue-100 text-blue-800"
                                       }`}>
-                                        {escalation.status || "pending"}
+                                        {formatStatus(escalation.status) || "pending"}
+
                                       </span>
                                     </div>
                                   </div>
@@ -548,7 +549,7 @@ export default function UserIssueDetail() {
                 </div>
               )}
 
-              {/* Issue Resolutions Section */}
+              {/* Support Request Resolutions Section */}
               {issue?.resolutions && issue.resolutions.length > 0 && (
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-4 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">

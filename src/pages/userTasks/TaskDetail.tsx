@@ -15,6 +15,7 @@ import {
   Lock,
   ChevronUp,
   ChevronDown,
+  Check,
 } from "lucide-react";
 import {
   useAcceptIssueMutation,
@@ -230,8 +231,8 @@ export default function UserTaskDetail() {
       key: "mark_as_inprogress",
       label: "Mark as Inprogress",
       desc: markIssue
-        ? 'Start working on this issue It will update the status to "In progress"'
-        : "Cannot mark in progress - issue is already in progress or you have escalated it",
+        ? 'Start working on this  support request It will update the status to "In progress"'
+        : "Cannot mark in progress - support request is already in progress or you have escalated it",
       color: "#c2b56cff",
       bg: "#E7F3FF",
       border: "#BFD7EA",
@@ -244,10 +245,10 @@ export default function UserTaskDetail() {
     },
     {
       key: "resolve",
-      label: "Resolve Issue",
+      label: "Resolve Request",
       desc: resolveIssue
-        ? "You have fixed the issue. Provide resolution detail to close the issue."
-        : "Cannot resolve - only the user who last accepted this issue can resolve it",
+        ? "You have fixed the support request. Provide resolution detail to close the support request."
+        : "Cannot resolve - only the user who last accepted this support request can resolve it",
       color: "#1E516A",
       bg: "#E7F3FF",
       border: "#BFD7EA",
@@ -256,10 +257,10 @@ export default function UserTaskDetail() {
     },
     {
       key: "escalate",
-      label: "Escalate Issue",
+      label: "Escalate Request",
       desc: escalateIssue
-        ? "This issue requires advanced debugging or specialized expertise from EAII."
-        : "Cannot escalate - issue is not in progress or you have already escalated it",
+        ? "This support request requires advanced debugging or specialized expertise from EAII."
+        : "Cannot escalate - support request is not in progress or you have already escalated it",
       color: "#6D28D9",
       bg: "#F5F3FF",
       border: "#D9D3FA",
@@ -292,10 +293,10 @@ export default function UserTaskDetail() {
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
                 <div>
                   <h2 className="text-[#1E516A] text-xl font-bold mb-1">
-                    Request Detail
+                    Support Request Detail
                   </h2>
                   <p className="text-gray-600">
-                    Review request details and take appropriate action
+                    Review support request details and take appropriate action
                   </p>
                 </div>
                 <div className="flex items-center gap-20">
@@ -394,7 +395,7 @@ export default function UserTaskDetail() {
                 {issueFiles.length > 0 && (
                   <div className="bg-white border border-[#BFD7EA] rounded-lg p-3 flex-1 my-6">
                     <h4 className="font-semibold text-[#1E516A] mb-3">
-                      Issue Attachments ({issueFiles.length})
+                      Support Request Attachments ({issueFiles.length})
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       {issueFiles.map((file, idx) => (
@@ -700,7 +701,7 @@ export default function UserTaskDetail() {
                                           {formatDate(resolution.resolved_at)}
                                         </span>
                                         <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                          {resolution.status || "resolved"}
+                                          {formatStatus(resolution.status) || "resolved"}
                                         </span>
                                       </div>
                                     </div>
@@ -829,7 +830,7 @@ export default function UserTaskDetail() {
                             }`}
                           >
                             {selectedAction === action.key && (
-                              <CheckCircle2
+                              <Check
                                 className="w-4 h-4"
                                 style={{ color: action.color }}
                               />

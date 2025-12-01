@@ -45,7 +45,7 @@
     "subtitle": "This is the Base Data of the {{title}}",
     "organization_management": "Organization Management",
     "subcity_management": "SubCity Management",
-    "issue_category_management": "Issue Category Management",
+    "issue_category_management": "Support Request Category Management",
     "city_management": "City Management",
     "priority_level_management": "Priority Level Management",
     "role_management":"Role Management",
@@ -65,9 +65,9 @@
     "city": "City",
     "priority_level": "Priority Level",
     "risk_level_management": "Risk Level Management",
-    "issue_category": "Issue Category",
-    "issue_flow": "Issue Flow",
-    "issue_configuration": "Issue Configuration",
+    "issue_category": "Support Request Category",
+    "issue_flow": "Support Request Flow",
+    "issue_configuration": "Support Request Configuration",
     "branch": "Branch",
     "level": "Level",
     "response_time": "Response Time",
@@ -86,7 +86,7 @@
     "add_organization": "Add Organization",
     "organization_name": "Organization Name",
     "developed_system": "Developed System",
-    "issue_category": "Issue Category",
+    "issue_category": "Support Request Category",
     "modal_title": "Create a new Organization",
     "organization_type": "Organization Type"
   },
@@ -143,40 +143,40 @@
     "modal_title": "Add new Priority Level"
   },
   "issue_category": {
-    "add_issue_category": "Add Issue Category",
-    "modal_title": "Add new Issue Category",
-    "issue_category": "Issue Category"
+    "add_issue_category": "Add Support Request Category",
+    "modal_title": "Add new Support Request Category",
+    "issue_category": "Support Request Category"
   },
   "issue": {
-    "issue_management": "Issue Management",
-    "myissue": "My Issue",
-    "add_issue": "Report New Issue",
-    "modal_title": "Add new Issue",
+    "issue_management": "Support Request Management",
+    "myissue": "My Support Requests",
+    "add_issue": "Report New Support Request",
+    "modal_title": "Add new Support Request",
     "created_date": "Created Date",
     "priority_level": "Priority Level",
-    "category": "Issue Category",
-    "issue_screenshot": "Issue Screenshot",
+    "category": "Support Request Category",
+    "issue_screenshot": "Support Request Screenshot",
     "action_taken": "Action Taken"
   },
 
   "task_list": {
     "tasklist": "TaskList",
-    "title": "Bug-Issue Tracking System",
-    "subtitle": "EAII QA Issue Management",
+    "title": "Support Request Tracking System",
+    "subtitle": "EAII QA Support Request Management",
     "priority_level": "Priority Level",
-    "category": "Issue Category",
+    "category": "Support Request Category",
     "system_name": "System Name",
     "due_date": "Due Date"
   },
   "QATask": {
     "qa_task_list": "QA Task List",
-    "title": "Bug-Issue Tracking System",
+    "title": "Support Request Tracking System",
     "subtitle": "EAII QA Team – Issue Management",
     "qa_task_detail": "QA Task Detail"
   },
   "TLTask": {
     "tl_task_list": "Team Leader Task List",
-    "title": "Bug-Issue Tracking System",
+    "title": "Support Request Tracking System",
     "subtitle": "EAII Team Leader – Issue Management",
     "assign_developer": "Assign Developer",
     "task_summary": "Task Summary",
@@ -184,13 +184,13 @@
   },
   "DeveloperTask": {
     "developer_task_list": "Developer Task List",
-    "title": "Bug-Issue Tracking System",
+    "title": "Support Request Tracking System",
     "subtitle": "EAII Developer – Issue Management"
   },
   "CATask": {
     "ca_task_list": "Central Admin Task List",
-    "title": "Bug-Issue Tracking System",
-    "subtitle": "This is the issue  management of the  Organization central Admin",
+    "title": "Support Request Tracking System",
+    "subtitle": "This is the support request  management of the  Organization central Admin",
     "task_summary": "Task Summary"
   },
   "user": {

@@ -11,6 +11,7 @@ import { DataTable } from "../../common/CommonTable";
 import { FilterField } from "../../../types/layout";
 
 import { useIssuesQuery } from "../../../hooks/useIssueQuery";
+import { formatStatus } from "../../../utils/statusFormatter";
 
 const TaskTableColumns = [
   {
@@ -66,7 +67,7 @@ const TaskTableColumns = [
         <span
           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bgClass}`}
         >
-          {status?.toUpperCase() || "N/A"}
+          {formatStatus(status) || "N/A"}
         </span>
       );
     },

@@ -13,6 +13,7 @@ import {
   Image as ImageIcon,
   Eye,
   Lock,
+  Check,
 } from "lucide-react";
 import {
   useAcceptIssueMutation,
@@ -40,7 +41,7 @@ import ResolutionPreview from "../../pages/userTasks/ResolutionPreview";
 import AssignmentPreview from "./AssignmentPreview";
 import { useGetUserInternalNodesByProjectQuery } from "../../redux/services/internalNodeApi";
 import Project from "../../pages/project/project";
-
+import { toast } from "sonner";
 export default function UserTaskDetail() {
   const { id } = useParams<{ id: string }>();
   const { data: issue, isLoading, isError } = useGetIssueByIdQuery(id!);
@@ -168,10 +169,6 @@ export default function UserTaskDetail() {
     }
   };
 
-  const [alert, setAlert] = useState<{ type: string; message: string } | null>(
-    null
-  );
-
   const openFileViewer = (fileUrl: string) => setFileViewerUrl(fileUrl);
   const closeFileViewer = () => setFileViewerUrl(null);
   const closeModal = () => setModalImageIndex(null);
@@ -180,18 +177,10 @@ export default function UserTaskDetail() {
     if (!id) return;
     try {
       const res = await acceptIssue({ issue_id: id }).unwrap();
-      setAlert({
-        type: "success",
-        message: res.message || "Status updated to In Progress!",
-      });
-      setTimeout(() => setAlert(null), 2000);
+      toast.success(res.message || "Status updated to In Progress!");
     } catch (error: any) {
-      setAlert({
-        type: "error",
-        message: error?.data?.message || "Error updating status.",
-      });
+      toast.error(error?.data?.message || "Error updating status.");
       console.error(error);
-      setTimeout(() => setAlert(null), 3000);
     }
   };
 
@@ -217,8 +206,8 @@ export default function UserTaskDetail() {
       key: "mark_as_inprogress",
       label: "Mark as Inprogress",
       desc: markIssue
-        ? 'Start working on this issue It will update the status to "In progress"'
-        : "Cannot mark in progress - issue is already in progress or you have escalated it",
+        ? 'Start working on this support request It will update the status to "In progress"'
+        : "Cannot mark in progress - support request is already in progress or you have escalated it",
       color: "#c2b56cff",
       bg: "#E7F3FF",
       border: "#BFD7EA",
@@ -232,10 +221,10 @@ export default function UserTaskDetail() {
     },
     {
       key: "resolve",
-      label: "Resolve Issue",
+      label: "Resolve Request",
       desc: resolveIssue
-        ? "You have fixed the issue. Provide resolution detail to close the issue."
-        : "Cannot resolve - only the user who last accepted this issue can resolve it",
+        ? "You have fixed the support request. Provide resolution detail to close the support request."
+        : "Cannot resolve - only the user who last accepted this support request can resolve it",
       color: "#1E516A",
       bg: "#E7F3FF",
       border: "#BFD7EA",
@@ -245,10 +234,10 @@ export default function UserTaskDetail() {
     },
     {
       key: "assign",
-      label: "Assign Issue",
+      label: "Assign Request",
       desc: assignIssue
-        ? "Assign this issue to the next responsible user in the workflow."
-        : "Cannot assign - issue is not in progress or assignment is not allowed.",
+        ? "Assign this support request to the next responsible user in the workflow."
+        : "Cannot assign - support request is not in progress or assignment is not allowed.",
       color: "#1E516A",
       bg: "#E6F3F9",
       border: "#BFD7EA",
@@ -259,7 +248,7 @@ export default function UserTaskDetail() {
   ];
 
   if (isLoading) return <div>Loading...</div>;
-  if (isError || !issue) return <div>Error loading issue details</div>;
+  if (isError || !issue) return <div>Error loading support request details</div>;
 
   return (
     <>
@@ -282,30 +271,17 @@ export default function UserTaskDetail() {
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
                 <div>
                   <h2 className="text-[#1E516A] text-xl font-bold mb-1">
-                    Issue Detail
+                    Support Request Detail
                   </h2>
                   <p className="text-gray-600">
-                    Review issue details and take appropriate action
+                    Review support request details and take appropriate action
                   </p>
                 </div>
                 {!openTimeline && !selectedAction && (
                   <TimelineOpener onOpen={() => setOpenTimeline(true)} />
                 )}
 
-                <AnimatePresence>
-                  {alert && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 20 }}
-                      className={`fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-lg text-white font-semibold ${
-                        alert.type === "success" ? "bg-green-600" : "bg-red-600"
-                      }`}
-                    >
-                      {alert.message}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+             
               </div>
 
               <div
@@ -368,7 +344,7 @@ export default function UserTaskDetail() {
                 {issueFiles.length > 0 && (
                   <div className="bg-white border border-[#BFD7EA] rounded-lg p-3 flex-1 my-6">
                     <h4 className="font-semibold text-[#1E516A] mb-3">
-                      Issue Attachments ({issueFiles.length})
+                      Support Request Attachments ({issueFiles.length})
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       {issueFiles.map((file, idx) => (
@@ -646,7 +622,7 @@ export default function UserTaskDetail() {
           }`}
         >
           {selectedAction === action.key && (
-            <CheckCircle2 className="w-3 h-3 text-white" />
+            <Check className="w-3 h-3 text-white" />
           )}
         </div>
         <p

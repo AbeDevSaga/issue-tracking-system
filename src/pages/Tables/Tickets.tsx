@@ -78,7 +78,7 @@ export default function TicketsPage() {
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-6">
       <div className="mb-2">
-        <h2 className="text-xl font-semibold text-blue-900 mb-1">Bug– Issue Tucking System</h2>
+        <h2 className="text-xl font-semibold text-blue-900 mb-1">Support Request Tracking System</h2>
         <div className="text-gray-500 text-sm mb-4">This is the issue management of the AA city central Admin</div>
       </div>
       <div className="flex flex-wrap gap-3 items-center justify-between mb-4">
@@ -96,7 +96,7 @@ export default function TicketsPage() {
             onChange={e => { setCategory(e.target.value); setCurrentPage(1); }}
             className="border px-3 py-2 rounded"
           >
-            <option value="">issue category</option>
+            <option value="">support request category</option>
             {CATEGORIES.map(c => <option key={c}>{c}</option>)}
           </select>
           <input
@@ -108,14 +108,14 @@ export default function TicketsPage() {
           />
         </div>
         <button className="bg-blue-900 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-blue-700">
-          <PlusIcon className="w-5 h-5" /> Report New Issue
+          <PlusIcon className="w-5 h-5" /> Report New Support Request
         </button>
       </div>
       {/* Table */}
       <table className="w-full border rounded text-sm">
         <thead>
           <tr className="bg-blue-900 text-white">
-            <th className="px-3 py-3 text-left font-medium">Issue ID</th>
+            <th className="px-3 py-3 text-left font-medium">Support Request ID</th>
             <th className="px-3 py-3 text-left font-medium">Category</th>
             <th className="px-3 py-3 text-left font-medium">Severity</th>
             <th className="px-3 py-3 text-left font-medium">Date Submitted</th>

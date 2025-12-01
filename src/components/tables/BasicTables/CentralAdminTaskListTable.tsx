@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import AssignDeveloper from "../../../pages/CentralAdminTaskList/QAExpertTaskModal";
 import Alert from "../../ui/alert/Alert";
 import { useNavigate } from "react-router-dom";
+import { formatStatus } from "../../../utils/statusFormatter";
 
 interface CentralAdminTask {
   id: string;
@@ -106,7 +107,7 @@ export default function CentralAdminTaskListTable() {
   const totalPages = Math.ceil(filteredissues.length / entriesPerPage);
 
   const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this issue?")) {
+    if (confirm("Are you sure you want to delete this support request?")) {
       console.log("Deleting organization:", id);
     }
   };
@@ -214,7 +215,7 @@ export default function CentralAdminTaskListTable() {
           <div className="relative flex-1 max-w-md">
             <input
               type="text"
-              placeholder="Search issue..."
+              placeholder="Search support request..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
@@ -337,7 +338,9 @@ export default function CentralAdminTaskListTable() {
                               : "bg-gray-500"
                         }`}
                     >
-                      {issue.status}
+                      
+                      {formatStatus(issue.status) || "N/A"}
+
                     </Badge>
 
                   </TableCell>

@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ArrowRight, Clock, X } from "lucide-react";
+import { formatStatus } from "../../utils/statusFormatter";
 
 interface User {
   full_name: string;
@@ -64,8 +65,8 @@ export default function IssueHistoryLog({ logs, onClose }: LogsPreviewProps) {
       className="absolute top-0 right-0 w-full lg:w-[360px] bg-white border-l border-[#D5E3EC] h-full flex flex-col gap-3 shadow-lg overflow-y-auto"
     >
       <div className="p-6 relative border-b border-[#D5E3EC] bg-gradient-to-r from-[#1E516A] to-[#2C6B8A]">
-        <h2 className="text-xl font-bold text-white">Issue Timeline</h2>
-        <p className="text-white text-sm mt-1">View the timeline of the issue</p>
+        <h2 className="text-xl font-bold text-white">Support Request Timeline</h2>
+        <p className="text-white text-sm mt-1">View the timeline of the support request</p>
      <div className="absolute top-5 right-5">
      {onClose && (
           <button
@@ -110,7 +111,7 @@ export default function IssueHistoryLog({ logs, onClose }: LogsPreviewProps) {
                       log.status_at_time
                     )}`}
                   >
-                    {log.status_at_time}
+                    {formatStatus(log.status_at_time) || "N/A"}
                   </span>
                 </div>
 
