@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import PageMeta from "../../components/common/PageMeta";
-import { Upload, CheckCircle2, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Upload, CheckCircle2, X, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import Screenshot1 from "../../assets/screenshot1.png";
 import Screenshot2 from "../../assets/screenshot2.png";
 import Screenshot3 from "../../assets/screenshot2.png";
@@ -211,7 +211,7 @@ export default function CentralAdminTask_Detail() {
                           }`}
                       >
                         {selectedAction === action.key && (
-                          <CheckCircle2
+                          <Check
                             className="w-4 h-4"
                             style={{ color: action.color }}
                           />
