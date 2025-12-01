@@ -1,19 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
 import {
-  Info,
-  FileText,
-  Image as ImageIcon,
-  AlertTriangle,
-  HelpCircle,
   Check,
+  Dot,
 } from "lucide-react";
 
 // import Select from "../../components/form/Select";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
-import Alert from "../../components/ui/alert/Alert";
 import {
   Select,
   SelectTrigger,
@@ -35,7 +30,7 @@ import { FileUploadField } from "../../components/common/FileUploadField";
 import DetailHeader from "../../components/common/DetailHeader";
 import TextArea from "../../components/form/input/TextArea";
 import { format } from "date-fns";
-import { FaChevronDown, FaChevronRight } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 export default function AddIssue() {
   const { t } = useTranslation();
@@ -83,6 +78,8 @@ export default function AddIssue() {
   const [alert, setAlert] = useState<{ type: string; message: string } | null>(
     null
   );
+  const [showPriorityModal, setShowPriorityModal] = useState(false);
+  const [tempPriority, setTempPriority] = useState("");
 
   // Form state
   const [formValues, setFormValues] = useState<Record<string, any>>({
@@ -202,42 +199,51 @@ export default function AddIssue() {
     { id: "url_path", label: "Add url", type: "url" },
     { id: "description", label: "Description", type: "textarea" },
   ];
-
-  // Guidelines data
   const guidelines = [
     {
-      title: "Be Specific:",
-      description:
-        "Clearly describe what went wrong, when it happened, and what you were trying to do.",
-      icon: Info,
-    },
-    {
-      title: "Include Details:",
-      description:
-        "Provide error messages, browser/device information, and steps to reproduce the issue.",
-      icon: FileText,
-    },
-    {
-      title: "Attach Evidence:",
-      description:
-        "Screenshots or logs help our team understand the problem faster.",
-      icon: ImageIcon,
-    },
-    {
-      title: "Set Correct Severity:",
-      description:
-        "Critical = system down, High = major functionality broken, Medium = partial functionality affected, Low = minor issue.",
-      icon: AlertTriangle,
+      section: "Support Request Guidelines",
+      items: [
+        {
+          text: "Describe the issue clearly.",
+          sub: [
+            "Explain what went wrong.",
+            "Mention when it happened.",
+            "Describe what you were trying to do.",
+          ],
+        },
+        {
+          text: "Provide helpful technical details.",
+          sub: [
+            "Include error messages.",
+            "Add browser/device information.",
+            "List steps to reproduce the issue.",
+          ],
+        },
+        {
+          text: "Attach supporting materials.",
+          sub: ["Upload screenshots.", "Include logs if available."],
+        },
+        {
+          text: "Select the correct severity level.",
+          sub: [
+            "Critical – System down or unusable.",
+            "High – Major functionality broken.",
+            "Medium – Partial functionality affected.",
+            "Low – Minor or cosmetic issue.",
+          ],
+        },
+      ],
     },
   ];
 
   const maxDateTime = format(new Date(), "yyyy-MM-dd'T'HH:mm");
 
   return (
+    <>
+    <DetailHeader className="mb-5 mt-2" breadcrumbs={[{ title: "Support Requests", link: "" },{ title: "Create New Request", link: "" }]} />
     <div className="w-full p-6 bg-white rounded-2xl border border-gray-200 dark:bg-gray-900">
       <div className="mb-5">
         <h2 className="text-xl font-bold text-[#094C81]">Create New Issue</h2>
-        <DetailHeader breadcrumbs={[]} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -271,7 +277,7 @@ export default function AddIssue() {
                       );
                     }}
                   >
-                    <SelectTrigger className="w-full border h-10 border-gray-300 bg-white p-2 rounded mt-1 text-gray-700">
+                    <SelectTrigger className=" border h-10 border-gray-300 bg-white p-2 rounded mt-1 text-gray-700">
                       <SelectValue placeholder="Select Project" />
                     </SelectTrigger>
 
@@ -294,7 +300,7 @@ export default function AddIssue() {
                         handleChange("issue_category_id", v)
                       }
                     >
-                      <SelectTrigger className="w-full h-10 border border-gray-300 bg-white p-2 rounded mt-1 text-gray-700">
+                      <SelectTrigger className=" h-10 border border-gray-300 bg-white p-2 rounded mt-1 text-gray-700">
                         <SelectValue placeholder="Select Category" />
                       </SelectTrigger>
 
@@ -311,9 +317,16 @@ export default function AddIssue() {
                 {field.type === "select" && field.id === "priority_id" && (
                   <Select
                     value={formValues.priority_id}
-                    onValueChange={(v) => handleChange("priority_id", v)}
+                    onValueChange={(value) => {
+                      if (value === "High" || value === "Critical") {
+                        setTempPriority(value);
+                        setShowPriorityModal(true);
+                      } else {
+                        handleChange("priority_id", value);
+                      }
+                    }}
                   >
-                    <SelectTrigger className="w-full h-10 border border-gray-300 bg-white p-2 rounded mt-1  text-gray-700">
+                    <SelectTrigger className=" h-10 border border-gray-300 bg-white p-2 rounded mt-1  text-gray-700">
                       <SelectValue placeholder="Select Priority" />
                     </SelectTrigger>
 
@@ -323,6 +336,7 @@ export default function AddIssue() {
                           {p.name}
                         </SelectItem>
                       ))}
+                       
                     </SelectContent>
                   </Select>
                 )}
@@ -383,14 +397,14 @@ export default function AddIssue() {
     "
                   >
                     {/* Checkmark */}
-                    {
-                      formValues.action_taken_checkbox ? <Check className="text-white" /> : null
-                    }
+                    {formValues.action_taken_checkbox ? (
+                      <Check className="text-white" />
+                    ) : null}
                   </div>
 
                   {/* Label */}
                   <span className="text-sm font-medium text-[#094C81]">
-                    Was any action taken?
+                    Have you tried to resolve the yourself?
                   </span>
                 </label>
               </div>
@@ -398,7 +412,7 @@ export default function AddIssue() {
               {formValues.action_taken_checkbox && (
                 <div className="w-full flex flex-col gap-2">
                   <Label className="text-sm  text-start font-medium text-[#094C81]">
-                    Action Taken
+                    Please describe the steps you took.
                   </Label>
                   <TextArea
                     rows={3}
@@ -442,79 +456,109 @@ export default function AddIssue() {
         </form>
 
         {/* GUIDELINES */}
-        <GuidelinesAccordion guidelines={guidelines} />
+        <GuidelinesCard guidelines={guidelines} />
       </div>
+
+      {showPriorityModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl max-w-md w-full border border-gray-200 dark:border-gray-700">
+            {/* Title */}
+            <h3 className="text-xl font-semibold text-[#094C81] mb-4 flex items-center gap-2">
+              Confirm Priority Selection
+            </h3>
+
+            {/* Main Message */}
+            <p className="text-base text-gray-900 dark:text-gray-200">
+              Are you sure your support request is
+              <span className="font-bold text-red-600 ml-1">
+                {tempPriority}?
+              </span>
+            </p>
+
+            {/* Extra Info */}
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 mb-6 leading-relaxed">
+              Please review the guidelines on the right side of this page to
+              ensure the issue priority is correctly selected.
+            </p>
+
+            {/* Buttons */}
+            <div className="flex justify-end gap-3 mt-2">
+              <button
+                onClick={() => {
+                  setShowPriorityModal(false);
+                  setTempPriority("");
+                }}
+                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={() => {
+                  handleChange("priority_id", tempPriority);
+                  setShowPriorityModal(false);
+                }}
+                className="px-4 py-2 rounded-lg bg-[#094C81] text-white hover:bg-[#07385f] transition shadow-sm"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+    </>
   );
 }
 
-function GuidelinesAccordion({
-  guidelines,
-}: {
-  guidelines: { title: string; description: string; icon?: any }[];
-}) {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const contentRefs = useRef<(HTMLDivElement | null)[]>([]);
-
-  const toggle = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
-
+export function GuidelinesCard({ guidelines }: { guidelines: any[] }) {
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-      <div className="mb-6">
-        <h3 className="text-2xl font-bold text-[#094C81] mb-2">
-          Issue Reporting Guidelines
-        </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Follow these tips to help us resolve your issue faster
-        </p>
-      </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-md max-w-2xl w-full mx-auto"
+    >
+      {/* Header */}
+      <h2 className="text-xl font-bold text-[#094C81] mb-4">
+        {guidelines[0].section}
+      </h2>
+      <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+        Follow these points to help us resolve your issue faster.
+      </p>
 
-      <div className="space-y-2">
-        {guidelines.map((g, i) => {
-          const IconComponent = g.icon || HelpCircle; // default icon
-
-          return (
-            <div key={i} className="border rounded-lg overflow-hidden">
-              <button
-                className="w-full flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-700  border-[#094C81] hover:shadow-md transition-shadow"
-                onClick={() => toggle(i)}
-              >
-                <div className="flex items-center gap-4">
-                  {/* Icon */}
-                  <div className="w-8 h-8 rounded-full bg-[#094C81] flex items-center justify-center text-white">
-                    <IconComponent size={18} />
-                  </div>
-
-                  <h4 className="text-base font-semibold text-[#094C81]">
-                    {g.title}
-                  </h4>
-                </div>
-
-                <span className="text-[#094C81] font-bold">
-                  {openIndex === i ? <FaChevronDown /> : <FaChevronRight />}
-                </span>
-              </button>
-
-              <div
-                ref={(el) => (contentRefs.current[i] = el)}
-                className="overflow-hidden transition-all duration-300 ease-in-out"
-                style={{
-                  maxHeight:
-                    openIndex === i && contentRefs.current[i]
-                      ? contentRefs.current[i].scrollHeight
-                      : 0,
-                }}
-              >
-                <div className="p-4 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                  {g.description}
-                </div>
-              </div>
+      {/* Bullet List */}
+      <ul className="space-y-4">
+        {guidelines[0].items.map((item, idx) => (
+          <li key={idx} className="flex flex-col gap-2">
+            {/* Main bullet */}
+            <div className="flex items-start gap-3">
+              <span className="text-[#094C81] mt-1">
+                <Check size={18} />
+              </span>
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-200 leading-relaxed">
+                {item.text}
+              </p>
             </div>
-          );
-        })}
-      </div>
-    </div>
+
+            {/* Nested bullets */}
+            {item.sub && (
+              <ul className="ml-8 space-y-1">
+                {item.sub.map((subItem: string, subIdx: number) => (
+                  <li key={subIdx} className="flex items-start gap-2">
+                    <span className="text-[#094C81] mt-0.5">
+                      <Dot size={16} />
+                    </span>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                      {subItem}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))}
+      </ul>
+    </motion.div>
   );
 }

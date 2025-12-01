@@ -98,7 +98,8 @@ const CustomNode: React.FC<CustomNodeProps> = ({
   }, [hovered]);
   const handleMouseEnter = () => {
     setHovered(true);
-  };
+  }; 
+  
   const handleMouseLeave = () => {
     setHovered(false);
   };
