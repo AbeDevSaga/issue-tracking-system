@@ -18,6 +18,11 @@ import { format } from "date-fns";
 // --- Define table columns ---
 const CategoryTableColumns = [
   {
+    id: "serial",
+    header: "#",
+    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+  },
+  {
     accessorKey: "name",
     header: "Category Name",
     cell: ({ row }: any) => (

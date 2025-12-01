@@ -17,6 +17,11 @@ import { useGetUsersByHierarchyNodeIdQuery } from "../../../redux/services/userA
 // =======================
 const columns = [
   {
+    id: "serial",
+    header: "#",
+    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+  },
+  {
     accessorKey: "user.full_name",
     header: "User",
     cell: ({ row }: any) => (

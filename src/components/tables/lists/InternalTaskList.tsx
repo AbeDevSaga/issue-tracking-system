@@ -29,6 +29,12 @@ const TaskTableColumns = [
     cell: ({ row }: any) => row.original.category?.name || "N/A",
   },
   {
+    accessorKey: "priority.name",
+    header: "Priority",
+    cell: ({ row }: any) => row.original.priority?.name || "N/A",
+  },
+
+  {
     accessorKey: "reporter.full_name",
     header: "Created By",
     cell: ({ row }: any) => row.original.reporter?.full_name || "N/A",
@@ -39,11 +45,6 @@ const TaskTableColumns = [
     cell: ({ row }: any) => row.original.hierarchyNode?.name || "N/A",
   },
 
-  {
-    accessorKey: "project.name",
-    header: "Project",
-    cell: ({ row }: any) => row.original.project?.name || "N/A",
-  },
   {
     accessorKey: "issue_occured_time",
     header: "Occurred Time",

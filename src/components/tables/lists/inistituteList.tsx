@@ -14,6 +14,11 @@ import { CreateInstituteModal } from "../../modals/CreateInstituteModal";
 // --- Define table columns ---
 const InstituteTableColumns = [
   {
+    id: "serial",
+    header: "#",
+    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+  },
+  {
     accessorKey: "name",
     header: "Institute Name",
     cell: ({ row }: any) => (

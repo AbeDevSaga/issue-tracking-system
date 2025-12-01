@@ -17,6 +17,7 @@ import { useForm } from "react-hook-form";
 import { useAuth } from "../../contexts/AuthContext"; // <-- IMPORTANT: Use AuthContext
 
 export default function Login() {
+  const [loginMethod, setLoginMethod] = useState<"email" | "phone">("email");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function Login() {
   const { login, error: authError, clearError } = useAuth(); // <-- Use AuthContext
 
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
     setError: setFormError,
@@ -89,10 +90,10 @@ export default function Login() {
           {/* Email */}
           <div>
             <Label
-              htmlFor="email"
+              htmlFor={loginMethod === "email" ? "email" : "phoneNumber"}
               className="block text-base font-medium text-[#0C4A6E] mb-1"
             >
-              {t("login.email_phone_number")}
+              {loginMethod === "email" ? t(" Email") : t("Phone")}
             </Label>
             <Input
               id="email"

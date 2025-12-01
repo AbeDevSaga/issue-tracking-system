@@ -69,10 +69,13 @@ import IssueCategoryDetail from "./pages/issueCategory/issueCategoryDetail";
 import CreateRole from "./pages/role/createRole";
 import Profile from "./pages/profile/profile";
 import PriorityLevelDetail from "./pages/priorityLevel/priorityLevelDetail";
+import ForgotPassword from "./components/auth/ForgotPassword";
+import ResetPassword from "./components/auth/ResetPassword";
 import InternalAppLayout from "./layout/InternalLayout/InternalAppLayout";
 import IssueFlow from "./InternalPages/IssueFlow/IssueFlow";
 import IssueConfigurationDetail from "./InternalPages/IssueFlow/IssueConfigurationDetail";
-import LandingPage from "./pages/home/LandingPage";
+import ForgotPasswordByEmail from "./components/auth/ForgotPasswordByEmail";
+import Notifications from "./components/header/Notifications";
 const AuthLoader = () => {
   return (
     <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">
@@ -125,11 +128,11 @@ function AppContent() {
               </ProtectedRoute>
             }
           // /> */}
-          {/* InternalTaskList */}
+          {/* InternalTaskList  */}
 
           <Route path="/task_list" element={<InternalTaskList />} />
           <Route path="/task_list/:id" element={<InternalTaskDetail />} />
-
+          <Route path="/notifications" element={<Notifications />} />
           <Route path="/task" element={<UserTaskList />} />
           <Route path="/task/:id" element={<UserTaskDetail />} />
           <Route path="/issue/:id" element={<IssueDetail />} />
@@ -215,6 +218,12 @@ function AppContent() {
               <Login />
             </PublicRoute>
           }
+        />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route
+          path="/reset-password-by-email"
+          element={<ForgotPasswordByEmail />}
         />
         {/* Internal Routes */}
         <Route element={<InternalAppLayout />}>

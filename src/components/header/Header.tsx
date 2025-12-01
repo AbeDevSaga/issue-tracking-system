@@ -6,9 +6,10 @@ import UserDropdown from "./UserDropdown";
 
 // Define the interface for the props
 interface HeaderProps {
-  onClick?: () => void; // Optional function that takes no arguments and returns void
+  onClick?: () => void;
   onToggle: () => void;
 }
+
 const Header: React.FC<HeaderProps> = ({ onClick, onToggle }) => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
 
@@ -55,7 +56,6 @@ const Header: React.FC<HeaderProps> = ({ onClick, onToggle }) => {
                 fill="currentColor"
               />
             </svg>
-            {/* Cross Icon */}
           </button>
           <button
             onClick={onClick}
@@ -79,16 +79,8 @@ const Header: React.FC<HeaderProps> = ({ onClick, onToggle }) => {
           </button>
 
           <Link to="/" className="lg:hidden">
-            <img
-              className="dark:hidden"
-              src=""
-              alt="Logok"
-            />
-            <img
-              className="hidden dark:block"
-              src=""
-              alt="logo"
-            />
+            <img className="dark:hidden" src="" alt="Logo" />
+            <img className="hidden dark:block" src="" alt="logo" />
           </Link>
 
           <button
@@ -154,8 +146,9 @@ const Header: React.FC<HeaderProps> = ({ onClick, onToggle }) => {
             {/* <!-- Dark Mode Toggler --> */}
             <ThemeToggleButton />
             {/* <!-- Dark Mode Toggler --> */}
-            <NotificationDropdown />
+
             {/* <!-- Notification Menu Area --> */}
+            <NotificationDropdown />
           </div>
           {/* <!-- User Area --> */}
           <UserDropdown />

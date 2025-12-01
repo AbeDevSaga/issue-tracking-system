@@ -16,10 +16,7 @@ import {
   AcademicCapIcon,
   StarIcon,
 } from "@heroicons/react/24/outline";
-import {
-  Card,
-  CardContent,
-} from "../../components/ui/cn/card";
+import { Card, CardContent } from "../../components/ui/cn/card";
 import { getFileUrl } from "../../utils/fileUrl";
 import DetailHeader from "../../components/common/DetailHeader";
 import { Edit, Trash2, User2Icon } from "lucide-react";
@@ -68,9 +65,11 @@ interface ExtendedUser extends User {
 const UserDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { data: user, isLoading, isError } = useGetUserByIdQuery(id!);
-  const [deleteUser, { isLoading: deletingUserLoading }] = useDeleteUserMutation();
+  const [deleteUser, { isLoading: deletingUserLoading }] =
+    useDeleteUserMutation();
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+
   const handleDelete = async () => {
     try {
       await deleteUser(id!).unwrap();
@@ -82,7 +81,8 @@ const UserDetail = () => {
       const errorMessage = (error as { data?: { message?: string } })?.data?.message || "Failed to delete user";
       toast.error(errorMessage);
     }
-  }
+  };
+
   const formatDate = (dateString?: string | null) => {
     if (!dateString) return "N/A";
     try {
@@ -136,9 +136,16 @@ const UserDetail = () => {
   const metrics = userData.metrics || [];
   const userType = userData.userType;
 
+  // Extract roles from user data
+  const userRoles: Role[] =
+    userData.roles || userData.user_roles?.map((ur: any) => ur.role) || [];
+
+  const userTypeName = userData.userType?.name || "N/A";
+  const isInternalUser = userTypeName === "internal_user";
+
   return (
     <>
-    <DeleteModal
+      <DeleteModal
         message="Are you sure you want to delete this user? This action cannot be undone."
         onCancel={() => setIsOpen(false)}
         onDelete={handleDelete}
@@ -155,16 +162,19 @@ const UserDetail = () => {
           <div className="flex justify-between">
             <DetailHeader
               breadcrumbs={[
-                { title: "Users", link: "" },
+                { title: "Users", link: "/users" },
                 { title: userData.full_name, link: "" },
               ]}
             />
             <div className="flex justify-center items-end gap-4">
-              <span>
+              <Link to={`/users/${userData.user_id}/edit`}>
                 <Edit className="h-5 w-5 text-[#094C81] hover:text-[#073954] cursor-pointer text-bold" />
-              </span>
+              </Link>
               <span>
-                <Trash2 onClick={() => setIsOpen(true)} className="h-5 w-5 text-[#B91C1C] hover:text-[#991B1B] cursor-pointer text-bold" />
+                <Trash2
+                  onClick={() => setIsOpen(true)}
+                  className="h-5 w-5 text-[#B91C1C] hover:text-[#991B1B] cursor-pointer text-bold"
+                />
               </span>
             </div>
           </div>
@@ -183,7 +193,7 @@ const UserDetail = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <User2Icon className="h-12 w-12 bg-white" />
+                    <User2Icon className="h-12 w-12 text-[#094C81]" />
                   )}
                 </div>
 
@@ -192,11 +202,16 @@ const UserDetail = () => {
                     {userData.full_name}
                   </h2>
                   <p className="text-gray-600 text-sm">{userData.email}</p>
+                  {userData.position && (
+                    <p className="text-gray-500 text-sm mt-1">
+                      {userData.position}
+                    </p>
+                  )}
                 </div>
               </div>
 
               {/* Status Badge */}
-              <div>
+              <div className="flex flex-col items-end gap-2">
                 <Badge
                   variant="light"
                   color={userData.is_active ? "success" : "error"}
@@ -214,6 +229,17 @@ const UserDetail = () => {
                       Inactive
                     </>
                   )}
+                </Badge>
+
+                {/* User Type Badge */}
+                <Badge
+                  variant="light"
+                  color={isInternalUser ? "primary" : "warning"}
+                  size="sm"
+                  className="text-xs"
+                >
+                  <UserGroupIcon className="h-3 w-3 mr-1" />
+                  {userTypeName.replace("_", " ")}
                 </Badge>
               </div>
             </div>
@@ -252,13 +278,13 @@ const UserDetail = () => {
                 {/* Institute */}
                 <div className="bg-gray-50 rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <BuildingOfficeIcon className="h-4 w-4 text-[#1E516A]" />
+                    <UserGroupIcon className="h-4 w-4 text-[#1E516A]" />
                     <p className="text-xs font-semibold text-[#1E516A] uppercase tracking-wide">
-                      Institute
+                      User Type
                     </p>
                   </div>
-                  <p className="text-gray-700 font-medium">
-                    {userData.institute?.name || "EAII"}
+                  <p className="text-gray-700 font-medium capitalize">
+                    {userTypeName.replace("_", " ")}
                   </p>
                 </div>
 

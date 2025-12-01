@@ -1,13 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { toast } from "sonner";
 
 import { useAssignUserToProjectMutation } from "../../redux/services/projectApi";
-
-import {
-  useGetUsersNotAssignedToProjectQuery,
-  useGetUsersQuery,
-} from "../../redux/services/userApi";
+import { useGetUsersNotAssignedToProjectQuery } from "../../redux/services/userApi";
 import { useGetRolesQuery } from "../../redux/services/roleApi";
 
 import {
@@ -19,9 +16,6 @@ import {
 import { Button } from "../ui/cn/button";
 import { Label } from "../ui/cn/label";
 
-import { toast } from "sonner";
-
-// ⭐ shadcn Select
 import {
   Select,
   SelectTrigger,
@@ -62,6 +56,7 @@ export default function AssignUserModal({
         : skipToken
     );
 
+  // Fetch all roles
   const { data: rolesResponse } = useGetRolesQuery(undefined);
 
   const [assignUserToProject] = useAssignUserToProjectMutation();
@@ -69,14 +64,21 @@ export default function AssignUserModal({
   const users = usersResponse?.data || [];
   const roles = rolesResponse?.data || [];
 
-  const [selectedUser, setSelectedUser] = useState("");
-  const [selectedRole, setSelectedRole] = useState("");
-  const [selectedSubRole, setSelectedSubRole] = useState("");
+  const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
-  const rolesMap = roles.map((r: any) => ({
-    ...r,
-    subRoles: r?.roleSubRoles?.map((s: any) => s.subRole) || [],
-  }));
+  // Filter roles based on selected user's roles
+  const availableRoles = useMemo(() => {
+    if (!selectedUser) return [];
+    const user = users.find((u) => u.user_id === selectedUser);
+    if (!user || !user.userRoles) return [];
+    return user.userRoles
+      .map((ur) => {
+        const role = roles.find((r) => r.role_id === ur.role_id);
+        return role ? { role_id: role.role_id, name: role.name } : null;
+      })
+      .filter(Boolean) as { role_id: string; name: string }[];
+  }, [selectedUser, users, roles]);
 
   const handleAssign = async () => {
     if (!selectedUser) {
@@ -84,9 +86,18 @@ export default function AssignUserModal({
       return;
     }
 
+    const user = users.find((u) => u.user_id === selectedUser);
+    const isExternal = user?.userType?.name === "external_user";
+
+    // External users must have hierarchy node
+    if (isExternal && !hierarchy_node_id) {
+      toast.error("External users must be assigned to a hierarchy node");
+      return;
+    }
+
     try {
       await assignUserToProject({
-        project_id: project_id,
+        project_id,
         user_id: selectedUser,
         // role_id: selectedRole,
         // sub_role_id: selectedSubRole || undefined,
@@ -94,11 +105,8 @@ export default function AssignUserModal({
       }).unwrap();
 
       toast.success("User assigned successfully");
-
-      setSelectedUser("");
-      setSelectedRole("");
-      setSelectedSubRole("");
-
+      setSelectedUser(null);
+      setSelectedRole(null);
       onClose();
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to assign user");
@@ -115,24 +123,31 @@ export default function AssignUserModal({
         </DialogHeader>
 
         <div className="flex gap-10 mt-4">
-          {/* LEFT SIDE — FORM */}
           <div className="flex justify-between w-full gap-4">
             {/* USER */}
             <div className="w-full">
               <Label className="text-sm font-medium text-[#094C81]">
                 Select User
               </Label>
-
-              <Select value={selectedUser} onValueChange={setSelectedUser}>
+              <Select
+                value={selectedUser || ""}
+                onValueChange={setSelectedUser}
+              >
                 <SelectTrigger className="w-full border p-2 rounded mt-1 text-[#094C81]">
                   <SelectValue placeholder="Select user" />
                 </SelectTrigger>
-                <SelectContent className="text-[#094C81] *: bg-white">
-                  {users.map((u) => (
-                    <SelectItem key={u.user_id} value={u.user_id}>
-                      {u.full_name} ({u.email})
+                <SelectContent className="text-[#094C81] bg-white">
+                  {users.length > 0 ? (
+                    users.map((u) => (
+                      <SelectItem key={u.user_id} value={u.user_id}>
+                        {u.full_name} ({u.email})
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem key="no-user" value="none" disabled>
+                      No users available
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -142,23 +157,25 @@ export default function AssignUserModal({
               <Label className="text-sm font-medium text-[#094C81]">
                 Select Role
               </Label>
-
               <Select
-                value={selectedRole}
-                onValueChange={(value) => {
-                  setSelectedRole(value);
-                  setSelectedSubRole("");
-                }}
+                value={selectedRole || ""}
+                onValueChange={setSelectedRole}
               >
                 <SelectTrigger className="w-full border p-2 rounded mt-1 text-[#094C81]">
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent className="text-[#094C81] bg-white">
-                  {rolesMap.map((r) => (
-                    <SelectItem key={r.role_id} value={r.role_id}>
-                      {r.name}
+                  {availableRoles.length > 0 ? (
+                    availableRoles.map((r) => (
+                      <SelectItem key={r.role_id} value={r.role_id}>
+                        {r.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem key="no-role" value="none" disabled>
+                      No roles available for this user
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
             </div> */}
