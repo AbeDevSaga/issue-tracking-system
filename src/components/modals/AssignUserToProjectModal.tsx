@@ -35,7 +35,7 @@ import { useAuth } from "../../contexts/AuthContext";
 interface AssignUserModalProps {
   inistitute_id?: string;
   hierarchy_node_id: string;
-  hierarchy_node_name: string;
+  hierarchy_node_name?: string;
   project_id: string;
   isOpen: boolean;
   onClose: () => void;
@@ -104,13 +104,13 @@ export default function AssignUserModal({
       toast.error(err?.data?.message || "Failed to assign user");
     }
   };
-
+  console.log("project_id: ", project_id, "hierarchy_node_name: ", hierarchy_node_name, "hierarchy_node_id: ", hierarchy_node_id);
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[400px] bg-white max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader>
           <DialogTitle className="text-[#094C81]">
-            Assign User to {hierarchy_node_name} Structure
+            Assign User 
           </DialogTitle>
         </DialogHeader>
 
@@ -171,7 +171,7 @@ export default function AssignUserModal({
             onClick={handleAssign}
             className="bg-[#094C81] hover:bg-[#094C81]/90 text-white"
           >
-            Assign User
+            Assign  
           </Button>
         </div>
       </DialogContent>

@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { Input } from "../ui/cn/input";
 import { Label } from "../ui/cn/label";
 import { Button } from "../ui/cn/button";
-import { Textarea } from "../ui/cn/textarea";
 import { XIcon } from "lucide-react";
 import { useCreateProjectMetricMutation } from "../../redux/services/projectMetricApi";
 
@@ -30,17 +29,17 @@ export const CreateProjectMetricModal: React.FC<
 
     const payload = {
       name,
-      description: description || undefined,
+      description: description || "",
       is_active: true,
     };
 
     try {
       await createProjectMetric(payload).unwrap();
-      toast.success("Project metric created successfully!");
+      toast.success("Project human resource created successfully!");
       onClose();
       resetForm();
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to create metric");
+      toast.error(error?.data?.message || "Failed to create human resource");
     }
   };
 
@@ -60,10 +59,10 @@ export const CreateProjectMetricModal: React.FC<
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-200"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white p-6 rounded-2xl w-full max-w-[500px] shadow-2xl transform transition-all duration-200">
+      <div className="bg-white p-6 rounded-2xl w-full max-w-[400px] shadow-2xl transform transition-all duration-200">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-[24px] font-bold text-[#094C81]">
-            Create Project Metric
+          <h2 className="text-[20px] font-bold text-[#094C81]">
+            Create Project Human Resource
           </h2>
           <button
             onClick={onClose}
@@ -76,29 +75,18 @@ export const CreateProjectMetricModal: React.FC<
         <div className="flex flex-col gap-4">
           <div>
             <Label className="block text-sm text-[#094C81] font-medium mb-2">
-              Metric Name <span className="text-red-500">*</span>
+              Human Resource Name <span className="text-red-500">*</span>
             </Label>
             <Input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Enter metric name"
-              className="w-full"
+              placeholder="Enter human resource name"
+              className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
             />
           </div>
 
-          <div>
-            <Label className="block text-sm text-[#094C81] font-medium mb-2">
-              Description
-            </Label>
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Metric description"
-              rows={3}
-              className="w-full"
-            />
-          </div>
+           
         </div>
 
         <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">

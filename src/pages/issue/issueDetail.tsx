@@ -11,6 +11,7 @@ import {
   Eye,
   ChevronDown,
   ChevronUp,
+  X,
 } from "lucide-react";
 import {
   useConfirmIssueResolvedMutation,
@@ -23,6 +24,7 @@ import { canConfirm } from "../../utils/taskHelper";
 import IssueHistoryLog from "../userTasks/IssueHistoryLog";
 import TimelineOpener from "../../components/common/TimelineOpener";
 import { Button } from "../../components/ui/cn/button";
+import { toast } from "sonner";
 
 export default function UserIssueDetail() {
   const { id } = useParams<{ id: string }>();
@@ -42,7 +44,10 @@ export default function UserIssueDetail() {
     resolutions: true,
   });
 
-  const [fileViewerUrl, setFileViewerUrl] = useState<string | null>(null);
+  const [fileViewerState, setFileViewerState] = useState<{
+    files: any[];
+    index: number;
+  } | null>(null);
   const { data: loggedUser } = useGetCurrentUserQuery();
   const userId = loggedUser?.user?.user_id || "";
 
@@ -125,10 +130,10 @@ export default function UserIssueDetail() {
   };
 
   // File card component for consistent styling
-  const FileCard = ({ file }: { file: any }) => (
+  const FileCard = ({ file, onOpen }: { file: any; onOpen: () => void }) => (
     <div
       className="border border-[#BFD7EA] rounded-lg p-3 hover:shadow-md transition-all duration-200 cursor-pointer group bg-white hover:bg-blue-50"
-      onClick={() => openFileViewer(file.url)}
+      onClick={onOpen}
     >
       <div className="flex items-center gap-3">
         <div className="flex-shrink-0">{getFileIcon(file.type)}</div>
@@ -159,30 +164,19 @@ export default function UserIssueDetail() {
     }
   };
 
-  const [alert, setAlert] = useState<{ type: string; message: string } | null>(
-    null
-  );
-
-  const openFileViewer = (fileUrl: string) => setFileViewerUrl(fileUrl);
-  const closeFileViewer = () => setFileViewerUrl(null);
+  const openFileViewer = (files: any[], index: number) =>
+    setFileViewerState({ files, index });
+  const closeFileViewer = () => setFileViewerState(null);
   const closeModal = () => setModalImageIndex(null);
 
   const handleConfirmIssueSolved = async () => {
     if (!id) return;
     try {
       const res = await confirmIssueResolved({ issue_id: id }).unwrap();
-      setAlert({
-        type: "success",
-        message: res.message || "Status updated to Closed!",
-      });
-      setTimeout(() => setAlert(null), 2000);
+      toast.success(res.message || "Status updated to Closed!");
     } catch (error: any) {
-      setAlert({
-        type: "error",
-        message: error?.data?.message || "Error updating status.",
-      });
+      toast.error(error?.data?.message || "Error updating status.");
       console.error(error);
-      setTimeout(() => setAlert(null), 3000);
     }
   };
 
@@ -226,31 +220,26 @@ export default function UserIssueDetail() {
                   <p className="text-gray-600">
                     Review request details and take appropriate action
                   </p>
+                  
                 </div>
+                <div className="flex items-center gap-20">
+                  {/* color resolved based on status */}
+                <span className={`text-base bg-green-100 text-green-900 px-2 py-1 rounded-md ${issue.status === "resolved" ? "text-green-900 " : issue.status === "in_progress" ? "text-blue-500" : issue.status === "closed" ? "text-red-500" : "text-gray-500"}`}>
+                  {issue.status}
+                </span>
                 {!openTimeline && (
                   <TimelineOpener onOpen={() => setOpenTimeline(true)} />
                 )}
-                <AnimatePresence>
-                  {alert && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 20 }}
-                      className={`fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-lg text-white font-semibold ${
-                        alert.type === "success" ? "bg-green-600" : "bg-red-600"
-                      }`}
-                    >
-                      {alert.message}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {/* status */}
+             
+                </div>
               </div>
 
               <div
                 className="border border-[#BFD7EA] rounded-lg p-4 mb-6"
                 style={{ backgroundColor: "rgba(9, 76, 129, 0.05)" }}
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-y-2">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-y-2">
                   <div>
                     <p className="font-semibold text-[#1E516A] text-sm">
                       System
@@ -283,6 +272,16 @@ export default function UserIssueDetail() {
                       {formatDate(issue.issue_occured_time)}
                     </p>
                   </div>
+                  <div>
+                    <p
+                      className={`font-semibold text-[#1E516A] text-sm py-1 rounded-md`}
+                    >
+                      Priority Level
+                    </p>
+                    <p className="font-semibold" style={{ color: issue.priority?.color_value || "#000" }}>
+                      {issue.priority?.name || "N/A"}
+                    </p>
+                  </div>
                 </div>
 
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -311,7 +310,11 @@ export default function UserIssueDetail() {
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       {issueFiles.map((file, idx) => (
-                        <FileCard key={idx} file={file} />
+                        <FileCard
+                          key={idx}
+                          file={file}
+                          onOpen={() => openFileViewer(issueFiles, idx)}
+                        />
                       ))}
                     </div>
                   </div>
@@ -495,13 +498,18 @@ export default function UserIssueDetail() {
                                           {escalation.reason || "No reason provided"}
                                         </p>
                                       </div>
-                                      <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3">
-                                        <p className="font-semibold text-[#1E516A] text-sm mb-1">
-                                          Escalator Level
-                                        </p>
-                                        <p className="text-gray-700">
-                                          {escalation.escalator?.position || "N/A"}
-                                        </p>
+                                      <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3 text-gray-700">
+                                          <p className="font-semibold text-[#1E516A] text-sm mb-1">
+                                            Reporter Contact
+                                            </p>
+                                          <p className="text-gray-600">
+                                            {escalation?.escalator?.full_name || "N/A"}
+                                            </p>
+                                            <p className="text-gray-500 text-xs mt-1">
+                                            {escalation?.escalator?.phone_number || "No phone number"}
+                                            {/* add email */}
+                                            </p>
+                                             
                                       </div>
                                     </div>
 
@@ -516,6 +524,12 @@ export default function UserIssueDetail() {
                                             <FileCard
                                               key={`${escalation.escalation_id}-${idx}`}
                                               file={file}
+                                              onOpen={() =>
+                                                openFileViewer(
+                                                  escalationFiles,
+                                                  idx
+                                                )
+                                              }
                                             />
                                           ))}
                                         </div>
@@ -622,10 +636,10 @@ export default function UserIssueDetail() {
                                     </h4>
                                     <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
                                       <span>
-                                        {resolution.resolver?.position || "N/A"}
+                                        By {resolution.resolver?.full_name || "N/A"}
                                       </span>
                                       <span>•</span>
-                                      <span>{formatDate(resolution.resolved_at)}</span>
+                                      <span>On: {formatDate(resolution.resolved_at)}</span>
                                       <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                         {resolution.status || "resolved"}
                                       </span>
@@ -657,7 +671,7 @@ export default function UserIssueDetail() {
                                     transition={{ duration: 0.3 }}
                                     className="p-4 border-t border-[#BFD7EA] bg-white"
                                   >
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                                    {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                                       <div>
                                         <p className="font-semibold text-[#1E516A] text-sm">
                                           Resolved By
@@ -690,7 +704,7 @@ export default function UserIssueDetail() {
                                           {resolution.status || "resolved"}
                                         </p>
                                       </div>
-                                    </div>
+                                    </div> */}
 
                                     <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                                       <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3">
@@ -728,6 +742,12 @@ export default function UserIssueDetail() {
                                             <FileCard
                                               key={`${resolution.resolution_id}-${idx}`}
                                               file={file}
+                                              onOpen={() =>
+                                                openFileViewer(
+                                                  resolutionFiles,
+                                                  idx
+                                                )
+                                              }
                                             />
                                           ))}
                                         </div>
@@ -763,23 +783,73 @@ export default function UserIssueDetail() {
             </div>
           </div>
 
-          {/* File Viewer Modal */}
-          {fileViewerUrl && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
+          {/* File Viewer Modal with next/prev navigation */}
+          {fileViewerState && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 bg-opacity-75 p-4">
               <div className="bg-white rounded-lg w-full max-w-6xl h-[90vh] flex flex-col">
                 <div className="flex justify-between items-center p-4 border-b">
                   <h3 className="text-lg font-semibold text-[#1E516A]">
-                    File Preview
+                    File Preview <span className="text-xs text-gray-500">
+                    ({fileViewerState.files[fileViewerState.index].name})
+                    </span>
                   </h3>
                   <button
                     onClick={closeFileViewer}
                     className="p-2 hover:bg-gray-100 rounded-full"
                   >
-                    <ChevronLeft className="w-5 h-5" />
+                    <X className="w-5 h-5" />
+
                   </button>
                 </div>
-                <div className="flex-1 p-4">
-                  <FileViewer fileUrl={fileViewerUrl} />
+                <div className="flex-1 p-4 flex flex-col">
+                  <div className="flex-1">
+                    <FileViewer
+                      fileUrl={fileViewerState.files[fileViewerState.index].url}
+                    />
+                  </div>
+                  {fileViewerState.files.length > 1 && (
+                    <div className="mt-4 flex items-center justify-between">
+                      <button
+                        className="flex items-center gap-1 px-3 py-1 rounded-md border border-gray-300 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() =>
+                          setFileViewerState((prev) =>
+                            !prev
+                              ? prev
+                              : {
+                                  ...prev,
+                                  index:
+                                    (prev.index - 1 + prev.files.length) %
+                                    prev.files.length,
+                                }
+                          )
+                        }
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        Previous
+                      </button>
+                      <span className="text-xs text-gray-500">
+                        {fileViewerState.index + 1} /{" "}
+                        {fileViewerState.files.length}
+                      </span>
+                      <button
+                        className="flex items-center gap-1 px-3 py-1 rounded-md border border-gray-300 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() =>
+                          setFileViewerState((prev) =>
+                            !prev
+                              ? prev
+                              : {
+                                  ...prev,
+                                  index:
+                                    (prev.index + 1) % prev.files.length,
+                                }
+                          )
+                        }
+                      >
+                        Next
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -842,3 +912,5 @@ export default function UserIssueDetail() {
     </>
   );
 }
+
+

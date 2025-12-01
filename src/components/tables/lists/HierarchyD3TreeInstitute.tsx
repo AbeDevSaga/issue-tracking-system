@@ -3,11 +3,11 @@ import Tree from 'react-d3-tree';
 import Label from '../../form/Label';
 import { Select, SelectTrigger } from '../../ui/cn/select';
 import { SelectItem, SelectContent, SelectValue } from '../../ui/cn/select';
-import { CreateHierarchyNodeModal } from '../../modals/CreateHierarchyNodeModal';
 import { useParams } from 'react-router-dom';
 import { CreateInstituteHierarchyNodeModal } from '../../modals/CreateInstituteHierarchyNodeModal';
 import { shortenText } from '../../../utils/shortenText';
 import AssignInternalUsersToProjectHierarchyModal from '../../modals/AssignInternalUsersToProjectHierarchyModal';
+import { useGetInternalUsersAssignedToProjectQuery } from '../../../redux/services/userApi';
 
 // ---------------------------
 // Types
@@ -67,6 +67,8 @@ interface CustomNodeProps {
   isAssignUsersToStructure: boolean;
   setIsAssignUsersModalOpen: (open: boolean) => void;
   setParentNodeName: (name: string) => void;
+  // Users assigned to this internal node (by internal_node_id)
+  assignedUsers?: string[];
 }
 
 const CustomNode: React.FC<CustomNodeProps> = ({
@@ -77,20 +79,31 @@ const CustomNode: React.FC<CustomNodeProps> = ({
   setIsAssignUsersModalOpen,
   isAssignUsersToStructure,
   setParentNodeName,
+  assignedUsers = [],
 }) => {
   const hasChildren = nodeDatum.children && nodeDatum.children.length > 0;
   const isActive = nodeDatum.attributes.is_active;
-  const project = nodeDatum.attributes.project;
-  const level = nodeDatum.attributes.level ?? 0;
   const isCollapsed = nodeDatum.__rd3t?.collapsed ?? false;
-
+  const [hovered,setHovered] = useState(false);
   const handleViewDetailsClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     window.location.href = `/issue_configuration/${nodeDatum.attributes.internal_node_id}`;
   };
- 
+  //  show some side modal when it is hovered
+  useEffect(() => {
+    if (!hovered) {
+      setHovered(false);
+    }
+  }, [hovered]);
+  const handleMouseEnter = () => {
+    setHovered(true);
+  };
+  const handleMouseLeave = () => {
+    setHovered(false);
+  };
   return (
-    <g  >
+    <>
+    <g onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       {hasChildren && (
         <g transform={`translate(-160, -70)`}>
           <foreignObject x={-10} y={-10} width={20} height={20}>
@@ -102,18 +115,10 @@ const CustomNode: React.FC<CustomNodeProps> = ({
             </button>
           </foreignObject>
         </g>
+        
       )}
 
-      {level > 0 && (
-        <g transform={`translate(160, -70)`}>
-          <foreignObject x={0} y={0} width={28} height={18}>
-            <div className="w-7 h-[18px] rounded-lg bg-gray-100 flex items-center justify-center">
-              <span className="text-[10px] font-semibold text-gray-600">L{level}</span>
-            </div>
-          </foreignObject>
-        </g>
-      )}
-
+ 
       <foreignObject x={-150} y={-90} width={300} height={150}>
         <div className="w-full h-full bg-white rounded-2xl border border-gray-200 shadow-lg hover:border-[#094C81] hover:shadow-xl transition-all duration-200 cursor-pointer p-5 flex flex-col justify-between">
           <div className="flex items-start justify-between mb-3">
@@ -168,7 +173,34 @@ const CustomNode: React.FC<CustomNodeProps> = ({
           </div>
         </div>
       </foreignObject>
+      {hovered && assignedUsers.length > 0 && (
+  <foreignObject
+    x={160}
+    y={-90}
+    width={260}
+    height={Math.min(300, 120 + assignedUsers.length * 24)} // max height 300
+  >
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        overflowY: 'auto', // enable scroll
+        WebkitOverflowScrolling: 'touch', // smooth scroll on touch devices
+      }}
+      className="bg-white rounded-xl border border-gray-200 shadow-xl p-4"
+    >
+      <p className="text-sm font-semibold text-[#094C81]">Users assigned:</p>
+      <ul className="text-sm text-gray-700 mt-2 space-y-1">
+        {assignedUsers.map((fullName) => (
+          <li key={fullName}>{fullName}</li>
+        ))}
+      </ul>
+    </div>
+  </foreignObject>
+)}
     </g>
+
+    </>
   );
 };
 
@@ -182,6 +214,35 @@ const HierarchyD3TreeInstitute: React.FC<HierarchyD3TreeProps> = ({ data, isLoad
   const [isModalOpen, setModalOpen] = useState(false);
   const [isAssignUsersModalOpen, setIsAssignUsersModalOpen] = useState(false);
   const [parentNodeName, setParentNodeName] = useState<string>('');
+
+  const { data: usersData } = useGetInternalUsersAssignedToProjectQuery(
+    project_id || '',
+    {
+      skip: !project_id,
+    }
+  );
+
+  // Map internal_node_id -> array of user full_names
+  const internalNodeUsersMap = useMemo(() => {
+    const map: Record<string, string[]> = {};
+    if (usersData && Array.isArray(usersData.data)) {
+      usersData.data.forEach(
+        (assignment: {
+          internal_node_id: string;
+          user?: { full_name?: string };
+        }) => {
+        const internalNodeId = assignment.internal_node_id;
+        const fullName = assignment.user?.full_name;
+        if (!internalNodeId || !fullName) return;
+        if (!map[internalNodeId]) {
+          map[internalNodeId] = [];
+        }
+        map[internalNodeId].push(fullName);
+      }
+      );
+    }
+    return map;
+  }, [usersData]);
   const buildTree = (nodes: TreeNode[]): TreeNode[] => {
     if (!nodes || nodes.length === 0) return [];
     const nodeMap = new Map<string, TreeNode>();
@@ -270,7 +331,20 @@ const HierarchyD3TreeInstitute: React.FC<HierarchyD3TreeProps> = ({ data, isLoad
                 transitionDuration={300}
                 renderCustomNodeElement={(rd3tProps: { nodeDatum: unknown; toggleNode: () => void }) => {
                   const nodeDatum = rd3tProps.nodeDatum as D3TreeNode & { __rd3t?: { collapsed?: boolean } };
-                  return (<CustomNode isAssignUsersToStructure={isAssignUsersToStructure} setSelectedParentNodeId={setSelectedParentNodeId} setModalOpen={setModalOpen} setIsAssignUsersModalOpen={setIsAssignUsersModalOpen} setParentNodeName={setParentNodeName} nodeDatum={nodeDatum} toggleNode={rd3tProps.toggleNode} />);
+                  const assignedUsers =
+                    internalNodeUsersMap[nodeDatum.attributes.internal_node_id] || [];
+                  return (
+                    <CustomNode
+                      isAssignUsersToStructure={isAssignUsersToStructure}
+                      setSelectedParentNodeId={setSelectedParentNodeId}
+                      setModalOpen={setModalOpen}
+                      setIsAssignUsersModalOpen={setIsAssignUsersModalOpen}
+                      setParentNodeName={setParentNodeName}
+                      nodeDatum={nodeDatum}
+                      toggleNode={rd3tProps.toggleNode}
+                      assignedUsers={assignedUsers}
+                    />
+                  );
                 }}
               />
             </div>

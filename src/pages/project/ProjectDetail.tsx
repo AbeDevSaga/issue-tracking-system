@@ -250,7 +250,12 @@ export default function ProjectDetail() {
 
           {/* Project Hierarchy */}
           {activeTab === "hierarchy" && (
-            <HierarchyNodeList project_id={id || ""} toggleActions={actions} />
+            <HierarchyNodeList
+              project_id={id || ""}
+              // use first institute for now
+              inistitute_id={project.institutes?.[0]?.institute_id}
+              toggleActions={actions}
+            />
           )}
 
           {activeTab === "users" && (

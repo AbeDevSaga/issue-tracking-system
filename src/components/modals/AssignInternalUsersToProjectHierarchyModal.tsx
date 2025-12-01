@@ -100,7 +100,7 @@ export default function AssignInternalUsersModal({
       <DialogContent className="w-[500px] bg-white max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader>
           <DialogTitle className="text-[#094C81]">
-            Assign User to {parent_node_name} Structure
+            Assign User 
           </DialogTitle>
         </DialogHeader>
 
@@ -193,7 +193,7 @@ export default function AssignInternalUsersModal({
             disabled={!selectedMetric || !selectedUser}
             className="bg-[#094C81] hover:bg-[#094C81]/90 text-white disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            Assign User
+            Assign 
           </Button>
         </div>
       </DialogContent>
