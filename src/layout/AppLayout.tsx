@@ -5,6 +5,9 @@ import { useAuth } from "../contexts/AuthContext";
 import AppHeader from "./AppHeader";
 import AppSidebar from "./AppSidebar";
 import Backdrop from "./Backdrop";
+import InternalAppHeader from "./InternalLayout/InternalAppHeader";
+import InternalNavBar from "./InternalLayout/InternalNavBar";
+import { getNavItemsCountByUserType } from "../types/userTypeRoutes";
 
 const LayoutWithSidebar: React.FC = () => {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
@@ -29,9 +32,27 @@ const LayoutWithSidebar: React.FC = () => {
   );
 };
 
+const LayoutWithOutSidebar: React.FC = () => {
+  return (
+    <div>
+      <InternalAppHeader />
+      {/* buttons like navigation bar */}
+
+      <div className="p-4 mx-auto max-w-(--breakpoint-2xl)  md:p-6">
+        <div className="flex justify-start mb-4">
+          <InternalNavBar />
+        </div>
+        <Outlet />
+      </div>
+    </div>
+  );
+};
+
 // src/layout/AppLayout.tsx (updated LayoutContent)
 const LayoutContent: React.FC = () => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
+  const userType = user?.user_type || "external_user";
+  const navItemLength = getNavItemsCountByUserType(userType);
   const location = useLocation();
 
   // Show loading spinner while checking auth
@@ -48,11 +69,15 @@ const LayoutContent: React.FC = () => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  return (
-    <SidebarProvider>
-      <LayoutWithSidebar />
-    </SidebarProvider>
-  );
+  if (navItemLength <= 3) {
+    return <LayoutWithOutSidebar />;
+  } else {
+    return (
+      <SidebarProvider>
+        <LayoutWithSidebar />
+      </SidebarProvider>
+    );
+  }
 };
 
 const AppLayout: React.FC = () => {
