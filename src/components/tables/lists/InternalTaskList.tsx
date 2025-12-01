@@ -9,13 +9,15 @@ import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { FilterField } from "../../../types/layout";
-import {
-  useGetAssignedIssuesQuery,
-  useGetEscalatedIssuesWithNullTierQuery,
-} from "../../../redux/services/issueApi";
+
 import { useIssuesQuery } from "../../../hooks/useIssueQuery";
 
 const TaskTableColumns = [
+  {
+    accessorKey: "project.ticket_number",
+    header: "Ticket Number",
+    cell: ({ row }: any) => <div>{row.original.ticket_number || "N/A"}</div>,
+  },
   {
     accessorKey: "priority.name",
     header: "Priority",
