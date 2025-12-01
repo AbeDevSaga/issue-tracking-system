@@ -72,6 +72,7 @@ import PriorityLevelDetail from "./pages/priorityLevel/priorityLevelDetail";
 import InternalAppLayout from "./layout/InternalLayout/InternalAppLayout";
 import IssueFlow from "./InternalPages/IssueFlow/IssueFlow";
 import IssueConfigurationDetail from "./InternalPages/IssueFlow/IssueConfigurationDetail";
+import LandingPage from "./pages/home/LandingPage";
 const AuthLoader = () => {
   return (
     <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">
@@ -105,6 +106,7 @@ function AppContent() {
       <ScrollToTop />
 
       <Routes>
+        <Route path='/' element={<LandingPage/>}/>
         <Route element={<AppLayout />}>
           <Route
             path="/dashboard"
