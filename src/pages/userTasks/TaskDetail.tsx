@@ -86,56 +86,6 @@ export default function UserTaskDetail() {
     setMarkIssue(canMarkInProgress(userId, issue?.status, issue));
   }, [userId, issue?.status, issue]);
 
-  // Toggle accordion sections
-  const toggleSection = (section: "escalations" | "resolutions") => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  };
-
-  // Toggle individual escalation accordion
-  const toggleEscalation = (escalationId: string) => {
-    setExpandedEscalations((prev) =>
-      prev.includes(escalationId)
-        ? prev.filter((id) => id !== escalationId)
-        : [...prev, escalationId]
-    );
-  };
-
-  // Toggle individual resolution accordion
-  const toggleResolution = (resolutionId: string) => {
-    setExpandedResolutions((prev) =>
-      prev.includes(resolutionId)
-        ? prev.filter((id) => id !== resolutionId)
-        : [...prev, resolutionId]
-    );
-  };
-
-  // Expand/Collapse all escalations
-  const toggleAllEscalations = () => {
-    if (!issue?.escalations) return;
-    if (expandedEscalations.length === issue.escalations.length) {
-      setExpandedEscalations([]);
-    } else {
-      setExpandedEscalations(
-        issue.escalations.map((esc) => esc.escalation_id)
-      );
-    }
-  };
-
-  // Expand/Collapse all resolutions
-  const toggleAllResolutions = () => {
-    if (!issue?.resolutions) return;
-    if (expandedResolutions.length === issue.resolutions.length) {
-      setExpandedResolutions([]);
-    } else {
-      setExpandedResolutions(
-        issue.resolutions.map((res) => res.resolution_id)
-      );
-    }
-  };
-
   // Map issue attachments to files array with proper URLs and file info
   const issueFiles =
     issue?.attachments?.map((attachment) => ({
@@ -413,7 +363,10 @@ export default function UserTaskDetail() {
                     >
                       Priority Level
                     </p>
-                    <p className="font-semibold" style={{ color: issue.priority?.color_value || "#000" }}>
+                    <p
+                      className="font-semibold"
+                      style={{ color: issue.priority?.color_value || "#000" }}
+                    >
                       {issue.priority?.name || "N/A"}
                     </p>
                   </div>
@@ -440,7 +393,7 @@ export default function UserTaskDetail() {
                 {issueFiles.length > 0 && (
                   <div className="bg-white border border-[#BFD7EA] rounded-lg p-3 flex-1 my-6">
                     <h4 className="font-semibold text-[#1E516A] mb-3">
-                       Attachments ({issueFiles.length})
+                      Issue Attachments ({issueFiles.length})
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       {issueFiles.map((file, idx) => (
