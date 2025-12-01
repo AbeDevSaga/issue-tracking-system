@@ -192,7 +192,7 @@ function AppContent() {
           <Route path="/org_structure" element={<OrgStructure />} />
           <Route path="/org_structure/:id" element={<OrgStructureDetail />} />
           {/* Metrics */}
-          <Route path="/metrics" element={<Metrics />} />
+          <Route path="/human_resource" element={<Metrics />} />
           <Route path="/basedata" element={<BaseData />} />
           <Route path="/subroles" element={<Subroles />} />
 

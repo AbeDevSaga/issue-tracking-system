@@ -60,12 +60,12 @@ export default function Basedata() {
       route: "/priority_level",
     },
     {
-      title: t("Metrics Management"),
-      description: t("Metrics Management", {
-        title: t("basedata.project_metrics"),
+      title: t("Human Resource Management"),
+      description: t("Human Resource Management", {
+        title: t("basedata.project_human_resource"),
       }),
       icon: <FaFlag size={26} color={"#094C81"} />,
-      route: "/metrics",
+      route: "/human_resource",
     },
 
     {

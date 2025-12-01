@@ -1,11 +1,13 @@
-import React, { useRef, useEffect, useState, useMemo } from 'react';
-import Tree from 'react-d3-tree';
-import Label from '../../form/Label';
-import { Select, SelectTrigger } from '../../ui/cn/select';
-import { SelectItem, SelectContent, SelectValue } from '../../ui/cn/select';
-import { CreateHierarchyNodeModal } from '../../modals/CreateHierarchyNodeModal';
-import { useParams } from 'react-router-dom';
-import { shortenText } from '../../../utils/shortenText';
+import React, { useRef, useEffect, useState, useMemo } from "react";
+import Tree from "react-d3-tree";
+import Label from "../../form/Label";
+import { Select, SelectTrigger } from "../../ui/cn/select";
+import { SelectItem, SelectContent, SelectValue } from "../../ui/cn/select";
+import { CreateHierarchyNodeModal } from "../../modals/CreateHierarchyNodeModal";
+import { useParams } from "react-router-dom";
+import { shortenText } from "../../../utils/shortenText";
+import { useGetUsersAssignedToProjectQuery } from "../../../redux/services/userApi";
+import AssignUserModal from "../../modals/AssignUserToProjectModal";
 
 // ---------------------------
 // Types
@@ -35,9 +37,23 @@ interface D3TreeNode {
   children?: D3TreeNode[];
 }
 
+interface ProjectUserRole {
+  project_user_role_id: string;
+  hierarchy_node_id: string | null;
+  user?: {
+    user_id: string;
+    full_name?: string;
+    email?: string;
+  };
+}
+
 interface HierarchyD3TreeProps {
   data: TreeNode[];
   isLoading?: boolean;
+  // Optional: full list of projectUserRoles from project detail API
+  projectUserRoles?: ProjectUserRole[];
+  // Institute context for AssignUserModal
+  inistitute_id?: string;
 }
 
 // ---------------------------
@@ -45,15 +61,18 @@ interface HierarchyD3TreeProps {
 // ---------------------------
 function convertToD3Tree(nodes: TreeNode[]): D3TreeNode[] {
   return nodes.map((node) => ({
-    name: node.name || 'Unnamed Node',
+    name: node.name || "Unnamed Node",
     attributes: {
       hierarchy_node_id: node.hierarchy_node_id,
-      description: node.description || '',
-      project: node.project?.name || '',
+      description: node.description || "",
+      project: node.project?.name || "",
       level: node.level ?? 0,
       is_active: node.is_active ?? true,
     },
-    children: node.children && node.children.length > 0 ? convertToD3Tree(node.children) : undefined,
+    children:
+      node.children && node.children.length > 0
+        ? convertToD3Tree(node.children)
+        : undefined,
   }));
 }
 
@@ -65,6 +84,9 @@ interface CustomNodeProps {
   toggleNode: () => void;
   setModalOpen: (open: boolean) => void;
   setSelectedParentNodeId: (id: string) => void;
+  setIsAssignUsersModalOpen: (open: boolean) => void;
+  // Users assigned to this hierarchy node (by hierarchy_node_id)
+  assignedUsers?: string[];
 }
 
 const CustomNode: React.FC<CustomNodeProps> = ({
@@ -72,20 +94,25 @@ const CustomNode: React.FC<CustomNodeProps> = ({
   toggleNode,
   setModalOpen,
   setSelectedParentNodeId,
+  setIsAssignUsersModalOpen,
+  assignedUsers = [],
 }) => {
   const hasChildren = nodeDatum.children && nodeDatum.children.length > 0;
   const isActive = nodeDatum.attributes.is_active;
-  const project = nodeDatum.attributes.project;
-  const level = nodeDatum.attributes.level ?? 0;
   const isCollapsed = nodeDatum.__rd3t?.collapsed ?? false;
+  const [hovered, setHovered] = useState(false);
 
   const handleViewDetailsClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     window.location.href = `/org_structure/${nodeDatum.attributes.hierarchy_node_id}`;
   };
 
+
+  const handleMouseEnter = () => setHovered(true);
+  const handleMouseLeave = () => setHovered(false);
+
   return (
-    <g>
+    <g onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       {/* Expand/Collapse Button */}
       {hasChildren && (
         <g transform={`translate(-160, -70)`}>
@@ -94,19 +121,8 @@ const CustomNode: React.FC<CustomNodeProps> = ({
               onClick={toggleNode}
               className="w-5 h-5 rounded-full bg-[#094C81] hover:bg-[#073954] text-white font-semibold flex items-center justify-center transition-colors duration-200 cursor-pointer text-sm"
             >
-              {isCollapsed ? '+' : '−'}
+              {isCollapsed ? "+" : "−"}
             </button>
-          </foreignObject>
-        </g>
-      )}
-
-      {/* Level Badge */}
-      {level > 0 && (
-        <g transform={`translate(160, -70)`}>
-          <foreignObject x={0} y={0} width={28} height={18}>
-            <div className="w-7 h-[18px] rounded-lg bg-gray-100 flex items-center justify-center">
-              <span className="text-[10px] font-semibold text-gray-600">L{level}</span>
-            </div>
           </foreignObject>
         </g>
       )}
@@ -117,14 +133,24 @@ const CustomNode: React.FC<CustomNodeProps> = ({
           {/* Title & Status */}
           <div className="flex items-start justify-between mb-3">
             <h3 className="text-[#094C81] text-base font-semibold flex-1 pr-2 line-clamp-2">
-              {nodeDatum.name.length > 28 ? `${nodeDatum.name.substring(0, 28)}...` : nodeDatum.name}
+              {nodeDatum.name.length > 28
+                ? `${nodeDatum.name.substring(0, 28)}...`
+                : nodeDatum.name}
             </h3>
             <span
               className={`px-3 py-1 flex items-center justify-center rounded-full text-xs font-semibold text-white whitespace-nowrap ${
-                isActive ? 'bg-green-100' : 'bg-red-100'
+                isActive ? "bg-green-100" : "bg-red-100"
               }`}
             >
-              {isActive ? <span className="text-green-900 text-xs font-semibold">Active</span> : <span className="text-red-900 text-xs font-semibold">Inactive</span>}
+              {isActive ? (
+                <span className="text-green-900 text-xs font-semibold">
+                  Active
+                </span>
+              ) : (
+                <span className="text-red-900 text-xs font-semibold">
+                  Inactive
+                </span>
+              )}
             </span>
           </div>
 
@@ -145,16 +171,60 @@ const CustomNode: React.FC<CustomNodeProps> = ({
             </button>
             <button
               onClick={() => {
-                setSelectedParentNodeId(nodeDatum.attributes.hierarchy_node_id);
+                setSelectedParentNodeId(
+                  nodeDatum.attributes.hierarchy_node_id
+                );
                 setModalOpen(true);
               }}
               className="flex-1 bg-[#094C81] hover:bg-[#073954] text-white font-semibold py-2 rounded-lg transition-colors duration-200 text-xs"
             >
               Add Child
             </button>
+            
           </div>
+          <button
+              onClick={
+                () => {
+                  setSelectedParentNodeId(
+                    nodeDatum.attributes.hierarchy_node_id
+                  );
+                  setIsAssignUsersModalOpen(true);
+                }
+              }
+              className="flex-1 bg-[#094C81] mt-2 hover:bg-[#073954] text-white font-semibold py-2 rounded-lg transition-colors duration-200 text-xs"
+            >
+              Assign Users
+            </button>
         </div>
       </foreignObject>
+
+      {hovered && assignedUsers.length > 0 && (
+        <foreignObject
+          x={160}
+          y={-90}
+          width={260}
+          height={Math.min(300, 120 + assignedUsers.length * 24)} // max height 300
+        >
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              overflowY: "auto",
+              WebkitOverflowScrolling: "touch",
+            }}
+            className="bg-white rounded-xl border border-gray-200 shadow-xl p-4"
+          >
+            <p className="text-sm font-semibold text-[#094C81]">
+              Users assigned:
+            </p>
+            <ul className="text-sm text-gray-700 mt-2 space-y-1">
+              {assignedUsers.map((fullName) => (
+                <li key={fullName}>{fullName}</li>
+              ))}
+            </ul>
+          </div>
+        </foreignObject>
+      )}
     </g>
   );
 };
@@ -162,21 +232,73 @@ const CustomNode: React.FC<CustomNodeProps> = ({
 // ---------------------------
 // Main Component
 // ---------------------------
-const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({ data, isLoading = false }) => {
+const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({
+  data,
+  isLoading = false,
+  projectUserRoles = [],
+  inistitute_id,
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const [selectedRootNodeId, setSelectedRootNodeId] = useState<string>('');
-  const [selectedParentNodeId, setSelectedParentNodeId] = useState<string | null>(null);
+  const [selectedRootNodeId, setSelectedRootNodeId] = useState<string>("");
+  const [selectedParentNodeId, setSelectedParentNodeId] = useState<
+    string | null
+  >(null);
   const { id: project_id } = useParams<{ id: string }>();
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isAssignUsersModalOpen, setIsAssignUsersModalOpen] = useState(false);
+  const { data: usersData } = useGetUsersAssignedToProjectQuery(
+    project_id || "",
+    {
+      skip: !project_id,
+    }
+  );
+  if (!project_id) throw new Error("Project ID is required");
 
-  if (!project_id) throw new Error('Project ID is required');
+  // Map hierarchy_node_id -> array of user full_names
+  // Prefer explicit projectUserRoles prop if provided; otherwise fall back to usersData from API.
+  const hierarchyNodeUsersMap = useMemo(() => {
+    const map: Record<string, string[]> = {};
+
+    // 1) From projectUserRoles prop (e.g. from ProjectDetail API)
+    projectUserRoles.forEach((role) => {
+      if (!role.hierarchy_node_id || !role.user?.full_name) return;
+      if (!map[role.hierarchy_node_id]) {
+        map[role.hierarchy_node_id] = [];
+      }
+      map[role.hierarchy_node_id].push(role.user.full_name);
+    });
+
+    // 2) From usersData returned by useGetUsersAssignedToProjectQuery
+    // Shape is assumed similar to:
+    // { success: true, data: [ { hierarchy_node_id, user: { full_name } } ] }
+    if (usersData && Array.isArray(usersData.data)) {
+      usersData.data.forEach(
+        (assignment: {
+          hierarchy_node_id?: string | null;
+          user?: { full_name?: string | null };
+        }) => {
+          const hierarchyNodeId = assignment.hierarchy_node_id;
+          const fullName = assignment.user?.full_name;
+          if (!hierarchyNodeId || !fullName) return;
+          if (!map[hierarchyNodeId]) {
+            map[hierarchyNodeId] = [];
+          }
+          map[hierarchyNodeId].push(fullName);
+        }
+      );
+    }
+
+    return map;
+  }, [projectUserRoles, usersData]);
 
   const buildTree = (nodes: TreeNode[]): TreeNode[] => {
     if (!nodes || nodes.length === 0) return [];
     const nodeMap = new Map<string, TreeNode>();
-    nodes.forEach((node) => nodeMap.set(node.hierarchy_node_id, { ...node, children: [] }));
+    nodes.forEach((node) =>
+      nodeMap.set(node.hierarchy_node_id, { ...node, children: [] })
+    );
     const tree: TreeNode[] = [];
     nodes.forEach((node) => {
       if (node.parent_id) {
@@ -190,25 +312,34 @@ const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({ data, isLoading = fal
   };
 
   const { d3TreeData, rootNodeOptions } = useMemo(() => {
-    if (!data || data.length === 0) return { d3TreeData: null, rootNodeOptions: [] };
+    if (!data || data.length === 0)
+      return { d3TreeData: null, rootNodeOptions: [] };
     const treeNodes = buildTree(data);
     const converted = convertToD3Tree(treeNodes);
     const options = treeNodes.map((node) => ({
       value: node.hierarchy_node_id,
-      label: `${node.name}${node.project?.name ? ` (${node.project.name})` : ''}`,
+      label: `${node.name}${
+        node.project?.name ? ` (${node.project.name})` : ""
+      }`,
     }));
     return { d3TreeData: converted, rootNodeOptions: options };
   }, [data]);
 
   useEffect(() => {
-    if (rootNodeOptions.length > 0 && (!selectedRootNodeId || !rootNodeOptions.find(opt => opt.value === selectedRootNodeId))) {
+    if (
+      rootNodeOptions.length > 0 &&
+      (!selectedRootNodeId ||
+        !rootNodeOptions.find((opt) => opt.value === selectedRootNodeId))
+    ) {
       setSelectedRootNodeId(rootNodeOptions[0].value);
     }
   }, [rootNodeOptions, selectedRootNodeId]);
 
   const selectedD3TreeData = useMemo(() => {
     if (!d3TreeData || !selectedRootNodeId) return null;
-    const selected = d3TreeData.find((node) => node.attributes.hierarchy_node_id === selectedRootNodeId);
+    const selected = d3TreeData.find(
+      (node) => node.attributes.hierarchy_node_id === selectedRootNodeId
+    );
     return selected ? [selected] : null;
   }, [d3TreeData, selectedRootNodeId]);
 
@@ -221,51 +352,71 @@ const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({ data, isLoading = fal
       }
     };
     updateDimensions();
-    window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
+    window.addEventListener("resize", updateDimensions);
+    return () => window.removeEventListener("resize", updateDimensions);
   }, [selectedD3TreeData]);
 
-  if (isLoading) return (
-    <div className="flex items-center justify-center py-12 min-h-[400px]">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#094C81] mx-auto mb-4"></div>
-        <p className="text-[#1E516A] text-lg">Loading hierarchy tree...</p>
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center py-12 min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#094C81] mx-auto mb-4"></div>
+          <p className="text-[#1E516A] text-lg">Loading hierarchy tree...</p>
+        </div>
       </div>
-    </div>
-  );
+    );
 
-  if (!d3TreeData || d3TreeData.length === 0) return (
-    <div className="flex items-center justify-center py-12 min-h-[400px]">
-      <div className="text-center">
-        <p className="text-gray-500 text-lg font-medium">No hierarchy nodes found</p>
-        <p className="text-gray-400 text-sm mt-2">Create a hierarchy node to get started.</p>
+  if (!d3TreeData || d3TreeData.length === 0)
+    return (
+      <div className="flex items-center justify-center py-12 min-h-[400px]">
+        <div className="text-center">
+          <p className="text-gray-500 text-lg font-medium">
+            No hierarchy nodes found
+          </p>
+          <p className="text-gray-400 text-sm mt-2">
+            Create a hierarchy node to get started.
+          </p>
+        </div>
       </div>
-    </div>
-  );
+    );
 
   return (
     <div className="w-full space-y-4">
       {rootNodeOptions.length > 1 && (
         <div className="w-[350px] p-4">
-          <Label className="text-[#094C81] text-sm font-medium">Select Root Node</Label>
-          <Select value={selectedRootNodeId} onValueChange={(value) => setSelectedRootNodeId(value)}>
+          <Label className="text-[#094C81] text-sm font-medium">
+            Select Root Node
+          </Label>
+          <Select
+            value={selectedRootNodeId}
+            onValueChange={(value) => setSelectedRootNodeId(value)}
+          >
             <SelectTrigger className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
               <SelectValue placeholder="Select a root node to display" />
             </SelectTrigger>
             <SelectContent>
               {rootNodeOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
       )}
 
-      <div ref={containerRef} className="w-full h-full min-h-[600px] bg-[#F9FBFC] rounded-lg border border-gray-200 overflow-hidden relative">
+      <div
+        ref={containerRef}
+        className="w-full h-full min-h-[600px] bg-[#F9FBFC] rounded-lg border border-gray-200 overflow-hidden relative"
+      >
         <style>{`.rd3t-link { stroke: #94A3B8 !important; stroke-width: 2.5px !important; fill: none !important; }`}</style>
         {selectedD3TreeData ? (
           <>
-            <div id="tree-container" className="w-full h-full" style={{ height: dimensions.height || '600px' }}>
+            <div
+              id="tree-container"
+              className="w-full h-full"
+              style={{ height: dimensions.height || "600px" }}
+            >
               <Tree
                 data={selectedD3TreeData}
                 translate={translate}
@@ -278,13 +429,21 @@ const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({ data, isLoading = fal
                 enableLegacyTransitions
                 transitionDuration={300}
                 renderCustomNodeElement={(rd3tProps) => {
-                  const nodeDatum = rd3tProps.nodeDatum as D3TreeNode & { __rd3t?: { collapsed?: boolean } };
+                  const nodeDatum = rd3tProps.nodeDatum as unknown as D3TreeNode & {
+                    __rd3t?: { collapsed?: boolean };
+                  };
+                  const assignedUsers =
+                    hierarchyNodeUsersMap[
+                      nodeDatum.attributes.hierarchy_node_id
+                    ] || [];
                   return (
                     <CustomNode
                       nodeDatum={nodeDatum}
                       toggleNode={rd3tProps.toggleNode}
                       setModalOpen={setModalOpen}
                       setSelectedParentNodeId={setSelectedParentNodeId}
+                      setIsAssignUsersModalOpen={setIsAssignUsersModalOpen}
+                      assignedUsers={assignedUsers}
                     />
                   );
                 }}
@@ -300,7 +459,9 @@ const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({ data, isLoading = fal
         ) : (
           <div className="flex items-center justify-center py-12 min-h-[400px] text-center text-gray-500">
             <p className="text-lg font-medium">No root node selected</p>
-            <p className="text-sm mt-2">Please select a root node from the dropdown above.</p>
+            <p className="text-sm mt-2">
+              Please select a root node from the dropdown above.
+            </p>
           </div>
         )}
       </div>
@@ -313,6 +474,14 @@ const HierarchyD3Tree: React.FC<HierarchyD3TreeProps> = ({ data, isLoading = fal
           setModalOpen(false);
           setSelectedParentNodeId(null);
         }}
+
+      />
+      <AssignUserModal
+        inistitute_id={inistitute_id}
+        hierarchy_node_id={selectedParentNodeId || ""}
+        project_id={project_id}
+        isOpen={isAssignUsersModalOpen}
+        onClose={() => setIsAssignUsersModalOpen(false)}
       />
     </div>
   );

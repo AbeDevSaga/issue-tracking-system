@@ -32,7 +32,7 @@ export default function ProjectMetricsList() {
   const metricColumns = [
     {
       accessorKey: "name",
-      header: "Metric Name",
+      header: "Human Resource Name",
       cell: ({ row }: any) => (
         <div className="font-medium text-blue-600">{row.getValue("name")}</div>
       ),
@@ -88,7 +88,7 @@ export default function ProjectMetricsList() {
 
   const actions: ActionButton[] = [
     {
-      label: "Add Metric",
+      label: "Add ",
       icon: <Plus className="h-4 w-4" />,
       variant: "default",
       size: "default",

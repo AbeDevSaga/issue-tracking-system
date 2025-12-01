@@ -168,9 +168,9 @@ const InternalNodeTableColumns = (deleteNode: any) => [
     setFilteredNodes(filtered);
   }, [nodes, statusFilter]);
 
-  // const handlePagination = (index: number, size: number) => {
-  //   setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
-  // };
+  const handlePagination = (index: number, size: number) => {
+    setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
+  };
 
   console.log(filteredNodes.length > 0 ? true : false,filteredNodes,"this is the filtered nodes");
   return (
@@ -180,11 +180,11 @@ const InternalNodeTableColumns = (deleteNode: any) => [
         filterColumnsPerRow={1}
         toggleActions={toggleActions}
         actions={actions}
-        showtoggle={false}
+        showtoggle={true}
         toggle={toggleView}
         onToggle={(value: string) => setToggleView(value)}
       >
-        {/* {toggleView === "table" ? (
+        {toggleView === "table" ? (
           <DataTable
             columns={InternalNodeTableColumns(deleteNode)}
             data={filteredNodes}
@@ -194,9 +194,9 @@ const InternalNodeTableColumns = (deleteNode: any) => [
             currentIndex={pageDetail.pageIndex}
           />
         ) : (
-          <HierarchyD3TreeInstitute data={filteredNodes} isLoading={isLoading} />
-        )} */}
           <HierarchyD3TreeInstitute isAssignUsersToStructure={isAssignUsersToStructure} data={filteredNodes} isLoading={isLoading} />
+        )}
+          {/* <HierarchyD3TreeInstitute isAssignUsersToStructure={isAssignUsersToStructure} data={filteredNodes} isLoading={isLoading} /> */}
 
       </PageLayout>
 
