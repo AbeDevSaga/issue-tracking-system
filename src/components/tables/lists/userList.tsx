@@ -16,16 +16,9 @@ import {
   useDeleteUserMutation,
   User,
 } from "../../../redux/services/userApi";
-import { useAuth } from "../../../contexts/AuthContext";
-import { getUserPositionId } from "../../../utils/helper/userPosition";
 
 // --- Define table columns ---
 const UserTableColumns = (handleEdit: (user: User) => void) => [
-  {
-    id: "serial",
-    header: "#",
-    cell: ({ row }: any) => <div>{row.index + 1}</div>,
-  },
   {
     accessorKey: "full_name",
     header: "Full Name",
@@ -74,93 +67,76 @@ const UserTableColumns = (handleEdit: (user: User) => void) => [
         </span>
       );
     },
-    {
-      accessorKey: "phone_number",
-      header: "Phone Number",
-      cell: ({ row }: any) => <div>{row.getValue("phone_number")}</div>,
+  },
+  {
+    accessorKey: "is_active",
+    header: "Status",
+    cell: ({ row }: any) => {
+      const isActive = row.getValue("is_active");
+      return (
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+          }`}
+        >
+          {isActive ? "Active" : "Inactive"}
+        </span>
+      );
     },
-    logged_user_type !== "external_user" &&
-      user_type === "external_user" && {
-        accessorKey: "institute.name", // ✅ Access nested userType name
-        header: "Institute",
-        cell: ({ row }: any) => {
-          const inst = row.original.institute?.name || "N/A";
-          return (
-            <span className={`px-2 py-1 text-xs font-semibold rounded-full`}>
-              {inst.replace("_", " ")}
-            </span>
-          );
-        },
-      },
-    {
-      accessorKey: "is_active",
-      header: "Status",
-      cell: ({ row }: any) => {
-        const isActive = row.getValue("is_active");
-        return (
-          <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              isActive
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
-            }`}
-          >
-            {isActive ? "Active" : "Inactive"}
-          </span>
-        );
-      },
-    },
-    {
-      id: "actions",
-      header: "Actions",
-      cell: ({ row }: any) => {
-        const user = row.original as User;
-        const [deleteUser] = useDeleteUserMutation();
+  },
+  {
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }: any) => {
+      const user = row.original as User;
+      const [deleteUser] = useDeleteUserMutation();
 
-        const handleDelete = async () => {
+      const handleDelete = async () => {
+        if (confirm(`Are you sure you want to delete ${user.full_name}?`)) {
           try {
             await deleteUser(user.user_id).unwrap();
             toast.success("User deleted successfully!");
           } catch (err: any) {
             toast.error(err?.data?.message || "Failed to delete user");
           }
-        };
+        }
+      };
 
-        return (
-          <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-              <Link to={`/users/${user.user_id}`}>
-                <Eye className="h-4 w-4" />
-              </Link>
-            </Button>
-            {/* <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
+      return (
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
             <Link to={`/users/${user.user_id}`}>
-              <Edit className="h-4 w-4" />
+              <Eye className="h-4 w-4" />
             </Link>
-          </Button> */}
-            {/* <Button
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+            onClick={() => handleEdit(user)}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
             variant="outline"
             size="sm"
             className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
             onClick={handleDelete}
           >
             <Trash2 className="h-4 w-4" />
-          </Button> */}
-          </div>
-        );
-      },
+          </Button>
+        </div>
+      );
     },
-  ].filter(Boolean);
-  const { user } = useAuth();
-  const positionId = getUserPositionId(logged_user_type, user_type, false);
+  },
+];
 
-  // user_position_id
-  const { data, isLoading, isError } = useGetUsersQuery({
-    institute_id: user?.institute?.institute_id || inistitute_id,
-    user_position_id: user_position_id || positionId,
-    user_type_id: user_type_id,
-  });
-  // useGetUsersByInstituteIdQuery
+interface UserListProps {
+  institute_id?: string;
+}
+
+export default function UserList({ institute_id }: UserListProps) {
+  const { data, isLoading, isError, refetch } = useGetUsersQuery();
   const [response, setResponse] = useState<User[]>([]);
   const [filteredResponse, setFilteredResponse] = useState<User[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -230,7 +206,7 @@ const UserTableColumns = (handleEdit: (user: User) => void) => [
 
   const actions: ActionButton[] = [
     {
-      label: buttonLabel,
+      label: "Add User",
       icon: <Plus className="h-4 w-4" />,
       variant: "default",
       size: "default",
@@ -265,7 +241,6 @@ const UserTableColumns = (handleEdit: (user: User) => void) => [
       <PageLayout
         filters={filterFields}
         filterColumnsPerRow={1}
-        toggleActions={toggleActions}
         actions={actions}
         title="User Management"
         description="Manage system users and their permissions"

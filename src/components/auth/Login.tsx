@@ -61,26 +61,22 @@ export default function Login() {
     }
   }, [navigate]);
 
-  // Format Ethiopian phone number for display
+  // Format Ethiopian phone number to +251XXXXXXXXX
   const formatEthiopianPhoneNumber = (value: string) => {
-    if (!value) return value;
+    if (!value) return "";
 
-    const cleaned = value.replace(/\D/g, "");
+    // Remove all non-digit characters
+    let digits = value.replace(/\D/g, "");
 
-    if (cleaned.length <= 1) {
-      return cleaned;
-    } else if (cleaned.length <= 3) {
-      return `${cleaned.slice(0, 1)}-${cleaned.slice(1)}`;
-    } else if (cleaned.length <= 6) {
-      return `${cleaned.slice(0, 1)}-${cleaned.slice(1, 4)}-${cleaned.slice(
-        4
-      )}`;
-    } else {
-      return `${cleaned.slice(0, 1)}-${cleaned.slice(1, 4)}-${cleaned.slice(
-        4,
-        7
-      )}-${cleaned.slice(7, 10)}`;
+    // Remove leading zero if present
+    if (digits.startsWith("0")) {
+      digits = digits.slice(1);
     }
+
+    // Limit to max 9 digits (Ethiopian mobile numbers without country code)
+    digits = digits.slice(0, 9);
+
+    return `+251${digits}`;
   };
 
   const handlePhoneNumberChange = (value: string) => {
@@ -142,12 +138,8 @@ export default function Login() {
                 className="h-30 mx-auto mb-1"
               />
               <p className="text-[12px] flex flex-col text-[#0C4A6E] font-bold text-center uppercase tracking-wide">
-              <span className="text-sm">
-              {t("login.title_am")}
-              </span>
-              <span className="text-[12px]">
-              {t("login.title")}
-              </span>
+                <span className="text-sm">{t("login.title_am")}</span>
+                <span className="text-[12px]">{t("login.title")}</span>
               </p>
             </div>
             {/* Error */}
@@ -182,7 +174,7 @@ export default function Login() {
                   : "text-gray-600 hover:text-gray-900"
               }`}
             >
-              {t("Login Phone")}
+              {t("Login By Phone")}
             </button>
           </div>
         </div>
@@ -197,9 +189,7 @@ export default function Login() {
               htmlFor={loginMethod === "email" ? "email" : "phoneNumber"}
               className="block text-base font-medium text-[#0C4A6E] mb-1"
             >
-              {loginMethod === "email"
-                ? t("Login Email")
-                : t("ogin.phone_number")}
+              {loginMethod === "email" ? t(" Email") : t("Phone")}
             </Label>
 
             {loginMethod === "email" ? (
@@ -236,16 +226,16 @@ export default function Login() {
                   <>
                     <Input
                       id="phoneNumber"
-                      placeholder="9-123-456-789"
+                      placeholder="+251912345678"
                       value={field.value}
                       onChange={(e) => {
-                        const formattedValue = handlePhoneNumberChange(
+                        const formattedValue = formatEthiopianPhoneNumber(
                           e.target.value
                         );
                         field.onChange(formattedValue);
                         setValue("email", ""); // Clear email when using phone
                       }}
-                      maxLength={14}
+                      maxLength={13} // +251 + 9 digits
                       className={`w-full px-3 py-2 border rounded-md text-sm ${
                         errors.phoneNumber
                           ? "border-red-500"
@@ -257,9 +247,6 @@ export default function Login() {
                         {errors.phoneNumber.message}
                       </p>
                     )}
-                    <p className="text-xs text-gray-500 mt-1">
-                      {t("login.phone_format")}
-                    </p>
                   </>
                 )}
               />

@@ -23,6 +23,8 @@ export default function ForgotPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
+
+  const [passwordError, setPasswordError] = useState("");
   const navigate = useNavigate();
 
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -55,36 +57,88 @@ export default function ForgotPassword() {
     setStep(2);
   };
 
-  // Phone validation and formatting functions
   const validateEthiopianPhoneNumber = (phone: string) => {
-    const cleanPhone = phone.replace(/\D/g, "");
-    const patterns = [
-      /^9\d{8}$/,
-      /^9\d{9}$/,
-      /^09\d{8}$/,
-      /^09\d{9}$/,
-      /^251\d{9}$/,
-    ];
-    return patterns.some((pattern) => pattern.test(cleanPhone));
+    const clean = phone.replace(/\D/g, "");
+
+    // Ethiopian phone numbers should have 12 digits total (251 + 9 digits)
+    // or 10 digits (09 format) or 9 digits (9 format)
+
+    // +2519XXXXXXXX  OR  2519XXXXXXXX (12 digits total)
+    if (clean.startsWith("251") && clean.length === 12 && clean[3] === "9") {
+      return true;
+    }
+
+    // 09XXXXXXXX  (10 digits)
+    if (clean.startsWith("09") && clean.length === 10) {
+      return true;
+    }
+
+    // 9XXXXXXXX  (9 digits)
+    if (clean.startsWith("9") && clean.length === 9) {
+      return true;
+    }
+
+    // Allow partial input during typing (minimum 4 digits: 2519)
+    if (clean.startsWith("2519") && clean.length >= 4 && clean.length <= 12) {
+      return true;
+    }
+
+    return false;
   };
 
   const formatEthiopianPhoneNumber = (value: string) => {
-    const cleaned = value.replace(/\D/g, "");
-    if (cleaned.length <= 1) return cleaned;
-    else if (cleaned.length <= 3)
-      return `${cleaned.slice(0, 1)}-${cleaned.slice(1)}`;
-    else if (cleaned.length <= 6)
-      return `${cleaned.slice(0, 1)}-${cleaned.slice(1, 4)}-${cleaned.slice(
-        4
-      )}`;
-    else
-      return `${cleaned.slice(0, 1)}-${cleaned.slice(1, 4)}-${cleaned.slice(
-        4,
-        7
-      )}-${cleaned.slice(7, 10)}`;
+    let clean = value.replace(/\D/g, "");
+
+    // Normalize to start with 251
+    if (clean.startsWith("0")) {
+      clean = "251" + clean.slice(1);
+    } else if (clean.startsWith("9")) {
+      clean = "251" + clean;
+    } else if (!clean.startsWith("251")) {
+      clean = "251" + clean;
+    }
+
+    // Allow full 12 digits (251 + 9 digits)
+    clean = clean.slice(0, 12);
+
+    // Display format with proper spacing for Ethiopian numbers
+    const country = "+251";
+
+    if (clean.length >= 4) {
+      const p1 = clean.slice(3, 4); // 9 (first digit after country code)
+      const p2 = clean.slice(4, 6); // 95 (next two digits)
+      const p3 = clean.slice(6, 9); // 475 (next three digits)
+      const p4 = clean.slice(9, 12); // remaining digits
+
+      let formatted = `${country}`;
+      if (p1) formatted += ` ${p1}`;
+      if (p2) formatted += ` ${p2}`;
+      if (p3) formatted += ` ${p3}`;
+      if (p4) formatted += ` ${p4}`;
+
+      return formatted.trim();
+    }
+
+    return `${country} ${clean.slice(3)}`;
   };
 
-  const cleanPhoneNumber = (phone: string) => phone.replace(/\D/g, "");
+  const cleanPhoneNumber = (phone: string) => {
+    let clean = phone.replace(/\D/g, "");
+
+    // Normalize to 251 format
+    if (clean.startsWith("0")) {
+      clean = "251" + clean.slice(1);
+    } else if (clean.startsWith("9")) {
+      clean = "251" + clean;
+    }
+
+    // Ensure we have exactly 12 digits for Ethiopian numbers
+    if (clean.startsWith("251") && clean.length > 12) {
+      clean = clean.slice(0, 12);
+    }
+
+    return clean;
+  };
 
   // Handle OTP input change
   const handleOtpChange = (index: number, value: string) => {
@@ -102,7 +156,22 @@ export default function ForgotPassword() {
       }, 10);
     }
   };
+  const validatePassword = (password) => {
+    const uppercase = /[A-Z]/.test(password);
+    const lowercase = /[a-z]/.test(password);
+    const specialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
+    if (!uppercase)
+      return "Password must include at least one uppercase letter.";
+    if (!lowercase)
+      return "Password must include at least one lowercase letter.";
+    if (!specialChar)
+      return "Password must include at least one special character.";
+    if (password.length < 6)
+      return "Password must be at least 6 characters long.";
+
+    return ""; // No errors
+  };
   // Handle OTP key down (backspace navigation)
   const handleOtpKeyDown = (
     index: number,
@@ -556,20 +625,20 @@ export default function ForgotPassword() {
                     <input
                       type="tel"
                       value={phoneNumber}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setPhoneNumber(
                           formatEthiopianPhoneNumber(e.target.value)
-                        )
-                      }
+                        );
+                      }}
                       className="block w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200 bg-white/50 text-slate-900 text-lg"
-                      placeholder="9-123-456-789"
-                      maxLength={14}
+                      placeholder="+251 9XX XXX XXX"
+                      maxLength={18}
                       required
                       disabled={loading}
                     />
                   </div>
                   <p className="text-xs text-slate-500">
-                    Enter your phone number (e.g., 912345678, 0912345678)
+                    Enter your phone number (e.g., +25912345678, 0912345678)
                   </p>
                 </div>
               ) : (
@@ -806,13 +875,21 @@ export default function ForgotPassword() {
                   <input
                     type="password"
                     value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
+                    onChange={(e) => {
+                      setNewPassword(e.target.value);
+                      const error = validatePassword(e.target.value);
+                      setPasswordError(error);
+                    }}
                     className="block w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200 bg-white/50 text-slate-900 text-lg"
                     placeholder="Enter new password"
-                    minLength={6}
                     required
                     disabled={loading}
                   />
+
+                  {/* 4. Show the validation message */}
+                  {passwordError && (
+                    <p className="text-xs text-red-500 mt-1">{passwordError}</p>
+                  )}
                 </div>
                 <p className="text-xs text-slate-500">
                   Password must be at least 6 characters long
@@ -844,7 +921,13 @@ export default function ForgotPassword() {
                 <button
                   type="button"
                   onClick={handleBack}
-                  disabled={loading}
+                  disabled={
+                    loading ||
+                    !newPassword ||
+                    !confirmPassword ||
+                    newPassword !== confirmPassword ||
+                    passwordError
+                  }
                   className="flex-1 bg-slate-500 hover:bg-slate-600 text-white py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Back
@@ -857,7 +940,7 @@ export default function ForgotPassword() {
                     !confirmPassword ||
                     newPassword !== confirmPassword
                   }
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-slate-400 disabled:to-slate-500 text-white py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-linear-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 disabled:from-slate-400 disabled:to-slate-500 text-white py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? "Resetting..." : "Reset Password"}
                 </button>

@@ -1,4 +1,5 @@
 // src/components/auth/ResetPasswordPage.tsx
+
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -7,6 +8,21 @@ import {
   AiOutlineArrowLeft,
   AiOutlineSafety,
 } from "react-icons/ai";
+
+const PasswordRule = ({ text, valid }: { text: string; valid: boolean }) => {
+  return (
+    <div className="flex items-center gap-2 text-sm">
+      {valid ? (
+        <span className="text-green-600 font-bold">✔</span>
+      ) : (
+        <span className="text-slate-400 font-bold">✖</span>
+      )}
+      <span className={valid ? "text-green-700" : "text-slate-500"}>
+        {text}
+      </span>
+    </div>
+  );
+};
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -19,6 +35,28 @@ export default function ResetPasswordPage() {
 
   const token = searchParams.get("token");
   const email = searchParams.get("email");
+
+  // Password rule states
+  const [passwordRules, setPasswordRules] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false,
+  });
+
+  // Live password strength check
+  useEffect(() => {
+    const p = newPassword;
+
+    setPasswordRules({
+      length: p.length >= 6,
+      uppercase: /[A-Z]/.test(p),
+      lowercase: /[a-z]/.test(p),
+      number: /[0-9]/.test(p),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(p),
+    });
+  }, [newPassword]);
 
   // Validate token on component mount
   useEffect(() => {
@@ -67,8 +105,15 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    if (newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
+    // Final backend-side validation
+    if (
+      !passwordRules.length ||
+      !passwordRules.uppercase ||
+      !passwordRules.lowercase ||
+      !passwordRules.number ||
+      !passwordRules.special
+    ) {
+      toast.error("Password does not meet requirements");
       return;
     }
 
@@ -106,6 +151,7 @@ export default function ResetPasswordPage() {
     }
   };
 
+  // LOADING PAGE
   if (validating) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50/30">
@@ -117,6 +163,7 @@ export default function ResetPasswordPage() {
     );
   }
 
+  // INVALID LINK
   if (!tokenValid) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50/30 px-4 py-8">
@@ -152,6 +199,7 @@ export default function ResetPasswordPage() {
     );
   }
 
+  // MAIN PAGE
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50/30 px-4 py-8">
       <Link
@@ -165,7 +213,7 @@ export default function ResetPasswordPage() {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="w-20 h-20 bg-linear-to-br from-blue-400 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg">
               <AiOutlineLock className="w-10 h-10 text-white" />
             </div>
           </div>
@@ -173,7 +221,7 @@ export default function ResetPasswordPage() {
             <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
               Create New Password
             </h1>
-            <p className="text-slate-600 text-lg leading-relaxed">
+            <p className="text-slate-600 text-2xl leading-relaxed">
               Enter your new password below
             </p>
           </div>
@@ -181,10 +229,12 @@ export default function ResetPasswordPage() {
 
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-200/60 p-8 space-y-6">
           <form onSubmit={handleResetPassword} className="space-y-6">
+            {/* NEW PASSWORD */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-2xl font-medium text-slate-700">
                 New Password
               </label>
+
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <AiOutlineLock className="h-5 w-5 text-slate-400" />
@@ -193,22 +243,44 @@ export default function ResetPasswordPage() {
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="block w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200 bg-white/50 text-slate-900 text-lg"
+                  className="block w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200 bg-white/50 text-slate-900 text-sm"
                   placeholder="Enter new password"
-                  minLength={6}
                   required
                   disabled={loading}
                 />
               </div>
-              <p className="text-xs text-slate-500">
-                Password must be at least 6 characters long
-              </p>
+
+              {/* Password Rules Display */}
+              <div className="mt-3 space-y-1">
+                <PasswordRule
+                  text="At least 6 characters"
+                  valid={passwordRules.length}
+                />
+                <PasswordRule
+                  text="One uppercase letter (A–Z)"
+                  valid={passwordRules.uppercase}
+                />
+                <PasswordRule
+                  text="One lowercase letter (a–z)"
+                  valid={passwordRules.lowercase}
+                />
+                <PasswordRule
+                  text="One number (0–9)"
+                  valid={passwordRules.number}
+                />
+                <PasswordRule
+                  text="One special character (!@#...)"
+                  valid={passwordRules.special}
+                />
+              </div>
             </div>
 
+            {/* CONFIRM PASSWORD */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="block text-2xl font-medium text-slate-700">
                 Confirm Password
               </label>
+
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <AiOutlineLock className="h-5 w-5 text-slate-400" />
@@ -217,24 +289,29 @@ export default function ResetPasswordPage() {
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="block w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200 bg-white/50 text-slate-900 text-lg"
+                  className="block w-full pl-10 pr-4 py-3.5 border border-slate-300 rounded-xl placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200 bg-white/50 text-slate-900 text-sm"
                   placeholder="Confirm new password"
-                  minLength={6}
                   required
                   disabled={loading}
                 />
               </div>
             </div>
 
+            {/* SUBMIT BUTTON */}
             <button
               type="submit"
               disabled={
                 loading ||
                 !newPassword ||
                 !confirmPassword ||
-                newPassword !== confirmPassword
+                newPassword !== confirmPassword ||
+                !passwordRules.length ||
+                !passwordRules.uppercase ||
+                !passwordRules.lowercase ||
+                !passwordRules.number ||
+                !passwordRules.special
               }
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-slate-400 disabled:to-slate-500 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl disabled:shadow-md transition-all duration-200 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-700 hover:to-blue-800 disabled:from-slate-400 disabled:to-slate-500 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl disabled:shadow-md transition-all duration-200 disabled:cursor-not-allowed"
             >
               {loading ? "Resetting Password..." : "Reset Password"}
             </button>
