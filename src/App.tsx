@@ -73,6 +73,8 @@ import InternalAppLayout from "./layout/InternalLayout/InternalAppLayout";
 import IssueFlow from "./InternalPages/IssueFlow/IssueFlow";
 import IssueConfigurationDetail from "./InternalPages/IssueFlow/IssueConfigurationDetail";
 import LandingPage from "./pages/home/LandingPage";
+import TrackPage from "./pages/home/TrackPage";
+import TrackPageDetail from "./pages/home/TrackPageDetail";
 const AuthLoader = () => {
   return (
     <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">
@@ -107,6 +109,8 @@ function AppContent() {
 
       <Routes>
         <Route path='/' element={<LandingPage/>}/>
+        <Route path='/track_request' element={<TrackPage/>}/>
+        <Route path='/track_request/:id' element={<TrackPageDetail/>}/>
         <Route element={<AppLayout />}>
           <Route
             path="/dashboard"

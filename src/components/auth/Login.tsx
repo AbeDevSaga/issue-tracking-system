@@ -6,7 +6,7 @@ import Input from "../form/input/InputField";
 import Button from "../ui/button/Button";
 import { useTranslation } from "react-i18next";
 import Login_bg from "../../assets/login_bg.png";
-import { EyeOffIcon } from "lucide-react";
+import { ArrowLeftIcon, EyeOffIcon } from "lucide-react";
 import { EyeOpenIcon } from "@radix-ui/react-icons";
 import {
   signInSchema,
@@ -53,9 +53,19 @@ export default function Login() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat relative"
+      className="min-h-screen relative flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat relative"
       style={{ backgroundImage: `url(${Login_bg})` }}
     >
+      <div className="fixed inset-0 w-full h-full z-0 overflow-hidden">
+        <Button
+          onClick={() => navigate("/")}
+          className="cursor-pointer z-50 bg-white/95 hover:bg-slate-100 backdrop-blur-md rounded-2xl shadow-2xl p-2 top-4 left-4 absolute flex items-center gap-1"
+        >
+          <ArrowLeftIcon className="w-5 h-5 text-[#0C4A6E]" />
+          <span className="text-sm text-[#0C4A6E] font-medium">Back </span>
+        </Button>
+      </div>
+
       <div className="relative w-full max-w-md min-h-[550px] flex flex-col justify-center items-center bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden">
         <div className="p-6 pb-4 w-full">
           <div className="flex items-center justify-center gap-4 flex-col space-x-4">

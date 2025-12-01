@@ -89,13 +89,7 @@ export default function IssueHistoryLog({ logs, onClose }: LogsPreviewProps) {
               {/* Timeline number */}
               <div className="relative w-6 h-6 ">
                 <div
-                  className={`w-6 h-6 absolute text-xs top-0 -left-2 rounded-full border-2 border-white flex items-center justify-center z-10 font-semibold ${
-                    log.resolution
-                      ? "bg-green-500 text-white"
-                      : log.escalation
-                      ? "bg-purple-500 text-white"
-                      : "bg-blue-500 text-white"
-                  }`}
+                  className={`w-6 h-6 bg-blue-500 text-white absolute text-xs top-0 -left-2 rounded-full border-2 border-white flex items-center justify-center z-10 font-semibold `}
                 >
                   {index + 1}
                 </div>
