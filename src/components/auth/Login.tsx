@@ -1,78 +1,55 @@
 // src/components/auth/SignInForm.tsx
-import { ChangeEvent, FormEvent, useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { EyeCloseIcon, EyeIcon } from "../../icons";
+import { useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Button from "../ui/button/Button";
 import { useTranslation } from "react-i18next";
 import Login_bg from "../../assets/login_bg.png";
-import { useLoginMutation } from "../../redux/services/authApi";
 import { EyeOffIcon } from "lucide-react";
 import { EyeOpenIcon } from "@radix-ui/react-icons";
-import { signInSchema, SignInFormData } from "../../utils/validation/loginSchema";
+import {
+  signInSchema,
+  SignInFormData,
+} from "../../utils/validation/loginSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-
-interface FormData {
-  email: string;
-  password: string;
-}
+import { useAuth } from "../../contexts/AuthContext"; // <-- IMPORTANT: Use AuthContext
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [formData, setFormData] = useState<FormData>({
-    email: "",
-    password: "",
-  });
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
-
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [loginMutation] = useLoginMutation();
+  const location = useLocation();
+  const { login, error: authError, clearError } = useAuth(); // <-- Use AuthContext
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    } = useForm({
+    setError: setFormError,
+  } = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
-    });
-  // Load token and user from localStorage on mount
-  useEffect(() => {
-    const storedToken = localStorage.getItem("authToken");
-    const storedUser = localStorage.getItem("user");
-    if (storedToken && storedUser) {
-      setUser(JSON.parse(storedUser));
-      navigate("/dashboard");
-    }
-  }, [navigate]);
+  });
 
-  
-  const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    if (error) setError(null);
-  };
+  const from = location.state?.from?.pathname || "/dashboard";
 
   const onSubmit = async (data: SignInFormData) => {
-    setError(null);
     try {
-    const response = await loginMutation(data).unwrap();
-    if (response.token && response.user) {
-    navigate("/dashboard");
-    } else {
-    setError("Login failed: Invalid credentials");
-    }
+      clearError(); // Clear any previous errors
+      await login(data); // Use AuthContext login
+
+      // AuthContext will update its state, and AppLayout will detect it
+      // Navigate to the intended destination or dashboard
+      navigate(from, { replace: true });
     } catch (err: any) {
-    console.error("Login error:", err);
-    setError(err?.data?.message || "Login failed");
+      console.error("Login error:", err);
+      // Error is already set in AuthContext, but you can also set form error
+      if (err.message) {
+        setFormError("root", { message: err.message });
+      }
     }
-    };
+  };
 
   return (
     <div
@@ -80,7 +57,7 @@ export default function Login() {
       style={{ backgroundImage: `url(${Login_bg})` }}
     >
       <div className="relative w-full max-w-md min-h-[550px] flex flex-col justify-center items-center bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden">
-        <div className="p-6 pb-4 w-full ">
+        <div className="p-6 pb-4 w-full">
           <div className="flex items-center justify-center gap-4 flex-col space-x-4">
             <div className="text-center w-full flex justify-center items-center gap-2 flex-col">
               <img
@@ -89,25 +66,26 @@ export default function Login() {
                 className="h-30 mx-auto mb-1"
               />
               <p className="text-[12px] flex flex-col text-[#0C4A6E] font-bold text-center uppercase tracking-wide">
-              <span className="text-sm">
-              {t("login.title_am")}
-              </span>
-              <span className="text-[12px]">
-              {t("login.title")}
-              </span>
+                <span className="text-sm">{t("login.title_am")}</span>
+                <span className="text-[12px]">{t("login.title")}</span>
               </p>
             </div>
-            {/* Error */}
-            {error && (
-              <div className="rounded-md  w-full text-center ">
-                <div className="text-sm text-red-700">{error}</div>
+
+            {/* Display error from AuthContext */}
+            {(authError || errors.root) && (
+              <div className="rounded-md w-full text-center">
+                <div className="text-sm text-red-700">
+                  {authError || errors.root?.message}
+                </div>
               </div>
             )}
-
           </div>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 pt-4 space-y-4 w-full">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="p-6 pt-4 space-y-4 w-full"
+        >
           {/* Email */}
           <div>
             <Label
@@ -116,7 +94,19 @@ export default function Login() {
             >
               {t("login.email_phone_number")}
             </Label>
-              <Input id="email"  placeholder="example.xx@gov.et" {...register("email")} className={`w-full px-3 py-2 border rounded-md text-sm ${ errors.email ? "border-red-500" : "border-blue-300" }`} /> {errors.email && ( <p className="text-red-500 text-sm mt-1">{errors.email.message}</p> )}
+            <Input
+              id="email"
+              placeholder="example.xx@gov.et"
+              {...register("email")}
+              className={`w-full px-3 py-2 border rounded-md text-sm ${
+                errors.email ? "border-red-500" : "border-blue-300"
+              }`}
+            />
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
           {/* Password */}
@@ -133,7 +123,9 @@ export default function Login() {
                 type={showPassword ? "text" : "password"}
                 placeholder="enter your password"
                 {...register("password")}
-                className={`w-full px-3 py-2 pr-10 border rounded-md text-sm ${ errors.password ? "border-red-500" : "border-blue-300" }`}
+                className={`w-full px-3 py-2 pr-10 border rounded-md text-sm ${
+                  errors.password ? "border-red-500" : "border-blue-300"
+                }`}
               />
               <button
                 type="button"
@@ -147,14 +139,18 @@ export default function Login() {
                 )}
               </button>
             </div>
-            {errors.password && ( <p className="text-red-500 text-sm mt-1">{errors.password.message}</p> )}
+            {errors.password && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.password.message}
+              </p>
+            )}
           </div>
 
           {/* Forgot Password */}
           <div className="flex items-center w-full text-right justify-end text-sm">
             <Link
               to="/forgot-password"
-              className="text-[#0C4A6E] hover:text-[#083b56]  hover:font-medium hover:cursor-pointer "
+              className="text-[#0C4A6E] hover:text-[#083b56] hover:font-medium hover:cursor-pointer"
             >
               {t("login.forgot_password")}
             </Link>

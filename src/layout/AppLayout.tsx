@@ -1,6 +1,5 @@
 // src/layout/AppLayout.tsx
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { SidebarProvider, useSidebar } from "../context/SidebarContext";
 import { useAuth } from "../contexts/AuthContext";
 import AppHeader from "./AppHeader";
@@ -30,29 +29,12 @@ const LayoutWithSidebar: React.FC = () => {
   );
 };
 
-const LayoutWithoutSidebar: React.FC = () => {
-  return (
-    <div className="min-h-screen">
-      <AppHeader />
-      <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
-        <Outlet />
-      </div>
-    </div>
-  );
-};
-
+// src/layout/AppLayout.tsx (updated LayoutContent)
 const LayoutContent: React.FC = () => {
-  const { user, loading } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      navigate("/login");
-    }
-  }, [navigate]);
-
+  // Show loading spinner while checking auth
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -61,27 +43,16 @@ const LayoutContent: React.FC = () => {
     );
   }
 
-  const isStudent = user?.user_type === "student";
-
-  const studentRoutes = [
-    "/student-dashboard",
-    "/all-courses",
-    "/my-courses",
-    "/student-exam",
-    "/student-resources",
-  ];
-
-  const isStudentRoute = studentRoutes.includes(location.pathname);
-
-  if (!isStudent || !isStudentRoute) {
-    return (
-      <SidebarProvider>
-        <LayoutWithSidebar />
-      </SidebarProvider>
-    );
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  return <LayoutWithoutSidebar />;
+  return (
+    <SidebarProvider>
+      <LayoutWithSidebar />
+    </SidebarProvider>
+  );
 };
 
 const AppLayout: React.FC = () => {

@@ -18,14 +18,16 @@ import { ActionButton, FilterField } from "../../../types/layout";
 import HierarchyD3TreeInstitute from "./HierarchyD3TreeInstitute";
 import { CreateInternalNodeModal } from "../../modals/CreateInternalNodeModal";
 
-
 interface IssueFlowListProps {
   toggleActions?: ActionButton[];
   isAssignUsersToStructure?: boolean;
 }
 
 // ------------------- Component -------------------
-export default function IssueFlowList({ toggleActions, isAssignUsersToStructure }: IssueFlowListProps) {
+export default function IssueFlowList({
+  toggleActions,
+  isAssignUsersToStructure,
+}: IssueFlowListProps) {
   const { data, isLoading, isError } = useGetInternalNodesQuery();
   const [deleteNode] = useDeleteInternalNodeMutation();
 
@@ -39,100 +41,8 @@ export default function IssueFlowList({ toggleActions, isAssignUsersToStructure 
     pageCount: 1,
     pageSize: 10,
   });
-  const {pathname} = useLocation();
-  console.log(pathname,"this is the pathname");
-// ------------------- Table Columns -------------------
-const InternalNodeTableColumns = (deleteNode: any) => [
-  {
-    accessorKey: "name",
-    header: "Issue Flow Name",
-    cell: ({ row }: any) => (
-      <div className="font-medium text-blue-600">{row.getValue("name")}</div>
-    ),
-  },
-  {
-    accessorKey: "description",
-    header: "Description",
-    cell: ({ row }: any) => <div>{row.getValue("description") || "N/A"}</div>,
-  },
-  {
-    accessorKey: "parent",
-    header: "Parent Issue Flow",
-    cell: ({ row }: any) => {
-      const parent = row.original.parent;
-      return <div>{parent?.name || "No Parent"}</div>;
-    },
-  },
-  {
-    accessorKey: "is_active",
-    header: "Status",
-    cell: ({ row }: any) => {
-      const isActive = row.getValue("is_active");
-      return (
-        <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-          }`}
-        >
-          {isActive ? "Active" : "Inactive"}
-        </span>
-      );
-    },
-  },
-  {
-    id: "actions",
-    header: "Actions",
-    cell: ({ row }: any) => {
-      const node = row.original;
-      
-      // const handleDelete = async () => {
-      //   if (confirm(`Delete node "${node.name}"?`)) {
-      //     try {
-      //       await deleteNode(node.internal_node_id).unwrap();
-      //       toast.success("Internal node deleted successfully");
-      //     } catch (err: any) {
-      //       toast.error(err?.data?.message || "Error deleting node");
-      //     }
-      //   }
-      // };
-      let toggle = true
-      if (pathname.startsWith("/inistitutes/project")) {
-        toggle = false;
-      }
-      
-      return (
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={toggle ? `/issue_configuration/${node.internal_node_id}` : `/issue_flow/${node.internal_node_id}`}>
-              <Eye className="h-4 w-4" />
-            </Link>
-          </Button>
-          {/* Uncomment if edit/delete actions are needed */}
-          {/* <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-            onClick={handleDelete}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button> */}
-        </div>
-      );
-    },
-  },
-];
-  const actions: ActionButton[] = [
-    {
-      label: "Add Support Request Flow",
-      icon: <Plus className="h-4 w-4" />,
-      variant: "default",
-      size: "default",
-      onClick: () => setModalOpen(true),
-    },
-  ];
+  const { pathname } = useLocation();
+  console.log(pathname, "this is the pathname");
 
   const filterFields: FilterField[] = [
     {
@@ -172,14 +82,17 @@ const InternalNodeTableColumns = (deleteNode: any) => [
   //   setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
   // };
 
-  console.log(filteredNodes.length > 0 ? true : false,filteredNodes,"this is the filtered nodes");
+  console.log(
+    filteredNodes.length > 0 ? true : false,
+    filteredNodes,
+    "this is the filtered nodes"
+  );
   return (
     <>
       <PageLayout
         filters={filterFields}
         filterColumnsPerRow={1}
         toggleActions={toggleActions}
-        actions={actions}
         showtoggle={false}
         toggle={toggleView}
         onToggle={(value: string) => setToggleView(value)}
@@ -196,8 +109,11 @@ const InternalNodeTableColumns = (deleteNode: any) => [
         ) : (
           <HierarchyD3TreeInstitute data={filteredNodes} isLoading={isLoading} />
         )} */}
-          <HierarchyD3TreeInstitute isAssignUsersToStructure={isAssignUsersToStructure} data={filteredNodes} isLoading={isLoading} />
-
+        <HierarchyD3TreeInstitute
+          isAssignUsersToStructure={isAssignUsersToStructure}
+          data={filteredNodes}
+          isLoading={isLoading}
+        />
       </PageLayout>
 
       <CreateInternalNodeModal
