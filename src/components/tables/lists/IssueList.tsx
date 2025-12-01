@@ -15,16 +15,12 @@ import { ActionButton, FilterField } from "../../../types/layout";
 import { useGetCurrentUserQuery } from "../../../redux/services/authApi";
 
 // --- Define table columns ---
+// ticket_number
 const IssueTableColumns = [
   {
-    accessorKey: "ticket_no",
-    header: "Issue No",
-    cell: ({ row }: any) => {
-      const index = row.index + 1;
-      const year = new Date().getFullYear();
-      const padded = index.toString().padStart(5, "0");
-      return `TCK-${year}-${padded}`;
-    },
+    accessorKey: "project.ticket_number",
+    header: "Ticket Number",
+    cell: ({ row }: any) => <div>{row.original.ticket_number || "N/A"}</div>,
   },
   {
     accessorKey: "project.name",

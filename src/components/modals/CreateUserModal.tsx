@@ -76,7 +76,9 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
     isLoading: loadingMetrics,
     isError,
   } = useGetProjectMetricsQuery({});
-  const { data: rolesResponse } = useGetRolesQuery(undefined);
+  const { data: rolesResponse } = useGetRolesQuery({
+    role_type: user_type == "internal_user" ? "internal" : "external",
+  });
   const roles = rolesResponse?.data || [];
   const metrics: ProjectMetric[] = metricsData || [];
 
@@ -263,10 +265,10 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
               </Label>
               <Input
                 value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}  
+                onChange={(e) => setPhoneNumber(e.target.value)}
                 placeholder="+251 9xxxxxxx"
                 className="w-full h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
-              />  
+              />
             </div>
             <div className="space-y-2">
               <Label className="block text-sm text-[#094C81] font-medium mb-2">
@@ -282,7 +284,9 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
             </div>
             {/* ROLE */}
             <div className="w-full space-y-2">
-              <Label className="text-sm font-medium text-[#094C81]">Role <span className="text-red-500">*</span></Label>
+              <Label className="text-sm font-medium text-[#094C81]">
+                Role <span className="text-red-500">*</span>
+              </Label>
 
               <Select
                 value={selectedRole}
@@ -312,7 +316,6 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                   <h3 className="text-[#094C81] font-semibold text-lg">
                     User Skills
                   </h3>
-                   
                 </div>
                 {/* Global Select All Checkbox */}
                 {metrics.length > 0 && (
@@ -327,7 +330,9 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                           : "border-gray-300 bg-white"
                       }`}
                     >
-                      {selectAll ? <Check className="w-3 h-3 stroke-3" /> : null}
+                      {selectAll ? (
+                        <Check className="w-3 h-3 stroke-3" />
+                      ) : null}
                     </div>
                     <span className="font-medium text-sm text-[#094C81]">
                       Select All
@@ -379,7 +384,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                           ) : null}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div 
+                          <div
                             className="font-medium text-xs text-gray-900 truncate leading-tight"
                             title={metric.name}
                           >

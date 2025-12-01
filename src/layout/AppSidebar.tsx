@@ -7,14 +7,11 @@ import Logo from "../assets/logo.png";
 import { HorizontaLDots } from "../icons";
 import { getNavItemsByUserType, NavItem } from "../types/userTypeRoutes";
 import DynamicIcon from "../components/common/DynamicIcon";
-import { useGetCurrentUserQuery } from "../redux/services/authApi";
 
 const AppSidebar: React.FC = () => {
-  const { data: loggedUser, isLoading: userLoading } = useGetCurrentUserQuery();
-
-  const userType = loggedUser?.user?.user_type || "external_user";
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
-  const { hasPermission, hasAnyPermission, user } = useAuth();
+  const { hasAnyPermission, user } = useAuth();
+  const userType = user?.user_type || "external_user";
   const location = useLocation();
 
   const [openSubmenu, setOpenSubmenu] = useState<{ index: number } | null>(

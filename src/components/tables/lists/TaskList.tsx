@@ -14,14 +14,9 @@ import { formatStatus } from "../../../utils/statusFormatter";
 
 const TaskTableColumns = [
   {
-    accessorKey: "#",
-    header: "Task No",
-    cell: ({ row }: any) => {
-      const index = row.index + 1;
-      const year = new Date().getFullYear();
-      const padded = index.toString().padStart(5, "0");
-      return `TCK-${year}-${padded}`;
-    },
+    accessorKey: "project.ticket_number",
+    header: "Ticket Number",
+    cell: ({ row }: any) => <div>{row.original.ticket_number || "N/A"}</div>,
   },
   {
     accessorKey: "project.name",

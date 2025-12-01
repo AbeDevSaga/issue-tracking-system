@@ -364,7 +364,10 @@ export default function UserTaskDetail() {
                     >
                       Priority Level
                     </p>
-                    <p className="font-semibold" style={{ color: issue.priority?.color_value || "#000" }}>
+                    <p
+                      className="font-semibold"
+                      style={{ color: issue.priority?.color_value || "#000" }}
+                    >
                       {issue.priority?.name || "N/A"}
                     </p>
                   </div>
