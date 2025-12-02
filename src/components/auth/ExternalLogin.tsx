@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import Button from "../ui/button/Button";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -11,9 +10,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signInSchema } from "../../utils/validation/loginSchema";
 import { Label } from "../ui/cn/label";
 import Input from "../form/input/InputField";
-import { EyeIcon } from "lucide-react";
+import { ArrowLeftIcon, EyeIcon } from "lucide-react";
 import { EyeOffIcon } from "lucide-react";
 import Logo from "../../assets/logo-aii.png";
+import Button from "../ui/button/Button";
 
 export default function ExternalLogin() {
     const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -50,8 +50,15 @@ export default function ExternalLogin() {
     return (
       <div className="min-h-screen bg-[#F9FBFC] flex items-center justify-center px-4">
         {/* Centered Card */}
-        <div className="w-full max-w-6xl min-h-[80vh]  shadow-2xl rounded-2xl border border-[#DCE7F1] overflow-hidden flex flex-col lg:flex-row">
-          
+        
+        <div className="w-full relative max-w-6xl min-h-[80vh]  shadow-2xl rounded-2xl border border-[#DCE7F1] overflow-hidden flex flex-col lg:flex-row">
+        <Button
+          onClick={() => navigate("/")}
+          className="cursor-pointer shadow-none z-50 bg-transparent hover:bg-slate-100      p-2 top-4 left-4 absolute flex items-center gap-1"
+        >
+          <ArrowLeftIcon className="w-5 h-5 text-[#0C4A6E]" />
+          <span className="text-sm text-[#0C4A6E] font-medium">Back </span>
+        </Button>
           {/* Left Side - Logo Section */}
           <div
             className="w-full  bg-cover bg-center p-8 flex items-center justify-center"
