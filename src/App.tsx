@@ -76,6 +76,8 @@ import IssueFlow from "./InternalPages/IssueFlow/IssueFlow";
 import IssueConfigurationDetail from "./InternalPages/IssueFlow/IssueConfigurationDetail";
 import ForgotPasswordByEmail from "./components/auth/ForgotPasswordByEmail";
 import Notifications from "./components/header/Notifications";
+import LandingPage from "./pages/home/LandingPage";
+import ChangePasswordPage from "./components/auth/ChangePassword";
 const AuthLoader = () => {
   return (
     <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">
@@ -109,7 +111,7 @@ function AppContent() {
       <ScrollToTop />
 
       <Routes>
-        <Route path='/' element={<LandingPage/>}/>
+        <Route path="/" element={<LandingPage />} />
         <Route element={<AppLayout />}>
           <Route
             path="/dashboard"
@@ -173,6 +175,8 @@ function AppContent() {
             path="/issue_configuration/:id"
             element={<IssueConfigurationDetail />}
           />
+
+          <Route path="/change_password" element={<ChangePasswordPage />} />
           <Route path="/issue_flow/:id" element={<IssueFlow />} />
           {/* IssueFlowConfig */}
           <Route path="/add_issue" element={<MyissueForm />} />

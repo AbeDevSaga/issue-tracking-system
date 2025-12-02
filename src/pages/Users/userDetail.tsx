@@ -76,9 +76,10 @@ const UserDetail = () => {
       setIsOpen(false);
       toast.success("User deleted successfully");
       navigate(-1);
-    }
-    catch (error: unknown) {
-      const errorMessage = (error as { data?: { message?: string } })?.data?.message || "Failed to delete user";
+    } catch (error: unknown) {
+      const errorMessage =
+        (error as { data?: { message?: string } })?.data?.message ||
+        "Failed to delete user";
       toast.error(errorMessage);
     }
   };
@@ -129,8 +130,9 @@ const UserDetail = () => {
   }
 
   // Handle wrapped response if API returns { success, message, data }
-  const userData = ((user as unknown as UserApiResponse).data || user) as ExtendedUser;
-  
+  const userData = ((user as unknown as UserApiResponse).data ||
+    user) as ExtendedUser;
+
   // Extract roles and metrics from the response
   const roles = userData.roles || [];
   const metrics = userData.metrics || [];
@@ -248,7 +250,6 @@ const UserDetail = () => {
             <div className="p-6">
               {/* Personal Information Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-
                 {/* Phone */}
                 <div className="bg-gray-50 rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-2">
@@ -271,7 +272,9 @@ const UserDetail = () => {
                     </p>
                   </div>
                   <p className="text-gray-700 font-medium capitalize">
-                    {userType?.name?.replace('_', ' ') || userData.userType?.name?.replace('_', ' ') || "N/A"}
+                    {userType?.name?.replace("_", " ") ||
+                      userData.userType?.name?.replace("_", " ") ||
+                      "N/A"}
                   </p>
                 </div>
 
@@ -302,7 +305,6 @@ const UserDetail = () => {
                     </p>
                   </div>
                 )}
-
               </div>
 
               {/* Roles Section */}
@@ -353,11 +355,17 @@ const UserDetail = () => {
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm text-gray-900 truncate" title={metric.name}>
+                            <p
+                              className="font-medium text-sm text-gray-900 truncate"
+                              title={metric.name}
+                            >
                               {metric.name}
                             </p>
                             {metric.description && (
-                              <p className="text-xs text-gray-500 mt-1 line-clamp-2" title={metric.description}>
+                              <p
+                                className="text-xs text-gray-500 mt-1 line-clamp-2"
+                                title={metric.description}
+                              >
                                 {metric.description}
                               </p>
                             )}
