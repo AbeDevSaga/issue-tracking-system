@@ -404,7 +404,7 @@ export default function AddIssue() {
 
                     {/* Label */}
                     <span className="text-sm font-medium text-[#094C81]">
-                      Have you tried to resolve the yourself?
+                      Have you tried to resolve by yourself?
                     </span>
                   </label>
                 </div>
@@ -438,11 +438,11 @@ export default function AddIssue() {
             </div>
 
             {/* Buttons */}
-            <div className="md:col-span-2 flex justify-end gap-4">
+            <div className="md:col-span-2 flex pr-10  justify-end gap-4">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`px-6 py-2 rounded text-white bg-[#094C81] hover:bg-[#07385f] transition flex items-center justify-center gap-2 ${
+                className={`px-6 py-2 min-w-[150px] rounded text-white bg-[#094C81] hover:bg-[#07385f] transition flex items-center justify-center gap-2 ${
                   isSubmitting ? "opacity-70 cursor-not-allowed" : ""
                 }`}
               >

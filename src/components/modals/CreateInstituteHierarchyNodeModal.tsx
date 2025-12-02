@@ -39,7 +39,7 @@ export function CreateInstituteHierarchyNodeModal({
   const [navigationStack, setNavigationStack] = useState<any[]>([]);
 
   const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState("description");
   
   // Track if parent is selected (for showing fields with animation)
   const isParentSelected = parent_hierarchy_node_id !== null && parent_hierarchy_node_id !== undefined 

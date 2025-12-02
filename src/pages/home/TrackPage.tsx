@@ -98,7 +98,7 @@ const TrackPage = () => {
                   value={id}
                   onChange={(e) => setId(e.target.value)}
                   type="text"
-                  placeholder="e.g. AII-REQ-2025-0145"
+                  placeholder="Enter Request ID"
                   className="w-full max-w-sm px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-gray-700 
           focus:outline-none focus:ring-2 focus:ring-[#0C4A6E] focus:border-[#0C4A6E] transition"
                 />

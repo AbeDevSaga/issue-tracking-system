@@ -389,10 +389,11 @@ export default function CreateRole() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-3 gap-4">
+                    
                     <div className="space-y-2 flex col-span-1 flex-col gap-2">
                       <Label
                         htmlFor="name"
-                        className="text-sm font-medium text-[#094C81] text-bold"
+                        className="text-sm font-medium text-[#094C81] "
                       >
                         Role Name <span className="text-red-500">*</span>
                       </Label>
@@ -405,27 +406,11 @@ export default function CreateRole() {
                         className="w-full h-11 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
                       />
                     </div>
-                    <div className="space-y-2 flex col-span-1 flex-col gap-2">
-                      <Label
-                        htmlFor="description"
-                        className="text-sm font-medium text-[#094C81] text-bold"
-                      >
-                        Description <span className="text-red-500">*</span>
-                      </Label>
-                      <Textarea
-                        id="description"
-                        placeholder="Brief description of the role"
-                        rows={4}
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        className="w-full h-11 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
-                      />
-                    </div>
-                    {/* Role Type Dropdown */}
-                    <div className="space-y-2 flex col-span-1 flex-col gap-2">
+                      {/* Role Type Dropdown */}
+                      <div className="space-y-2 flex col-span-1 flex-col gap-2">
                       <Label
                         htmlFor="role_type"
-                        className="text-sm font-medium text-[#094C81] font-bold"
+                        className="text-sm font-medium text-[#094C81]"
                       >
                         Role Type <span className="text-red-500">*</span>
                       </Label>
@@ -451,6 +436,23 @@ export default function CreateRole() {
                         </SelectContent>
                       </Select>
                     </div>
+                    <div className="space-y-2 flex col-span-1 flex-col gap-2">
+                      <Label
+                        htmlFor="description"
+                        className="text-sm font-medium text-[#094C81] "
+                      >
+                        Description <span className="text-red-500">*</span>
+                      </Label>
+                      <Textarea
+                        id="description"
+                        placeholder="Brief description of the role"
+                        rows={4}
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        className="w-full h-11 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+                      />
+                    </div>
+                  
                   </div>
                 </CardContent>
               </Card>
