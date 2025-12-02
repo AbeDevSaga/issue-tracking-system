@@ -175,9 +175,9 @@ export default function UserList({
 
   const buttonLabel = toggleActions
     ? user_type === "internal_user"
-      ? "Add Internal User"
-      : "Add External User"
-    : "Add User";
+      ? "Create Internal User"
+      : "Create External User"
+    : "Create User";
   const actions: ActionButton[] = [
     {
       label: buttonLabel,

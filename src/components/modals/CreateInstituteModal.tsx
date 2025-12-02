@@ -78,7 +78,7 @@ export const CreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
             </label>
             <input
               className="w-full border border-gray-300 px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none"
-              placeholder="Enter institute name"
+              placeholder="Enter Organization name"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -92,7 +92,7 @@ export const CreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
             <textarea
               rows={4}
               className="w-full border border-gray-300 px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none"
-              placeholder="Enter institute description"
+              placeholder="Enter Organization description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
@@ -125,7 +125,7 @@ export const CreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
             htmlFor="active-toggle"
             className="text-sm font-medium text-gray-700 cursor-pointer"
           >
-            Active Institute
+            Active Organization
           </label>
         </div> */}
         {/* Footer Actions */}

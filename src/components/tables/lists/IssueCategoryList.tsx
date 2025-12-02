@@ -99,7 +99,7 @@ export default function IssueCategoryList() {
 
   const actions: ActionButton[] = [
     {
-      label: "Add Category",
+      label: "Create",
       icon: <Plus className="h-4 w-4" />,
       variant: "default",
       size: "default",

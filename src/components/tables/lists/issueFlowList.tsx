@@ -126,7 +126,7 @@ const InternalNodeTableColumns = (deleteNode: any) => [
 ];
   const actions: ActionButton[] = [
     {
-      label: "Add Support Request Flow",
+      label: "Add",
       icon: <Plus className="h-4 w-4" />,
       variant: "default",
       size: "default",

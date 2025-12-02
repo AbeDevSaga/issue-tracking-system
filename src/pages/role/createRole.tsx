@@ -666,9 +666,9 @@ export default function CreateRole() {
                         {isEditMode ? "Updating..." : "Creating..."}
                       </>
                     ) : isEditMode ? (
-                      "Update Role"
+                      "Update"
                     ) : (
-                      "Create Role"
+                      "Create"
                     )}
                   </Button>
                 </div>

@@ -421,7 +421,7 @@ export default function InternalTaskDetail() {
                     <p className="font-semibold text-[#1E516A] text-sm mb-2">
                       Description
                     </p>
-                    <p className="text-gray-700 whitespace-pre-line">
+                    <p className="text-gray-700 text-wrap whitespace-pre-line">
                       {issue.description ||
                         issue.title ||
                         "No description provided"}
@@ -432,7 +432,7 @@ export default function InternalTaskDetail() {
                     <p className="font-semibold text-[#1E516A] text-sm mb-2">
                       Action Taken
                     </p>
-                    <p className="text-gray-700 whitespace-pre-line">
+                    <p className="text-gray-700 text-wrap whitespace-pre-line">
                       {issue.action_taken || "No action taken yet"}
                     </p>
                   </div>

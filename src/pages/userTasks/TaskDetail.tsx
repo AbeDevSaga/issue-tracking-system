@@ -383,16 +383,20 @@ export default function UserTaskDetail() {
                     <p className="font-semibold text-[#1E516A] text-sm mb-1">
                       Description
                     </p>
+                    <p className="text-gray-700 text-wrap whitespace-pre-line">
                     {issue.description ||
                       issue.title ||
                       "No description provided"}
+                      </p>
                   </div>
 
                   <div className="bg-slate-50 border border-[#BFD7EA] rounded-md p-3 text-gray-700">
                     <p className="font-semibold text-[#1E516A] text-sm mb-1">
                       Action Taken
                     </p>
+                    <p className="text-gray-700 text-wrap whitespace-pre-line">
                     {issue.action_taken || "No action taken yet"}
+                    </p>
                   </div>
                 </div>
                 {/* Issue Attachments */}

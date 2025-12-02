@@ -29,7 +29,7 @@
   },
    "role":{
     "role":"Role",
-    "add_role":"Add Role",
+    "add_role":"Create Role",
     "role_name":"Role Name"
   },
     "Subrole":{

@@ -100,7 +100,7 @@ export default function RoleList() {
 
   const actions: ActionButton[] = [
     {
-      label: "Add Role",
+      label: "Create Role",
       icon: <Plus className="h-4 w-4" />,
       variant: "default",
       size: "default",
