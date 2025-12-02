@@ -76,6 +76,7 @@ import LandingPage from "./pages/home/LandingPage";
 import TrackPage from "./pages/home/TrackPage";
 import TrackPageDetail from "./pages/home/TrackPageDetail";
 import OrganizationProfile from "./pages/profile/OrganizationProfile";
+import ExternalLogin from "./components/auth/ExternalLogin";
 const AuthLoader = () => {
   return (
     <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">
@@ -219,6 +220,15 @@ function AppContent() {
           element={
             <PublicRoute>
               <Login />
+
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/signin"
+          element={
+            <PublicRoute>
+              <ExternalLogin />
             </PublicRoute>
           }
         />
