@@ -56,7 +56,7 @@ export interface CreateUserDto {
   user_type_id: string;
   user_position_id?: string;
   institute_id?: string;
-  role_id?: string;
+  role_ids?: string[];
   hierarchy_node_id?: string;
   project_metrics_ids?: string[];
   position?: string;
