@@ -72,6 +72,8 @@ export interface UpdateUserDto {
   institute_id?: string;
   hierarchy_node_id?: string;
   is_active?: boolean;
+  role_ids?: string[];
+  project_metrics_ids?: string[];
 }
 
 export interface GetUsersParams {
@@ -193,16 +195,13 @@ export const userApi = baseApi.injectEndpoints({
     }),
 
     // Update user
-    updateUser: builder.mutation<User, { id: string; data: UpdateUserDto }>({
-      query: ({ id, data }) => ({
-        url: `/users/${id}`,
+    updateUser: builder.mutation<User, { user_id: string; data: UpdateUserDto }>({
+      query: ({ user_id, data }) => ({
+        url: `/users/${user_id}`,
         method: "PUT",
         body: data,
       }),
-      invalidatesTags: (result, error, { id }) => [
-        { type: "User", id },
-        "User",
-      ],
+      invalidatesTags: ["User"],
     }),
 
     // Delete (deactivate) user

@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import {
   useGetUserByIdQuery,
+  useGetUserTypesQuery,
   User,
   useUpdateUserMutation,
 } from "../../redux/services/userApi";
@@ -96,7 +97,7 @@ interface EditFormData {
   full_name: string;
   email: string;
   phone_number: string;
-  position: string;
+  position?: string;
   is_active: boolean;
   institute_id: string;
   role_ids: string[]; // Changed to array to support multiple roles
@@ -131,7 +132,6 @@ const UserDetail = () => {
     full_name: "",
     email: "",
     phone_number: "",
-    position: "",
     is_active: true,
     institute_id: "",
     role_ids: [], // Changed to array
@@ -147,7 +147,11 @@ const UserDetail = () => {
   const { data: rolesResponse } = useGetRolesQuery({});
   const allRoles = rolesResponse?.data || [];
   const metrics: ProjectMetric[] = metricsData || [];
-
+  const { data: userTypes = [] } = useGetUserTypesQuery({});
+const selectedUserType = userTypes?.data?.find(
+  (type: any) => type.user_type_id === editForm.user_type_id
+);
+const isExternalUser = selectedUserType?.name === "external_user";
   const handleDelete = async () => {
     try {
       await deleteUser(id!).unwrap();
@@ -188,12 +192,11 @@ const UserDetail = () => {
         full_name: userData.full_name || "",
         email: userData.email || "",
         phone_number: userData.phone_number || "",
-        position: userData.position || "",
         is_active: userData.is_active ?? true,
         institute_id: userData.institute?.institute_id || "",
         role_ids: userRoleIds, // Set as array
         project_metrics_ids: userMetricIds,
-        user_type_id: userData.userType?.name || "",
+        user_type_id: userData.userType?.user_type_id || "",
       });
     }
   }, [user]);
@@ -216,12 +219,12 @@ const UserDetail = () => {
         full_name: userData.full_name || "",
         email: userData.email || "",
         phone_number: userData.phone_number || "",
-        position: userData.position || "",
         is_active: userData.is_active ?? true,
         institute_id: userData.institute?.institute_id || "",
         role_ids: userRoleIds,
         project_metrics_ids: userMetricIds,
-        user_type_id: userData.userType?.name || "",
+        user_type_id: userData.userType?.user_type_id || "",
+        
       });
     }
   };
@@ -234,11 +237,20 @@ const UserDetail = () => {
         email: editForm.email,
         phone_number: editForm.phone_number,
         is_active: editForm.is_active,
+        user_type_id: editForm.user_type_id,
+        role_ids: editForm.role_ids,
+        project_metrics_ids: editForm.project_metrics_ids,
+        position: editForm.position,
       };
+      console.log(updatePayload);
 
       // Only include fields that have changed or are required
       if (editForm.position !== (user as ExtendedUser)?.position) {
         updatePayload.position = editForm.position;
+      }
+      // if the user type is external user, then we need to add the institute id
+      if (isExternalUser) {
+        updatePayload.institute_id = editForm.institute_id;
       }
 
       if (
@@ -259,7 +271,7 @@ const UserDetail = () => {
         updatePayload.project_metrics_ids = editForm.project_metrics_ids;
       }
 
-      await updateUser({ id: id!, userData: updatePayload }).unwrap();
+      await updateUser({ user_id: id!, data: updatePayload }).unwrap();
       toast.success("User updated successfully");
       setIsEditing(false);
       refetch(); // Refresh the data
@@ -566,80 +578,88 @@ const UserDetail = () => {
                     </p>
                   </div>
                   {isEditing ? (
-  <Select
-    value={editForm.user_type_id} 
-    onValueChange={(value) =>
-      handleInputChange("user_type_id", value)
-    }
-  >
-    <SelectTrigger className="w-full border border-gray-300">
-      <SelectValue placeholder="Select User Type" />
-    </SelectTrigger>
-    <SelectContent>
-      <SelectItem value="internal_user">Internal User</SelectItem>
-      <SelectItem value="external_user">External User</SelectItem>
-    </SelectContent>
-  </Select>
-) : (
-  <p className="text-gray-700 font-medium capitalize">
-    {userType?.name?.replace("_", " ") || "N/A"}
-  </p>
-)}
+                    <Select
+                      value={editForm.user_type_id}
+                      onValueChange={(value) =>
+                        handleInputChange("user_type_id", value)
+                      }
+                    >
+                      <SelectTrigger className="w-full border border-gray-300">
+                        <SelectValue placeholder="Select User Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                      <SelectContent>
+  {userTypes?.data?.map((type: any) => (
+    <SelectItem
+      key={type.user_type_id}
+      value={type.user_type_id}
+      onClick={() => setTypeName(type.name)}
+    >
+      {type.name == "internal_user" ? "Internal User" : "External User"}
+    </SelectItem>
+  ))}
+</SelectContent>
 
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="text-gray-700 font-medium capitalize">
+                      {userType?.name?.replace("_", " ") || "N/A"}
+                    </p>
+                  )}
                 </div>
 
                 {/* Institute */}
-{isEditing ? (
-  // Edit mode: only show select if external
-  editForm.user_type_id === "external_user" && (
-    <div className="bg-gray-50 rounded-lg p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <BuildingOfficeIcon className="h-4 w-4 text-[#1E516A]" />
-        <p className="text-xs font-semibold text-[#1E516A] uppercase tracking-wide">
-          Institute
-        </p>
-      </div>
-      <Select
-        value={editForm.institute_id}
-        onValueChange={(value) =>
-          handleInputChange("institute_id", value)
-        }
-      >
-        <SelectTrigger className="w-full border border-gray-300">
-          <SelectValue placeholder="Select Institute" />
-        </SelectTrigger>
-        <SelectContent>
-          {loadingInstitutes ? (
-            <SelectItem value="loading">Loading...</SelectItem>
-          ) : (
-            institutes?.map((inst: any) => (
-              <SelectItem
-                key={inst.institute_id}
-                value={inst.institute_id}
-              >
-                {inst.name}
-              </SelectItem>
-            ))
-          )}
-        </SelectContent>
-      </Select>
-    </div>
-  )
-) : (
-  // View mode: always show institute for both internal and external
-  <div className="bg-gray-50 rounded-lg p-4">
-    <div className="flex items-center gap-2 mb-2">
-      <BuildingOfficeIcon className="h-4 w-4 text-[#1E516A]" />
-      <p className="text-xs font-semibold text-[#1E516A] uppercase tracking-wide">
-        Institute
-      </p>
-    </div>
-    <p className="text-gray-700 font-medium">
-      {userData.institute?.name || "EAII"}
-    </p>
-  </div>
-)}
-
+                {isEditing ? (
+                  // Edit mode: only show select if external
+                  isExternalUser && (
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <BuildingOfficeIcon className="h-4 w-4 text-[#1E516A]" />
+                        <p className="text-xs font-semibold text-[#1E516A] uppercase tracking-wide">
+                          Institute
+                        </p>
+                      </div>
+                      <Select
+                        value={editForm.institute_id}
+                        onValueChange={(value) =>
+                          handleInputChange("institute_id", value)
+                        }
+                      >
+                        <SelectTrigger className="w-full border border-gray-300">
+                          <SelectValue placeholder="Select Institute" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {loadingInstitutes ? (
+                            <SelectItem value="loading">Loading...</SelectItem>
+                          ) : (
+                            institutes?.map((inst: any) => (
+                              <SelectItem
+                                key={inst.institute_id}
+                                value={inst.institute_id}
+                              >
+                                {inst.name}
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )
+                ) : (
+                  // View mode: always show institute for both internal and external
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <BuildingOfficeIcon className="h-4 w-4 text-[#1E516A]" />
+                      <p className="text-xs font-semibold text-[#1E516A] uppercase tracking-wide">
+                        Institute
+                      </p>
+                    </div>
+                    <p className="text-gray-700 font-medium">
+                      {userData.institute?.name || "EAII"}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Roles Section */}
@@ -829,7 +849,8 @@ const UserDetail = () => {
                 </div>
               )}
               {/* Internal Project Roles Section - Categorized by Project */}
-              {!isEditing && userData.internalProjectUserRoles &&
+              {!isEditing &&
+                userData.internalProjectUserRoles &&
                 userData.internalProjectUserRoles.length > 0 && (
                   <div className="mt-6">
                     <div className="flex items-center gap-2 mb-4">
@@ -924,7 +945,8 @@ const UserDetail = () => {
                 )}
 
               {/* External Project Roles Section - Categorized by Project */}
-              {!isEditing && userType?.name === "external_user" &&
+              {!isEditing &&
+                userType?.name === "external_user" &&
                 userData.projectRoles &&
                 userData.projectRoles.length > 0 && (
                   <div className="mt-6">

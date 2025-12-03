@@ -281,68 +281,67 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
             {/* ROLE */}
             {/* ROLE MULTI SELECT */}
 
-      
-<div className="w-full space-y-2">
-  <Label className="text-sm font-medium text-[#094C81]">
-    Role <span className="text-red-500">*</span>
-  </Label>
-  <Select
-  value="multi" // dummy value to prevent Radix from overriding
-  onValueChange={(value) => {
-    setSelectedRoles((prev) =>
-      prev.includes(value)
-        ? prev.filter((id) => id !== value) // unselect
-        : [...prev, value]                  // select
-    );
-  }}
->
-  <SelectTrigger className="w-full h-12 border p-2 rounded mt-1 text-[#094C81]">
-    <div className="flex items-center justify-between w-full">
-      <SelectValue asChild>
-        <span>
-          {selectedRoles.length === 0
-            ? "Select Role"
-            : `${selectedRoles.length} role${selectedRoles.length > 1 ? "s" : ""} selected`}
-        </span>
-      </SelectValue>
-      {selectedRoles.length > 0 && (
-        <span className="text-xs bg-[#094C81] text-white rounded-full w-5 h-5 flex items-center justify-center">
-          {selectedRoles.length}
-        </span>
-      )}
-    </div>
-  </SelectTrigger>
+            <div className="w-full space-y-2">
+              <Label className="text-sm font-medium text-[#094C81]">
+                Role <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value="multi" // dummy value to prevent Radix from overriding
+                onValueChange={(value) => {
+                  setSelectedRoles(
+                    (prev) =>
+                      prev.includes(value)
+                        ? prev.filter((id) => id !== value) // unselect
+                        : [...prev, value] // select
+                  );
+                }}
+              >
+                <SelectTrigger className="w-full h-12 border p-2 rounded mt-1 text-[#094C81]">
+                  <div className="flex items-center justify-between w-full">
+                    <SelectValue asChild>
+                      <span>
+                        {selectedRoles.length === 0
+                          ? "Select Role"
+                          : `${selectedRoles.length} role${
+                              selectedRoles.length > 1 ? "s" : ""
+                            } selected`}
+                      </span>
+                    </SelectValue>
+                    {selectedRoles.length > 0 && (
+                      <span className="text-xs bg-[#094C81] text-white rounded-full w-5 h-5 flex items-center justify-center">
+                        {selectedRoles.length}
+                      </span>
+                    )}
+                  </div>
+                </SelectTrigger>
 
-  <SelectContent className="text-[#094C81] bg-white max-h-64 overflow-y-auto">
-    {roles.map((r: any) => {
-      const isSelected = selectedRoles.includes(r.role_id);
-      return (
-        <SelectItem
-          key={r.role_id}
-          value={r.role_id}
-          className="relative pr-8 cursor-pointer"
-          onPointerDown={(e) => e.preventDefault()} // ✅ keep dropdown open
-        >
-          <span className="block truncate">{r.name}</span>
+                <SelectContent className="text-[#094C81] bg-white max-h-64 overflow-y-auto">
+                  {roles.map((r: any) => {
+                    const isSelected = selectedRoles.includes(r.role_id);
+                    return (
+                      <SelectItem
+                        key={r.role_id}
+                        value={r.role_id}
+                        className="relative pr-8 cursor-pointer"
+                        onPointerDown={(e) => e.preventDefault()} // ✅ keep dropdown open
+                      >
+                        <span className="block truncate">{r.name}</span>
 
-          <div
-            className={`absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 border-2 rounded flex items-center justify-center transition-all duration-200 ${
-              isSelected
-                ? "bg-[#094C81] border-[#094C81] text-white"
-                : "border-gray-300 bg-white"
-            }`}
-          >
-            {isSelected && <Check className="w-3 h-3 stroke-3" />}
-          </div>
-        </SelectItem>
-      );
-    })}
-  </SelectContent>
-</Select>
-
-
-</div>
-
+                        <div
+                          className={`absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 border-2 rounded flex items-center justify-center transition-all duration-200 ${
+                            isSelected
+                              ? "bg-[#094C81] border-[#094C81] text-white"
+                              : "border-gray-300 bg-white"
+                          }`}
+                        >
+                          {isSelected && <Check className="w-3 h-3 stroke-3" />}
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           {/* metrics panel */}
           {showMetricsSelect && (
