@@ -190,7 +190,7 @@ export function CreateInternalNodeModal({
       >
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-[#094C81]">
-            Create Issue Flow
+            Create Support Request Flow
           </h2>
           <button
             onClick={onClose}

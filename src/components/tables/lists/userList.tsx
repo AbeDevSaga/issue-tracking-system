@@ -188,22 +188,11 @@ export default function UserList({ institute_id }: UserListProps) {
     setPageDetail({ ...pageDetail, pageIndex, pageSize });
   };
 
-  const handleUserCreated = () => {
-    refetch();
-    toast.success("User created successfully!");
-  };
-
-  const handleUserUpdated = () => {
-    refetch();
-    setEditModalOpen(false);
-    setSelectedUser(null);
-  };
-
-  const handleCloseEditModal = () => {
-    setEditModalOpen(false);
-    setSelectedUser(null);
-  };
-
+  const buttonLabel = toggleActions
+    ? user_type === "internal_user"
+      ? "Create Internal User"
+      : "Create External User"
+    : "Create User";
   const actions: ActionButton[] = [
     {
       label: "Add User",

@@ -77,7 +77,10 @@ import IssueConfigurationDetail from "./InternalPages/IssueFlow/IssueConfigurati
 import ForgotPasswordByEmail from "./components/auth/ForgotPasswordByEmail";
 import Notifications from "./components/header/Notifications";
 import LandingPage from "./pages/home/LandingPage";
-import ChangePasswordPage from "./components/auth/ChangePassword";
+import TrackPage from "./pages/home/TrackPage";
+import TrackPageDetail from "./pages/home/TrackPageDetail";
+import OrganizationProfile from "./pages/profile/OrganizationProfile";
+import ExternalLogin from "./components/auth/ExternalLogin";
 const AuthLoader = () => {
   return (
     <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">
@@ -111,7 +114,9 @@ function AppContent() {
       <ScrollToTop />
 
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route path='/' element={<LandingPage/>}/>
+        <Route path='/track_request' element={<TrackPage/>}/>
+        <Route path='/track_request/:id' element={<TrackPageDetail/>}/>
         <Route element={<AppLayout />}>
           <Route
             path="/dashboard"
@@ -140,6 +145,7 @@ function AppContent() {
           <Route path="/issue/:id" element={<IssueDetail />} />
 
           <Route path="/profile" element={<Profile />} />
+          <Route path="/organization_profile" element={<OrganizationProfile />} />
           <Route path="/users" element={<Users />} />
           <Route path="/users/:id" element={<UserDetail />} />
           <Route path="/organization" element={<Organization />} />
@@ -220,6 +226,15 @@ function AppContent() {
           element={
             <PublicRoute>
               <Login />
+
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/signin"
+          element={
+            <PublicRoute>
+              <ExternalLogin />
             </PublicRoute>
           }
         />

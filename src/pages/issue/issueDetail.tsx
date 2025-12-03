@@ -25,6 +25,8 @@ import IssueHistoryLog from "../userTasks/IssueHistoryLog";
 import TimelineOpener from "../../components/common/TimelineOpener";
 import { Button } from "../../components/ui/cn/button";
 import { toast } from "sonner";
+import { formatStatus } from "../../utils/statusFormatter";
+import DetailHeader from "../../components/common/DetailHeader";
 
 export default function UserIssueDetail() {
   const { id } = useParams<{ id: string }>();
@@ -196,15 +198,17 @@ export default function UserIssueDetail() {
 
   return (
     <>
+    <DetailHeader breadcrumbs={[
+        { title: "Request List", link: "" },
+        { title: "Request Detail", link: "" },
+      ]} />
       <PageMeta
-        title={t("CATask.ca_task_detail")}
-        description={t("CATask.ca_task_detail", {
-          title: t("QATasCATaskk.detail"),
-        })}
+        title={"Support Request Detail"}
+        description={"Review support request details and take appropriate action"}
       />
-      <div className="min-h-screen bg-[#F9FBFC] p-6 pb-24 flex flex-col items-start">
+      <div className="min-h-screen bg-[#F9FBFC] py-6 pb-24 flex flex-col items-start">
         <div
-          className={`w-full max-w-[1440px] mx-auto bg-white shadow-md rounded-xl border border-dashed border-[#BFD7EA] p-6 relative overflow-hidden`}
+          className={`w-full   mx-auto bg-white shadow-md rounded-xl  border-[#BFD7EA] p-6 relative overflow-hidden`}
         >
           <div
             className={`w-full transition-all duration-500 ease-in-out  ${
@@ -215,17 +219,17 @@ export default function UserIssueDetail() {
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
                 <div>
                   <h2 className="text-[#1E516A] text-xl font-bold mb-1">
-                    Request Detail
+                    Support Request Detail
                   </h2>
                   <p className="text-gray-600">
-                    Review request details and take appropriate action
+                    Review support request details and take appropriate action
                   </p>
                   
                 </div>
                 <div className="flex items-center gap-20">
                   {/* color resolved based on status */}
                 <span className={`text-base bg-green-100 text-green-900 px-2 py-1 rounded-md ${issue.status === "resolved" ? "text-green-900 " : issue.status === "in_progress" ? "text-blue-500" : issue.status === "closed" ? "text-red-500" : "text-gray-500"}`}>
-                  {issue.status}
+                  {formatStatus(issue.status)}
                 </span>
                 {!openTimeline && (
                   <TimelineOpener onOpen={() => setOpenTimeline(true)} />
@@ -236,15 +240,14 @@ export default function UserIssueDetail() {
               </div>
 
               <div
-                className="border border-[#BFD7EA] rounded-lg p-4 mb-6"
-                style={{ backgroundColor: "rgba(9, 76, 129, 0.05)" }}
+                className=" border border-[#BFD7EA] rounded-lg p-6 mb-6"
               >
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-y-2">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
                   <div>
                     <p className="font-semibold text-[#1E516A] text-sm">
                       System
                     </p>
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 text-sm">
                       {issue.project?.name || "N/A"}
                     </p>
                   </div>
@@ -252,7 +255,7 @@ export default function UserIssueDetail() {
                     <p className="font-semibold text-[#1E516A] text-sm">
                       Category
                     </p>
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 text-sm">
                       {issue.category?.name || "N/A"}
                     </p>
                   </div>
@@ -260,7 +263,7 @@ export default function UserIssueDetail() {
                     <p className="font-semibold text-[#1E516A] text-sm">
                       Reported By
                     </p>
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 text-sm">
                       {issue.reporter?.full_name || "N/A"}
                     </p>
                   </div>
@@ -268,45 +271,50 @@ export default function UserIssueDetail() {
                     <p className="font-semibold text-[#1E516A] text-sm">
                       Reported On
                     </p>
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 text-sm">
                       {formatDate(issue.issue_occured_time)}
                     </p>
                   </div>
                   <div>
                     <p
-                      className={`font-semibold text-[#1E516A] text-sm py-1 rounded-md`}
+                      className={`font-semibold text-[#1E516A]  py-1 rounded-md`}
                     >
                       Priority Level
                     </p>
-                    <p className="font-semibold" style={{ color: issue.priority?.color_value || "#000" }}>
+                    <p className="font-semibold text-sm" style={{ color: issue.priority?.color_value || "#000" }}>
                       {issue.priority?.name || "N/A"}
                     </p>
                   </div>
                 </div>
 
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3 text-gray-700">
+                  <div className="bg-slate-50 border border-[#BFD7EA] rounded-md p-3 text-gray-700">
                     <p className="font-semibold text-[#1E516A] text-sm mb-1">
                       Description
                     </p>
+                    <p className="text-gray-700 text-wrap whitespace-pre-line">
+
                     {issue.description ||
                       issue.title ||
                       "No description provided"}
+                      </p>
                   </div>
 
-                  <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3 text-gray-700">
+                  <div className="bg-slate-50 border border-[#BFD7EA] rounded-md p-3 text-gray-700">
                     <p className="font-semibold text-[#1E516A] text-sm mb-1">
                       Action Taken
                     </p>
-                    {issue.action_taken || "No action taken yet"}
+                    <p className="text-gray-700 text-wrap whitespace-pre-line">
+                      {issue.action_taken || "No action taken yet"}
+                      </p>
                   </div>
                 </div>
                 
-                {/* Issue Attachments */}
+                {/* Support Request Attachments */}
                 {issueFiles.length > 0 && (
-                  <div className="bg-white border border-[#BFD7EA] rounded-lg p-3 flex-1 my-6">
+                  <div className="bg-white   border-[#BFD7EA] rounded-lg py-3 flex-1 ">
                     <h4 className="font-semibold text-[#1E516A] mb-3">
-                       Attachments ({issueFiles.length})
+                      Support Request Attachments ({issueFiles.length})
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       {issueFiles.map((file, idx) => (
@@ -321,7 +329,7 @@ export default function UserIssueDetail() {
                 )}
               </div>
 
-              {/* Issue Escalations Section */}
+              {/* Support Request Escalations Section */}
               {issue?.escalations && issue.escalations.length > 0 && (
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-4 p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200">
@@ -424,7 +432,8 @@ export default function UserIssueDetail() {
                                           ? "bg-yellow-100 text-yellow-800"
                                           : "bg-blue-100 text-blue-800"
                                       }`}>
-                                        {escalation.status || "pending"}
+                                        {formatStatus(escalation.status) || "pending"}
+
                                       </span>
                                     </div>
                                   </div>
@@ -547,7 +556,7 @@ export default function UserIssueDetail() {
                 </div>
               )}
 
-              {/* Issue Resolutions Section */}
+              {/* Support Request Resolutions Section */}
               {issue?.resolutions && issue.resolutions.length > 0 && (
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-4 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">

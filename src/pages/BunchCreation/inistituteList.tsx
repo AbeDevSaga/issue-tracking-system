@@ -15,7 +15,7 @@ import ModalPage from "./ModalPage";
 const InstituteTableColumns = [
   {
     accessorKey: "name",
-    header: "Institute Name",
+    header: "Organization Name",
     cell: ({ row }: any) => (
       <div className="font-medium text-blue-600">{row.getValue("name")}</div>
     ),
@@ -88,7 +88,7 @@ export default function BunchInstituteList() {
 
   const actions: ActionButton[] = [
     {
-      label: "Add Institute",
+      label: "Create",
       icon: <Plus className="h-4 w-4" />,
       variant: "default",
       size: "default",

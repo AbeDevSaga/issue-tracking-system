@@ -73,7 +73,7 @@ export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
       <div className="w-full max-w-[700px] rounded-2xl bg-white p-6 shadow-xl">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-[20px] font-bold text-[#094C81]">
-            Create New Priority
+            Create New Request Priority
           </h2>
           <button
             onClick={onClose}

@@ -177,8 +177,8 @@ const CustomNode: React.FC<CustomNodeProps> = ({
   <foreignObject
     x={160}
     y={-90}
-    width={260}
-    height={Math.min(300, 120 + assignedUsers.length * 24)} // max height 300
+    width={200}
+    height={Math.min(300, 100 + assignedUsers.length * 24)} // max height 300
   >
     <div
       style={{
@@ -189,10 +189,16 @@ const CustomNode: React.FC<CustomNodeProps> = ({
       }}
       className="bg-white rounded-xl border border-gray-200 shadow-xl p-4"
     >
-      <p className="text-sm font-semibold text-[#094C81]">Users assigned:</p>
+      <p className="text-sm text-center font-semibold text-[#094C81]">Assigned Users</p>
       <ul className="text-sm text-gray-700 mt-2 space-y-1">
         {assignedUsers.map((fullName) => (
-          <li key={fullName}>{fullName}</li>
+          <li
+          key={fullName}
+          className="flex items-center gap-2 text-gray-800 text-sm"
+        >
+          <span className="w-2 h-2 bg-[#094C81] rounded-full"></span>
+          {fullName}
+        </li>
         ))}
       </ul>
     </div>

@@ -2,12 +2,12 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import PageMeta from "../../components/common/PageMeta";
-import { Upload, CheckCircle2, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Upload, CheckCircle2, X, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import Screenshot1 from "../../assets/screenshot1.png";
 import Screenshot2 from "../../assets/screenshot2.png";
 import Screenshot3 from "../../assets/screenshot2.png";
-import Alert from "../../components/ui/alert/Alert";
 import AssignDeveloper from "./QAExpertTaskModal";
+import { toast } from "sonner";
 export default function CentralAdminTask_Detail() {
   const { t } = useTranslation();
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
@@ -28,23 +28,16 @@ export default function CentralAdminTask_Detail() {
   };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [alert, setAlert] = useState<{ type: string; message: string } | null>(
-    null
-  );
   const openModal = (index: number) => setModalImageIndex(index);
-  const openReworkModal = () => setReworkModal(true);
-  const closeReworkModal = () => setReworkModal(false);
   const closeModal = () => setModalImageIndex(null);
 
   const handleMarkAsInProgress = async () => {
     try {
-      setAlert({ type: "success", message: "Status updated to In Progress!" });
+      toast.success("Status updated to In Progress!");
       setSelectedAction(null);
-      setTimeout(() => setAlert(null), 2000);
     } catch (error) {
-      setAlert({ type: "error", message: "Error updating status." });
+      toast.error("Error updating status.");
       console.error(error);
-      setTimeout(() => setAlert(null), 3000);
     }
   };
 
@@ -55,25 +48,18 @@ export default function CentralAdminTask_Detail() {
     setIsModalOpen(false);
   };
   const handleFormSubmit = (values: Record<string, any>) => {
-    setAlert({ type: "success", message: "Developer Assigned successfully!" });
+    toast.success("Developer Assigned successfully!");
     closeAssignModal();
-    setTimeout(() => setAlert(null), 3000);
   };
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setAlert({ type: "success", message: "Issue Esclated successfully!" });
+    toast.success("Issue Esclated successfully!");
     setSelectedAction(null);
-    setTimeout(() => {
-      setAlert(null);
-    }, 1500);
   };
   const handleSubmitDocument = (e: React.FormEvent) => {
     e.preventDefault();
-    setAlert({ type: "success", message: "Issue Solved successfully!" });
+    toast.success("Issue Solved successfully!");
     setSelectedAction(null);
-    setTimeout(() => {
-      setAlert(null);
-    }, 1500);
   };
   return (
     <>
@@ -101,19 +87,6 @@ export default function CentralAdminTask_Detail() {
                     Review issue details and take appropriate action
                   </p>
                 </div>
-                <AnimatePresence>
-                  {alert && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 20 }}
-                      className={`fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-lg text-white font-semibold ${alert.type === "success" ? "bg-green-600" : "bg-red-600"
-                        }`}
-                    >
-                      {alert.message}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
 
               <div
@@ -238,7 +211,7 @@ export default function CentralAdminTask_Detail() {
                           }`}
                       >
                         {selectedAction === action.key && (
-                          <CheckCircle2
+                          <Check
                             className="w-4 h-4"
                             style={{ color: action.color }}
                           />

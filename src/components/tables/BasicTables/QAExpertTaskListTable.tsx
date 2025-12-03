@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import AssignDeveloper from "../../../pages/QAExpertTaskList/QAExpertTaskModal";
 import Alert from "../../ui/alert/Alert";
 import { useNavigate } from "react-router-dom";
+import { formatStatus } from "../../../utils/statusFormatter";
 
 interface QAExpertTask {
   id: string;
@@ -345,7 +346,8 @@ export default function QAExpertTaskListTable() {
                               : "bg-gray-500"
                         }`}
                     >
-                      {issue.status}
+                      {formatStatus(issue.status) || "N/A"}
+
                     </Badge>
 
                   </TableCell>

@@ -50,19 +50,19 @@ const InternalNodeTableColumns = (deleteNode: any) => [
   },
   {
     accessorKey: "name",
-    header: "Issue Flow Name",
+    header: "Support Request Flow Name",
     cell: ({ row }: any) => (
       <div className="font-medium text-blue-600">{row.getValue("name")}</div>
     ),
   },
-  {
-    accessorKey: "description",
-    header: "Description",
-    cell: ({ row }: any) => <div>{row.getValue("description") || "N/A"}</div>,
-  },
+  // {
+  //   accessorKey: "description",
+  //   header: "Description",
+  //   cell: ({ row }: any) => <div>{row.getValue("description") || "N/A"}</div>,
+  // },
   {
     accessorKey: "parent",
-    header: "Parent Issue Flow",
+    header: "Parent Request Flow",
     cell: ({ row }: any) => {
       const parent = row.original.parent;
       return <div>{parent?.name || "No Parent"}</div>;
@@ -131,7 +131,7 @@ const InternalNodeTableColumns = (deleteNode: any) => [
 ];
   const actions: ActionButton[] = [
     {
-      label: "Add Support Request Flow",
+      label: "Add",
       icon: <Plus className="h-4 w-4" />,
       variant: "default",
       size: "default",

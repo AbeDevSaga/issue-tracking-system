@@ -33,7 +33,7 @@ const IssueCategoryDetail = () => {
       <div className="min-h-screen bg-[#F9FBFC] p-6 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#094C81] mx-auto mb-4"></div>
-          <p className="text-[#1E516A] text-lg">Loading issue category details...</p>
+          <p className="text-[#1E516A] text-lg">Loading support request category details...</p>
         </div>
       </div>
     );
@@ -45,14 +45,14 @@ const IssueCategoryDetail = () => {
         <Card className="max-w-md w-full">
           <CardContent className="pt-6 text-center">
             <XCircleIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-[#1E516A] mb-2">Issue Category Not Found</h2>
+            <h2 className="text-xl font-semibold text-[#1E516A] mb-2">Support Request Category Not Found</h2>
             <p className="text-gray-600 mb-4">The issue category you're looking for doesn't exist or has been removed.</p>
             <Link
               to="/issueCategory"
               className="inline-flex items-center gap-2 text-[#094C81] hover:text-[#073954] font-medium"
             >
               <ArrowLeftIcon className="h-4 w-4" />
-              Back to Issue Categories
+              Back to Support Request Categories
             </Link>
           </CardContent>
         </Card>
@@ -63,7 +63,7 @@ const IssueCategoryDetail = () => {
   return (
     <>
       <PageMeta
-        title={`${issueCategory.name} - Issue Category Details`}
+        title={`${issueCategory.name} - Support Request Category Details`}
         description={`View details for ${issueCategory.name}`}
       />
       <div className="min-h-screen bg-[#F9FBFC] p-6 pb-24">
@@ -76,7 +76,7 @@ const IssueCategoryDetail = () => {
                 className="inline-flex items-center gap-2 text-[#094C81] hover:text-[#073954] transition-colors"
               >
                 <ArrowLeftIcon className="h-5 w-5" />
-                <span className="font-medium">Back to Issue Categories</span>
+                <span className="font-medium">Back to Support Request Categories</span>
               </Link>
             </div>
           </div>

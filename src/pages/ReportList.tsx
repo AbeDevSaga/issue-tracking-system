@@ -108,9 +108,9 @@ export default function ReportList() {
           className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md"
           onSubmit={handleSubmit}
         >
-          <h2 className="font-bold mb-2 text-lg">Add New Issue</h2>
+          <h2 className="font-bold mb-2 text-lg">Add New Support Request</h2>
           <div className="mb-2">
-            <label className="block text-sm font-semibold mb-1">Issue ID</label>
+            <label className="block text-sm font-semibold mb-1">Support Request ID</label>
             <input
               value={nextId}
               disabled
@@ -207,7 +207,7 @@ export default function ReportList() {
     <div className="rounded-xl border border-gray-200 bg-white p-6">
       <div className="mb-2">
         <h2 className="text-xl font-semibold text-blue-900 mb-1">
-          Bug– Issue Tucking System
+          Support Request Tracking System
         </h2>
         <div className="text-gray-500 text-sm mb-4">
           This is the issue management of the AA city central Admin
@@ -234,7 +234,7 @@ export default function ReportList() {
             }}
             className="border px-3 py-2 rounded"
           >
-            <option value="">issue category</option>
+            <option value="">support request category</option>
             {CATEGORIES.map((c) => (
               <option key={c}>{c}</option>
             ))}
@@ -254,14 +254,14 @@ export default function ReportList() {
           className="bg-blue-900 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-blue-700"
           onClick={() => setShowAddModal(true)}
         >
-          <PlusIcon className="w-5 h-5" /> Report New Issue
+          <PlusIcon className="w-5 h-5" /> Report New Support Request
         </button>
       </div>
       {/* Table */}
       <table className="w-full border rounded text-sm">
         <thead>
           <tr className="bg-blue-900 text-white">
-            <th className="px-3 py-3 text-left font-medium">Issue ID</th>
+            <th className="px-3 py-3 text-left font-medium">Support Request ID</th>
             <th className="px-3 py-3 text-left font-medium">Category</th>
             <th className="px-3 py-3 text-left font-medium">Severity</th>
             <th className="px-3 py-3 text-left font-medium">

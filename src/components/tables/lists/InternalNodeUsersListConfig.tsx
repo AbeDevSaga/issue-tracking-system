@@ -104,15 +104,15 @@ export default function InternalNodeUsersListConfig({
     }
   );
 
-  const actions: ActionButton[] = [
-    {
-      label: "Assign User",
-      icon: <Plus className="h-4 w-4" />,
-      variant: "default",
-      size: "default",
-      onClick: () => setModalOpen(true),
-    },
-  ];
+  // const actions: ActionButton[] = [
+  //   {
+  //     label: "Assign User",
+  //     icon: <Plus className="h-4 w-4" />,
+  //     variant: "default",
+  //     size: "default",
+  //     onClick: () => setModalOpen(true),
+  //   },
+  // ];
   // Filters
   const filterFields: FilterField[] = [
     {
@@ -175,7 +175,7 @@ export default function InternalNodeUsersListConfig({
     <PageLayout
       filters={filterFields}
       filterColumnsPerRow={1}
-      actions={actions}
+      // actions={actions}
     >
       <DataTable
         columns={columns}

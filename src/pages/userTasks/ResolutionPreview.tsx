@@ -51,7 +51,7 @@ export default function ResolutionPreview({
       className="absolute top-0 right-0 w-full lg:w-[360px] bg-white border-l border-[#D5E3EC] h-full rounded-r-lg flex flex-col gap-4 shadow-lg"
     >
       <div className="p-6 border-b border-[#D5E3EC] bg-gradient-to-r from-[#1E516A] to-[#2C6B8A]">
-        <h2 className="text-xl font-bold text-white">Resolve Issue</h2>
+        <h2 className="text-xl font-bold text-white">Resolve Request</h2>
         <p className="text-white text-sm mt-1">Upload files related to the resolution</p>
       </div>
       <div className="flex flex-col px-4 gap-3">

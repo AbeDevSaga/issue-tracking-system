@@ -33,7 +33,7 @@ export function CreateChildInternalNodeModal({
     e.preventDefault();
 
     if (!name.trim()) {
-      toast.error("Issue flow name is required");
+      toast.error("Support request flow name is required");
       return;
     }
 
@@ -45,13 +45,13 @@ export function CreateChildInternalNodeModal({
         is_active: true,
       }).unwrap();
 
-      toast.success("Issue flow created!");
+      toast.success("Support request flow created!");
 
       setName("");
       setDescription("");
       onClose();
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to create issue flow");
+      toast.error(error?.data?.message || "Failed to create support request flow");
     }
   };
 
@@ -76,11 +76,11 @@ export function CreateChildInternalNodeModal({
               {/* Node Name */}
               <div className="w-1/2">
                 <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                  Issue Flow Name *
+                  Support Request Flow Name *
                 </Label>
                 <Input
                   id="issue-flow-name"
-                  placeholder="Enter issue flow name"
+                  placeholder="Enter support request flow name"
                   value={name}
                   className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
                   onChange={(e) => setName(e.target.value)}
@@ -98,7 +98,7 @@ export function CreateChildInternalNodeModal({
                 </Label>
                 <Textarea
                   id="issue-flow-description"
-                  placeholder="Enter issue flow description"
+                  placeholder="Enter support request flow description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
@@ -122,7 +122,7 @@ export function CreateChildInternalNodeModal({
               disabled={isCreatingNode || !name.trim()}
               className="bg-[#094C81] hover:bg-[#094C81]/80 text-white"
             >
-              {isCreatingNode ? "Creating..." : "Create Issue Flow"}
+              {isCreatingNode ? "Creating..." : "Create"}
             </Button>
           </div>
         </form>

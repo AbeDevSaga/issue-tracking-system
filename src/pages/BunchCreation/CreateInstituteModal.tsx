@@ -90,7 +90,7 @@ export const BunchCreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
             </label>
             <input
               className="w-full border border-gray-300 px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none"
-              placeholder="Enter institute name"
+              placeholder="Enter Organization name"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />

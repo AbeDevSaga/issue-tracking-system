@@ -40,13 +40,13 @@ export const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
 
     try {
       const response = await createCategory(formData).unwrap();
-      toast.success(`Category created successfully`);
+      toast.success(`Support request category created successfully`);
       setFormData({ name: "", description: "" });
       onClose();
     } catch (error: any) {
       toast.error(
         error?.data?.message ||
-          "Failed to create issue category. Please try again."
+          "Failed to create support request category. Please try again."
       );
     }
   };
@@ -57,7 +57,7 @@ export const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-[400px] rounded-2xl bg-white p-6 shadow-xl">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-[20px] font-bold text-[#094C81]">Create Issue Category</h2>
+          <h2 className="text-[20px] font-bold text-[#094C81]">Create Support Request Category</h2>
           <button
             onClick={onClose}
             className="text-[#094C81] hover:text-gray-600 transition-colors duration-200"
@@ -68,11 +68,11 @@ export const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
 
         <div className="space-y-4 flex-col flex w-full ">
           <div className="">
-            <Label htmlFor="name" className="block text-sm text-[#094C81] font-medium mb-2">Category Name</Label>
+            <Label htmlFor="name" className="block text-sm text-[#094C81] font-medium mb-2">Support Request Category Name</Label>
             <Input
               id="name"
               name="name"
-              placeholder="Enter category name"
+              placeholder="Enter support request category name"
               value={formData.name}
               onChange={handleChange}
               className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
@@ -97,7 +97,7 @@ export const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={isLoading}>
-            {isLoading ? "Creating..." : "Create Category"}
+            {isLoading ? "Creating..." : "Create"}
           </Button>
         </div>
       </div>
