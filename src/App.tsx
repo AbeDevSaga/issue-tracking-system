@@ -77,6 +77,7 @@ import IssueConfigurationDetail from "./InternalPages/IssueFlow/IssueConfigurati
 import ForgotPasswordByEmail from "./components/auth/ForgotPasswordByEmail";
 import Notifications from "./components/header/Notifications";
 import LandingPage from "./pages/home/LandingPage";
+import ChangePasswordPage from "./components/auth/ChangePassword";
 import TrackPage from "./pages/home/TrackPage";
 import TrackPageDetail from "./pages/home/TrackPageDetail";
 import OrganizationProfile from "./pages/profile/OrganizationProfile";
@@ -114,6 +115,7 @@ function AppContent() {
       <ScrollToTop />
 
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route path='/' element={<LandingPage/>}/>
         <Route path='/track_request' element={<TrackPage/>}/>
         <Route path='/track_request/:id' element={<TrackPageDetail/>}/>
