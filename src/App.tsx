@@ -25,6 +25,7 @@ import Project from "./pages/project/project";
 import Permission from "./pages/permission/permission";
 import Woreda from "./pages/woreda/woreda";
 import ProjectLevel from "./pages/priorityLevel/priorityLevel";
+import ResponseTimes from "./pages/responseTimes/ResponseTimes";
 import IssueCategory from "./pages/issueCategory/issueCategory";
 import MyIssue from "./pages/issue/my_issue";
 import IssueFlowConfig from "./pages/IssueFlowConfiguration/IssueFlowConfiguration";
@@ -110,9 +111,9 @@ function AppContent() {
       <ScrollToTop />
 
       <Routes>
-        <Route path='/' element={<LandingPage/>}/>
-        <Route path='/track_request' element={<TrackPage/>}/>
-        <Route path='/track_request/:id' element={<TrackPageDetail/>}/>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/track_request" element={<TrackPage />} />
+        <Route path="/track_request/:id" element={<TrackPageDetail />} />
         <Route element={<AppLayout />}>
           <Route
             path="/dashboard"
@@ -141,7 +142,10 @@ function AppContent() {
           <Route path="/issue/:id" element={<IssueDetail />} />
 
           <Route path="/profile" element={<Profile />} />
-          <Route path="/organization_profile" element={<OrganizationProfile />} />
+          <Route
+            path="/organization_profile"
+            element={<OrganizationProfile />}
+          />
           <Route path="/users" element={<Users />} />
           <Route path="/users/:id" element={<UserDetail />} />
           <Route path="/organization" element={<Organization />} />
@@ -163,6 +167,9 @@ function AppContent() {
             element={<InternalProjectDetail />}
           />
           <Route path="/issue_flow/:id" element={<IssueFlow />} />
+          {/* ResponseTimes */}
+          <Route path="/response_times" element={<ResponseTimes />} />
+
           <Route path="/priority_level" element={<ProjectLevel />} />
           <Route path="/priority_level/:id" element={<PriorityLevelDetail />} />
           <Route path="/permission" element={<Permission />} />
@@ -220,7 +227,6 @@ function AppContent() {
           element={
             <PublicRoute>
               <Login />
-
             </PublicRoute>
           }
         />

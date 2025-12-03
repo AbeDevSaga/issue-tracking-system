@@ -51,6 +51,7 @@ export const baseApi = createApi({
     "IssueEscalation",
     "IssueResolution",
     "IssuePriority",
+    "IssueResponseTime",
     "IssueAssignment",
     "IssueCategory",
     "Assignment",

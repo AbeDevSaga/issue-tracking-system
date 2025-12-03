@@ -17,7 +17,8 @@ export interface CreateIssuePriorityDto {
   name: string;
   description?: string;
   color_value: string;
-  response_time: string;
+  response_time_id: string;
+  is_active?: boolean;
 }
 
 // Inject endpoints into baseApi
