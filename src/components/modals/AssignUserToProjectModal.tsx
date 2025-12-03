@@ -56,12 +56,12 @@ export default function AssignUserModal({
         : skipToken
     );
 
-  // Fetch all roles
   const { data: rolesResponse } = useGetRolesQuery(undefined);
 
   const [assignUserToProject] = useAssignUserToProjectMutation();
 
-  const users = usersResponse?.data || [];
+  const users = usersResponse || [];
+  console.log("userssssssssssssssssssssss", users);
   const roles = rolesResponse?.data || [];
 
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
@@ -112,14 +112,19 @@ export default function AssignUserModal({
       toast.error(err?.data?.message || "Failed to assign user");
     }
   };
-  console.log("project_id: ", project_id, "hierarchy_node_name: ", hierarchy_node_name, "hierarchy_node_id: ", hierarchy_node_id);
+  console.log(
+    "project_id: ",
+    project_id,
+    "hierarchy_node_name: ",
+    hierarchy_node_name,
+    "hierarchy_node_id: ",
+    hierarchy_node_id
+  );
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[400px] bg-white max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader>
-          <DialogTitle className="text-[#094C81]">
-            Assign User 
-          </DialogTitle>
+          <DialogTitle className="text-[#094C81]">Assign User</DialogTitle>
         </DialogHeader>
 
         <div className="flex gap-10 mt-4">
@@ -188,7 +193,7 @@ export default function AssignUserModal({
             onClick={handleAssign}
             className="bg-[#094C81] hover:bg-[#094C81]/90 text-white"
           >
-            Assign  
+            Assign
           </Button>
         </div>
       </DialogContent>

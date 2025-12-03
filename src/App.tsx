@@ -116,9 +116,9 @@ function AppContent() {
 
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path='/' element={<LandingPage/>}/>
-        <Route path='/track_request' element={<TrackPage/>}/>
-        <Route path='/track_request/:id' element={<TrackPageDetail/>}/>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/track_request" element={<TrackPage />} />
+        <Route path="/track_request/:id" element={<TrackPageDetail />} />
         <Route element={<AppLayout />}>
           <Route
             path="/dashboard"
@@ -147,7 +147,10 @@ function AppContent() {
           <Route path="/issue/:id" element={<IssueDetail />} />
 
           <Route path="/profile" element={<Profile />} />
-          <Route path="/organization_profile" element={<OrganizationProfile />} />
+          <Route
+            path="/organization_profile"
+            element={<OrganizationProfile />}
+          />
           <Route path="/users" element={<Users />} />
           <Route path="/users/:id" element={<UserDetail />} />
           <Route path="/organization" element={<Organization />} />
@@ -184,7 +187,6 @@ function AppContent() {
             element={<IssueConfigurationDetail />}
           />
 
-          <Route path="/change_password" element={<ChangePasswordPage />} />
           <Route path="/issue_flow/:id" element={<IssueFlow />} />
           {/* IssueFlowConfig */}
           <Route path="/add_issue" element={<MyissueForm />} />
@@ -222,13 +224,12 @@ function AppContent() {
             }
           />
         </Route>
-
+        <Route path="/change_password" element={<ChangePasswordPage />} />
         <Route
           path="/login"
           element={
             <PublicRoute>
               <Login />
-
             </PublicRoute>
           }
         />

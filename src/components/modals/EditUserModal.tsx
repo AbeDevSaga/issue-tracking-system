@@ -38,8 +38,6 @@ interface Role {
   role_id: string;
   name: string;
   description?: string;
-  created_at?: string;
-  updated_at?: string;
 }
 
 export const EditUserModal: React.FC<EditUserModalProps> = ({
@@ -59,16 +57,15 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
     is_active: true,
   });
 
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  const [role_ids, setRoleIds] = useState<string[]>([]);
 
   // Fetch user data
-  const {
-    data: userResponse,
-    isLoading: loadingUser,
-    refetch: refetchUser,
-  } = useGetUserByIdQuery(userId, {
-    skip: !userId || !isOpen,
-  });
+  const { data: userResponse, isLoading: loadingUser } = useGetUserByIdQuery(
+    userId,
+    {
+      skip: !userId || !isOpen,
+    }
+  );
 
   // Fetch user types
   const { data: userTypesResponse, isLoading: loadingUserTypes } =
@@ -79,15 +76,13 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
   const { data: institutes, isLoading: loadingInstitutes } =
     useGetInstitutesQuery();
 
-  // Fetch roles using your existing role API
+  // Fetch roles
   const { data: rolesResponse, isLoading: loadingRoles } = useGetRolesQuery(
     undefined,
     {
       skip: !isOpen,
     }
   );
-
-  // Extract roles from response
   const roles: Role[] = rolesResponse?.data || rolesResponse || [];
 
   const [updateUser, { isLoading: updating }] = useUpdateUserMutation();
@@ -100,7 +95,6 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
   useEffect(() => {
     if (userResponse?.data) {
       const user = userResponse.data;
-      console.log("User data loaded:", user); // Debug log
 
       setFormData({
         full_name: user.full_name || "",
@@ -113,49 +107,35 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
         is_active: user.is_active ?? true,
       });
 
-      // Debug: Check what roles data looks like
-      console.log("User roles data:", user.roles);
-      console.log("User user_roles data:", user.user_roles);
-
-      // Extract roles from user data - try multiple possible structures
+      // Extract role_ids
       let userRoles: string[] = [];
-
       if (user.roles && Array.isArray(user.roles)) {
-        userRoles = user.roles.map(
-          (role: any) => role.role_id || role.id || role
-        );
+        userRoles = user.roles.map((r: any) => r.role_id || r.id || r);
       } else if (user.user_roles && Array.isArray(user.user_roles)) {
         userRoles = user.user_roles.map(
-          (userRole: any) =>
-            userRole.role_id || userRole.role?.role_id || userRole
+          (ur: any) => ur.role_id || ur.role?.role_id || ur
         );
       } else if (user.role_ids && Array.isArray(user.role_ids)) {
         userRoles = user.role_ids;
       }
-
-      console.log("Extracted user roles:", userRoles);
-      setSelectedRoles(userRoles);
+      setRoleIds(userRoles);
     }
   }, [userResponse]);
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
 
-    // If user type changes to internal, clear institute
+    // Clear institute if internal user
     if (field === "user_type_id") {
       const newUserType = userTypes.find((ut) => ut.user_type_id === value);
       if (newUserType?.name === "internal_user") {
         setFormData((prev) => ({ ...prev, institute_id: "" }));
       }
-      // Don't clear roles when changing user type - both can have roles
     }
   };
 
   const handleRoleToggle = (roleId: string) => {
-    setSelectedRoles((prev) =>
+    setRoleIds((prev) =>
       prev.includes(roleId)
         ? prev.filter((id) => id !== roleId)
         : [...prev, roleId]
@@ -173,7 +153,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
       return;
     }
 
-    const payload: UpdateUserDto & { roles?: string[] } = {
+    const payload: UpdateUserDto & { role_ids?: string[] } = {
       full_name: formData.full_name,
       email: formData.email,
       phone_number: formData.phone_number || undefined,
@@ -182,16 +162,11 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
       institute_id: formData.institute_id || undefined,
       hierarchy_node_id: formData.hierarchy_node_id || undefined,
       is_active: formData.is_active,
-      // Always include roles for both user types
-      roles: selectedRoles,
+      role_ids, // <-- send role_ids to match backend
     };
 
     try {
-      await updateUser({
-        id: userId,
-        data: payload,
-      }).unwrap();
-
+      await updateUser({ id: userId, data: payload }).unwrap();
       toast.success("User updated successfully!");
       onUserUpdated?.();
       handleClose();
@@ -212,12 +187,8 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
       hierarchy_node_id: "",
       is_active: true,
     });
-    setSelectedRoles([]);
+    setRoleIds([]);
     onClose();
-  };
-
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) handleClose();
   };
 
   if (!isOpen) return null;
@@ -225,7 +196,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-      onClick={handleBackdropClick}
+      onClick={(e) => e.target === e.currentTarget && handleClose()}
     >
       <div className="bg-white p-6 rounded-2xl w-full max-w-[800px] shadow-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
@@ -246,14 +217,12 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
           </div>
         ) : (
           <>
-            {/* Content */}
+            {/* Form Fields */}
             <div className="w-full flex flex-col space-y-4">
               <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 pr-2">
                 {/* User Type */}
                 <div className="space-y-2">
-                  <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                    User Type *
-                  </Label>
+                  <Label>User Type *</Label>
                   <Select
                     value={formData.user_type_id}
                     onValueChange={(value) =>
@@ -261,7 +230,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                     }
                     disabled={loadingUserTypes}
                   >
-                    <SelectTrigger className="h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
+                    <SelectTrigger>
                       <SelectValue placeholder="Select User Type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -277,12 +246,10 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                   </Select>
                 </div>
 
-                {/* Institute (only for external users) */}
+                {/* Institute */}
                 {selectedUserType?.name === "external_user" && (
                   <div className="space-y-2">
-                    <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                      Institute *
-                    </Label>
+                    <Label>Institute *</Label>
                     <Select
                       value={formData.institute_id}
                       onValueChange={(value) =>
@@ -290,7 +257,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                       }
                       disabled={loadingInstitutes}
                     >
-                      <SelectTrigger className="h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
+                      <SelectTrigger>
                         <SelectValue placeholder="Select Institute" />
                       </SelectTrigger>
                       <SelectContent>
@@ -309,128 +276,78 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
 
                 {/* Full Name */}
                 <div className="space-y-2">
-                  <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                    Full Name *
-                  </Label>
+                  <Label>Full Name *</Label>
                   <Input
                     value={formData.full_name}
                     onChange={(e) =>
                       handleInputChange("full_name", e.target.value)
                     }
                     placeholder="John Doe"
-                    className="w-full h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
                   />
                 </div>
 
                 {/* Email */}
                 <div className="space-y-2">
-                  <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                    Email *
-                  </Label>
+                  <Label>Email *</Label>
                   <Input
-                    type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     placeholder="john@example.com"
-                    className="w-full h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
                   />
                 </div>
 
-                {/* Phone Number */}
+                {/* Phone */}
                 <div className="space-y-2">
-                  <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                    Phone Number
-                  </Label>
+                  <Label>Phone Number</Label>
                   <Input
                     value={formData.phone_number}
                     onChange={(e) =>
                       handleInputChange("phone_number", e.target.value)
                     }
                     placeholder="+251 9xxxxxxx"
-                    className="w-full h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
                   />
                 </div>
 
-                {/* Active Status */}
+                {/* Active */}
                 <div className="space-y-2">
-                  <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                    Status
-                  </Label>
+                  <Label>Status</Label>
                   <div className="flex items-center space-x-2 h-12">
                     <input
                       type="checkbox"
-                      id="is_active"
                       checked={formData.is_active}
                       onChange={(e) =>
                         handleInputChange("is_active", e.target.checked)
                       }
-                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <Label
-                      htmlFor="is_active"
-                      className="text-sm font-medium leading-none cursor-pointer"
-                    >
-                      Active User
-                    </Label>
+                    <Label>Active User</Label>
                   </div>
                 </div>
               </div>
 
-              {/* Roles Section - Available for BOTH user types */}
+              {/* Roles Section */}
               <div className="border-t pt-4 mt-4">
                 <div className="flex items-center justify-between mb-3">
-                  <Label className="block text-sm text-[#094C81] font-medium">
-                    Roles
-                  </Label>
-                  <span className="text-xs text-gray-500">
-                    {selectedRoles.length} role(s) selected
-                  </span>
+                  <Label>Roles</Label>
+                  <span>{role_ids.length} role(s) selected</span>
                 </div>
-
                 {loadingRoles ? (
-                  <div className="flex items-center justify-center py-4">
-                    <Loader2 className="w-5 h-5 animate-spin text-[#094C81] mr-2" />
-                    <span className="text-sm text-gray-600">
-                      Loading roles...
-                    </span>
-                  </div>
+                  <Loader2 className="w-5 h-5 animate-spin text-[#094C81]" />
                 ) : (
-                  <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-2">
-                      {roles.map((role) => (
-                        <div
-                          key={role.role_id}
-                          className="flex items-start space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-                        >
-                          <input
-                            type="checkbox"
-                            id={`role-${role.role_id}`}
-                            checked={selectedRoles.includes(role.role_id)}
-                            onChange={() => handleRoleToggle(role.role_id)}
-                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <label
-                              htmlFor={`role-${role.role_id}`}
-                              className="text-sm font-medium leading-none cursor-pointer block"
-                            >
-                              {role.name}
-                            </label>
-                            {/* {role.description && (
-                              <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                                {role.description}
-                              </p>
-                            )} */}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    {roles.length === 0 && !loadingRoles && (
-                      <p className="text-sm text-gray-500 text-center py-4 border rounded-lg">
-                        No roles available in the system
-                      </p>
-                    )}
-                  </>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-2">
+                    {roles.map((role) => (
+                      <div
+                        key={role.role_id}
+                        className="flex items-start space-x-2 p-2 border rounded-lg"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={role_ids.includes(role.role_id)}
+                          onChange={() => handleRoleToggle(role.role_id)}
+                        />
+                        <label>{role.name}</label>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>
@@ -444,19 +361,8 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
               >
                 Cancel
               </Button>
-              <Button
-                onClick={handleSubmit}
-                disabled={updating || loadingUser}
-                className="min-w-24 bg-[#094C81] hover:bg-[#083a66]"
-              >
-                {updating ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    Updating...
-                  </>
-                ) : (
-                  "Update User"
-                )}
+              <Button onClick={handleSubmit} disabled={updating || loadingUser}>
+                {updating ? "Updating..." : "Update User"}
               </Button>
             </div>
           </>

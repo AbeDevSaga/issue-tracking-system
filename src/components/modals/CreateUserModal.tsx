@@ -1,4 +1,3 @@
-// Updated CreateUserModal with normal div modal instead of Dialog
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -62,10 +61,9 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [selectedRole, setSelectedRole] = useState("");
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [projectMetricsIds, setProjectMetricsIds] = useState<string[]>([]);
   const [position, setPosition] = useState("");
-  const [isActive, setIsActive] = useState(true);
   const [instituteId, setInstituteId] = useState<string>("");
   const [selectAll, setSelectAll] = useState(false);
 
@@ -77,7 +75,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
     isError,
   } = useGetProjectMetricsQuery({});
   const { data: rolesResponse } = useGetRolesQuery({
-    role_type: user_type == "internal_user" ? "internal" : "external",
+    role_type: user_type === "internal_user" ? "internal" : "external",
   });
   const roles = rolesResponse?.data || [];
   const metrics: ProjectMetric[] = metricsData || [];
@@ -88,14 +86,16 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
     ...r,
     subRoles: r?.roleSubRoles?.map((s: any) => s.subRole) || [],
   }));
-  // Set initial ID on modal open
+
+  const positionId = getUserPositionId(logged_user_type, user_type, true);
+
+  // Set initial institute
   useEffect(() => {
     const id = user?.institute?.institute_id || inistitute_id || "";
     setInstituteId(id);
   }, [user, inistitute_id, isOpen]);
-  const positionId = getUserPositionId(logged_user_type, user_type, true);
 
-  // Update selectAll state based on current selection
+  // Update selectAll state
   useEffect(() => {
     if (metrics.length > 0) {
       setSelectAll(projectMetricsIds.length === metrics.length);
@@ -103,22 +103,18 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
   }, [projectMetricsIds, metrics]);
 
   const handleMetricSelect = (metricId: string) => {
-    setProjectMetricsIds((prev) => {
-      if (prev.includes(metricId)) {
-        return prev.filter((id) => id !== metricId);
-      } else {
-        return [...prev, metricId];
-      }
-    });
+    setProjectMetricsIds((prev) =>
+      prev.includes(metricId)
+        ? prev.filter((id) => id !== metricId)
+        : [...prev, metricId]
+    );
   };
 
   const handleSelectAll = () => {
     if (selectAll) {
-      // Deselect all
       setProjectMetricsIds([]);
       setSelectAll(false);
     } else {
-      // Select all
       const allMetricIds = metrics.map((metric) => metric.project_metric_id);
       setProjectMetricsIds(allMetricIds);
       setSelectAll(true);
@@ -126,26 +122,25 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (!fullName || !email || !selectedRole) {
-      toast.error("Please fill all required fields");
+    if (!fullName || !email || selectedRoles.length === 0) {
+      toast.error(
+        "Please fill all required fields and select at least one role"
+      );
       return;
     }
 
-    if (user_type === "external_user") {
-      const finalInstituteId = user?.institute?.institute_id || instituteId;
-      if (!finalInstituteId) {
-        toast.error("Please select an institute for external users");
-        return;
-      }
+    if (user_type === "external_user" && !instituteId) {
+      toast.error("Please select an institute for external users");
+      return;
     }
-    if (user_type === "internal_user") {
-      if (projectMetricsIds.length === 0) {
-        toast.error(
-          "Please select at least one project metric for internal users"
-        );
-        return;
-      }
+
+    if (user_type === "internal_user" && projectMetricsIds.length === 0) {
+      toast.error(
+        "Please select at least one project metric for internal users"
+      );
+      return;
     }
+
     const finalInstituteId = user?.institute?.institute_id || instituteId;
 
     const payload: CreateUserDto = {
@@ -153,7 +148,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
       email,
       phone_number: phoneNumber || undefined,
       user_type_id: user_type_id,
-      role_id: selectedRole || undefined,
+      role_ids: selectedRoles,
       project_metrics_ids:
         projectMetricsIds.length > 0 ? projectMetricsIds : undefined,
       position: position || undefined,
@@ -177,11 +172,10 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
     setEmail("");
     setPhoneNumber("");
     setPosition("");
-    setIsActive(true);
     setInstituteId("");
     setProjectMetricsIds([]);
     setSelectAll(false);
-    setSelectedRole("");
+    setSelectedRoles([]);
     onClose();
   };
 
@@ -191,7 +185,6 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Determine if institute selection should be shown
   const showInstituteSelect =
     logged_user_type === "internal_user" && user_type === "external_user";
   const showMetricsSelect =
@@ -216,8 +209,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
 
         {/* Content */}
         <div className="w-full flex flex-col space-y-4">
-          {/* User Detail */}
-          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4  mt-2 pr-2">
+          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 pr-2">
             {showInstituteSelect && (
               <div className="space-y-2">
                 <Label className="block text-sm text-[#094C81] font-medium mb-2">
@@ -237,7 +229,6 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                   <SelectContent className="text-sm bg-white text-[#094C81] font-medium">
                     {institutes?.map((inst: Institute) => (
                       <SelectItem
-                        className="text-sm text-[#094C81] font-medium"
                         key={inst.institute_id}
                         value={inst.institute_id}
                       >
@@ -261,7 +252,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
             </div>
             <div className="space-y-2">
               <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                Phone Number <span className="text-red-500">*</span>
+                Phone Number
               </Label>
               <Input
                 value={phoneNumber}
@@ -282,42 +273,53 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                 className="w-full h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
               />
             </div>
-            {/* ROLE */}
-            <div className="w-full space-y-2">
-              <Label className="text-sm font-medium text-[#094C81]">
-                Role <span className="text-red-500">*</span>
-              </Label>
-
-              <Select
-                value={selectedRole}
-                onValueChange={(value) => {
-                  setSelectedRole(value);
-                }}
-              >
-                <SelectTrigger className="w-full h-12  border p-2 rounded mt-1 text-[#094C81]">
-                  <SelectValue placeholder="Select Role" />
-                </SelectTrigger>
-                <SelectContent className="text-[#094C81] bg-white">
-                  {rolesMap.map((r: any) => (
-                    <SelectItem key={r.role_id} value={r.role_id}>
-                      {r.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
-          {/* metrics panel */}
+
+          {/* ROLES */}
+          <div className="w-full space-y-2">
+            <Label className="text-sm font-medium text-[#094C81]">
+              Roles <span className="text-red-500">*</span>
+            </Label>
+
+            {rolesMap.length === 0 ? (
+              <div className="text-gray-500 text-sm">No roles available</div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-[200px] overflow-y-auto border rounded-md p-2">
+                {rolesMap.map((r: any) => (
+                  <label
+                    key={r.role_id}
+                    className="flex items-center gap-2 p-1 cursor-pointer hover:bg-gray-50 rounded-md"
+                  >
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4"
+                      value={r.role_id}
+                      checked={selectedRoles.includes(r.role_id)}
+                      onChange={(e) => {
+                        const roleId = e.target.value;
+                        setSelectedRoles((prev) =>
+                          prev.includes(roleId)
+                            ? prev.filter((id) => id !== roleId)
+                            : [...prev, roleId]
+                        );
+                      }}
+                    />
+                    <span className="text-sm text-[#094C81]">{r.name}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Metrics */}
           {showMetricsSelect && (
             <div className="w-full border border-gray-200 flex flex-col gap-4 p-5 shadow-sm rounded-lg">
-              {/* Header with count */}
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-3">
                   <h3 className="text-[#094C81] font-semibold text-lg">
                     User Skills
                   </h3>
                 </div>
-                {/* Global Select All Checkbox */}
                 {metrics.length > 0 && (
                   <div
                     className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-[#094C81]/10 cursor-pointer transition-all duration-200 border border-gray-200 bg-white"
@@ -330,9 +332,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                           : "border-gray-300 bg-white"
                       }`}
                     >
-                      {selectAll ? (
-                        <Check className="w-3 h-3 stroke-3" />
-                      ) : null}
+                      {selectAll && <Check className="w-3 h-3 stroke-3" />}
                     </div>
                     <span className="font-medium text-sm text-[#094C81]">
                       Select All
@@ -355,9 +355,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                 </div>
               ) : (
                 <div className="relative">
-                  {/* Scrollable container with better height */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 max-h-[400px] overflow-y-auto overflow-x-hidden pr-2 pb-2 custom-scrollbar">
-                    {/* Metrics List */}
                     {metrics.map((metric) => (
                       <div
                         key={metric.project_metric_id}
@@ -379,9 +377,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                         >
                           {projectMetricsIds.includes(
                             metric.project_metric_id
-                          ) ? (
-                            <Check className="w-2.5 h-2.5 stroke-3" />
-                          ) : null}
+                          ) && <Check className="w-2.5 h-2.5 stroke-3" />}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div
@@ -394,7 +390,6 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                       </div>
                     ))}
                   </div>
-                  {/* Scroll indicator hint for many items */}
                   {metrics.length > 12 && (
                     <div className="absolute bottom-0 left-0 right-2 h-8 bg-gradient-to-t from-gray-50/50 to-transparent pointer-events-none rounded-b-lg" />
                   )}

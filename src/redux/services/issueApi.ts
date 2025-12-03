@@ -14,6 +14,10 @@ export interface IssuesByMultiplePairsParams {
     hierarchy_node_id: string;
   }>;
 }
+export interface ReopenIssueDto {
+  issue_id: string;
+  notes?: string; // optional reason for reopening
+}
 
 export interface IssueByTicketNumberParams {
   ticket_number: string;
@@ -128,6 +132,18 @@ export const issueApi = baseApi.injectEndpoints({
       query: () => `/issues/escalated/null-tier`,
       providesTags: ["Issue"], // Refresh when needed
     }),
+    // Reopen Issue mutation
+    reopenIssue: builder.mutation<
+      { success: boolean; message: string },
+      ReopenIssueDto
+    >({
+      query: (data) => ({
+        url: `/issues/${data.issue_id}/reopen`,
+        method: "PUT",
+        body: { notes: data.notes },
+      }),
+      invalidatesTags: ["Issue"], // Refresh any queries related to issues
+    }),
 
     createIssue: builder.mutation<Issue, CreateIssueDto>({
       query: (data) => ({
@@ -197,4 +213,5 @@ export const {
   useDeleteIssueMutation,
   useGetIssuesByHierarchyAndProjectQuery,
   useGetIssuesByMultiplePairsQuery, // NEW: Export the new hook
+  useReopenIssueMutation,
 } = issueApi;

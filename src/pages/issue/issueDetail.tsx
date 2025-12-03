@@ -16,6 +16,7 @@ import {
 import {
   useConfirmIssueResolvedMutation,
   useGetIssueByIdQuery,
+  useReopenIssueMutation,
 } from "../../redux/services/issueApi";
 import FileViewer from "../../components/common/FileView";
 import { getFileType, getFileUrl } from "../../utils/fileUrl";
@@ -27,14 +28,21 @@ import { Button } from "../../components/ui/cn/button";
 import { toast } from "sonner";
 import { formatStatus } from "../../utils/statusFormatter";
 import DetailHeader from "../../components/common/DetailHeader";
-
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "../../components/ui/cn/dialog";
 export default function UserIssueDetail() {
   const { id } = useParams<{ id: string }>();
   const { data: issue, isLoading, isError } = useGetIssueByIdQuery(id!);
   const { t } = useTranslation();
   const [modalImageIndex, setModalImageIndex] = useState<number | null>(null);
   const [confirmIssue, setConfirmIssue] = useState(false);
-  const [openTimeline, setOpenTimeline] = useState(false);
+  const [openTimeline, setOpenTimeline] = useState(true);
   const [confirmIssueResolved, { isLoading: isConfirming }] =
     useConfirmIssueResolvedMutation();
 
@@ -89,9 +97,7 @@ export default function UserIssueDetail() {
     if (expandedEscalations.length === issue.escalations.length) {
       setExpandedEscalations([]);
     } else {
-      setExpandedEscalations(
-        issue.escalations.map((esc) => esc.escalation_id)
-      );
+      setExpandedEscalations(issue.escalations.map((esc) => esc.escalation_id));
     }
   };
 
@@ -101,9 +107,7 @@ export default function UserIssueDetail() {
     if (expandedResolutions.length === issue.resolutions.length) {
       setExpandedResolutions([]);
     } else {
-      setExpandedResolutions(
-        issue.resolutions.map((res) => res.resolution_id)
-      );
+      setExpandedResolutions(issue.resolutions.map((res) => res.resolution_id));
     }
   };
 
@@ -181,6 +185,72 @@ export default function UserIssueDetail() {
       console.error(error);
     }
   };
+  const ReopenIssueButton = ({ issueId }: { issueId: string }) => {
+    const [open, setOpen] = useState(false);
+    const [reopenIssue, { isLoading }] = useReopenIssueMutation();
+
+    const handleReopen = async () => {
+      try {
+        const result = await reopenIssue({
+          issue_id: issueId,
+          notes: "Reopened by user",
+        }).unwrap();
+
+        toast.success(result.message || "Issue reopened successfully!");
+        setOpen(false);
+      } catch (err: any) {
+        toast.error(err?.data?.message || "Failed to reopen issue.");
+      }
+    };
+
+    return (
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2"
+            disabled={isLoading}
+          >
+            {isLoading ? "Reopening..." : "Reopen Issue"}
+          </Button>
+        </DialogTrigger>
+
+        <DialogContent
+          className="
+          max-w-md
+          bg-white 
+          rounded-lg 
+          shadow-lg 
+          p-6 
+          border 
+          border-gray-200
+        "
+        >
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-gray-800">
+              Are you sure you want to reopen this issue?
+            </DialogTitle>
+          </DialogHeader>
+
+          <DialogFooter className="mt-4 flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setOpen(false)}
+              className="px-4 py-2 border-gray-400 text-gray-700"
+            >
+              Cancel
+            </Button>
+
+            <Button
+              onClick={handleReopen}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2"
+            >
+              Yes, Reopen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  };
 
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -194,17 +264,21 @@ export default function UserIssueDetail() {
   };
 
   if (isLoading) return <div>Loading...</div>;
-  if (isError || !issue) return <div>Error loading  details</div>;
+  if (isError || !issue) return <div>Error loading details</div>;
 
   return (
     <>
-    <DetailHeader breadcrumbs={[
-        { title: "Request List", link: "" },
-        { title: "Request Detail", link: "" },
-      ]} />
+      <DetailHeader
+        breadcrumbs={[
+          { title: "Request List", link: "" },
+          { title: "Request Detail", link: "" },
+        ]}
+      />
       <PageMeta
         title={"Support Request Detail"}
-        description={"Review support request details and take appropriate action"}
+        description={
+          "Review support request details and take appropriate action"
+        }
       />
       <div className="min-h-screen bg-[#F9FBFC] py-6 pb-24 flex flex-col items-start">
         <div
@@ -224,24 +298,30 @@ export default function UserIssueDetail() {
                   <p className="text-gray-600">
                     Review support request details and take appropriate action
                   </p>
-                  
                 </div>
                 <div className="flex items-center gap-20">
                   {/* color resolved based on status */}
-                <span className={`text-base bg-green-100 text-green-900 px-2 py-1 rounded-md ${issue.status === "resolved" ? "text-green-900 " : issue.status === "in_progress" ? "text-blue-500" : issue.status === "closed" ? "text-red-500" : "text-gray-500"}`}>
-                  {formatStatus(issue.status)}
-                </span>
-                {!openTimeline && (
-                  <TimelineOpener onOpen={() => setOpenTimeline(true)} />
-                )}
-                {/* status */}
-             
+                  <span
+                    className={`text-base bg-green-100 text-green-900 px-2 py-1 rounded-md ${
+                      issue.status === "resolved"
+                        ? "text-green-900 "
+                        : issue.status === "in_progress"
+                        ? "text-blue-500"
+                        : issue.status === "closed"
+                        ? "text-red-500"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {formatStatus(issue.status)}
+                  </span>
+                  {!openTimeline && (
+                    <TimelineOpener onOpen={() => setOpenTimeline(true)} />
+                  )}
+                  {/* status */}
                 </div>
               </div>
 
-              <div
-                className=" border border-[#BFD7EA] rounded-lg p-6 mb-6"
-              >
+              <div className=" border border-[#BFD7EA] rounded-lg p-6 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
                   <div>
                     <p className="font-semibold text-[#1E516A] text-sm">
@@ -281,7 +361,10 @@ export default function UserIssueDetail() {
                     >
                       Priority Level
                     </p>
-                    <p className="font-semibold text-sm" style={{ color: issue.priority?.color_value || "#000" }}>
+                    <p
+                      className="font-semibold text-sm"
+                      style={{ color: issue.priority?.color_value || "#000" }}
+                    >
                       {issue.priority?.name || "N/A"}
                     </p>
                   </div>
@@ -293,11 +376,10 @@ export default function UserIssueDetail() {
                       Description
                     </p>
                     <p className="text-gray-700 text-wrap whitespace-pre-line">
-
-                    {issue.description ||
-                      issue.title ||
-                      "No description provided"}
-                      </p>
+                      {issue.description ||
+                        issue.title ||
+                        "No description provided"}
+                    </p>
                   </div>
 
                   <div className="bg-slate-50 border border-[#BFD7EA] rounded-md p-3 text-gray-700">
@@ -306,10 +388,10 @@ export default function UserIssueDetail() {
                     </p>
                     <p className="text-gray-700 text-wrap whitespace-pre-line">
                       {issue.action_taken || "No action taken yet"}
-                      </p>
+                    </p>
                   </div>
                 </div>
-                
+
                 {/* Support Request Attachments */}
                 {issueFiles.length > 0 && (
                   <div className="bg-white   border-[#BFD7EA] rounded-lg py-3 flex-1 ">
@@ -377,93 +459,109 @@ export default function UserIssueDetail() {
                         transition={{ duration: 0.3 }}
                         className="space-y-4"
                       >
-                        {issue.escalations.map((escalation, escalationIndex) => {
-                          const isExpanded = expandedEscalations.includes(
-                            escalation.escalation_id
-                          );
-                          const escalationFiles =
-                            escalation.attachments?.map((attachment) => ({
-                              url: getFileUrl(attachment.attachment.file_path),
-                              name: attachment.attachment.file_name,
-                              path: attachment.attachment.file_path,
-                              type: getFileType(attachment.attachment.file_name),
-                              uploadedAt: attachment.attachment.created_at,
-                              escalationId: escalation.escalation_id,
-                              escalatedBy: escalation.escalator?.full_name,
-                              escalatedAt: escalation.escalated_at,
-                              reason: escalation.reason,
-                              fromTier: escalation.fromTierNode?.name || "N/A",
-                              toTier: escalation.toTierNode?.name || "EAII",
-                            })) || [];
+                        {issue.escalations.map(
+                          (escalation, escalationIndex) => {
+                            const isExpanded = expandedEscalations.includes(
+                              escalation.escalation_id
+                            );
+                            const escalationFiles =
+                              escalation.attachments?.map((attachment) => ({
+                                url: getFileUrl(
+                                  attachment.attachment.file_path
+                                ),
+                                name: attachment.attachment.file_name,
+                                path: attachment.attachment.file_path,
+                                type: getFileType(
+                                  attachment.attachment.file_name
+                                ),
+                                uploadedAt: attachment.attachment.created_at,
+                                escalationId: escalation.escalation_id,
+                                escalatedBy: escalation.escalator?.full_name,
+                                escalatedAt: escalation.escalated_at,
+                                reason: escalation.reason,
+                                fromTier:
+                                  escalation.fromTierNode?.name || "N/A",
+                                toTier: escalation.toTierNode?.name || "EAII",
+                              })) || [];
 
-                          return (
-                            <div
-                              key={escalation.escalation_id}
-                              className="border border-[#BFD7EA] rounded-lg overflow-hidden"
-                            >
-                              {/* Escalation Header */}
+                            return (
                               <div
-                                className="p-4 cursor-pointer hover:bg-purple-50 transition-colors flex items-center justify-between"
-                                onClick={() =>
-                                  toggleEscalation(escalation.escalation_id)
-                                }
+                                key={escalation.escalation_id}
+                                className="border border-[#BFD7EA] rounded-lg overflow-hidden"
                               >
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-                                    <span className="font-bold text-purple-700">
-                                      {escalationIndex + 1}
-                                    </span>
-                                  </div>
-                                  <div>
-                                    <h4 className="font-semibold text-[#1E516A]">
-                                      {escalation.fromTierNode?.name || "Unknown"} →{" "}
-                                      {escalation.toTierNode?.name || "EAII"}
-                                    </h4>
-                                    <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                                      <span>
-                                        By: {escalation.escalator?.full_name || "N/A"}
-                                      </span>
-                                      {/* <span>On:</span> */}
-                                      <span>On: {formatDate(escalation.escalated_at)}</span>
-                                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                        escalation.status === "completed"
-                                          ? "bg-green-100 text-green-800"
-                                          : escalation.status === "in_progress"
-                                          ? "bg-yellow-100 text-yellow-800"
-                                          : "bg-blue-100 text-blue-800"
-                                      }`}>
-                                        {formatStatus(escalation.status) || "pending"}
-
+                                {/* Escalation Header */}
+                                <div
+                                  className="p-4 cursor-pointer hover:bg-purple-50 transition-colors flex items-center justify-between"
+                                  onClick={() =>
+                                    toggleEscalation(escalation.escalation_id)
+                                  }
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                                      <span className="font-bold text-purple-700">
+                                        {escalationIndex + 1}
                                       </span>
                                     </div>
+                                    <div>
+                                      <h4 className="font-semibold text-[#1E516A]">
+                                        {escalation.fromTierNode?.name ||
+                                          "Unknown"}{" "}
+                                        →{" "}
+                                        {escalation.toTierNode?.name || "EAII"}
+                                      </h4>
+                                      <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                                        <span>
+                                          By:{" "}
+                                          {escalation.escalator?.full_name ||
+                                            "N/A"}
+                                        </span>
+                                        {/* <span>On:</span> */}
+                                        <span>
+                                          On:{" "}
+                                          {formatDate(escalation.escalated_at)}
+                                        </span>
+                                        <span
+                                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                            escalation.status === "completed"
+                                              ? "bg-green-100 text-green-800"
+                                              : escalation.status ===
+                                                "in_progress"
+                                              ? "bg-yellow-100 text-yellow-800"
+                                              : "bg-blue-100 text-blue-800"
+                                          }`}
+                                        >
+                                          {formatStatus(escalation.status) ||
+                                            "pending"}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    {escalationFiles.length > 0 && (
+                                      <span className="text-sm text-gray-500 flex items-center gap-1">
+                                        <FileText className="w-4 h-4" />
+                                        {escalationFiles.length}
+                                      </span>
+                                    )}
+                                    {isExpanded ? (
+                                      <ChevronUp className="w-5 h-5 text-[#6D28D9]" />
+                                    ) : (
+                                      <ChevronDown className="w-5 h-5 text-[#6D28D9]" />
+                                    )}
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                  {escalationFiles.length > 0 && (
-                                    <span className="text-sm text-gray-500 flex items-center gap-1">
-                                      <FileText className="w-4 h-4" />
-                                      {escalationFiles.length}
-                                    </span>
-                                  )}
-                                  {isExpanded ? (
-                                    <ChevronUp className="w-5 h-5 text-[#6D28D9]" />
-                                  ) : (
-                                    <ChevronDown className="w-5 h-5 text-[#6D28D9]" />
-                                  )}
-                                </div>
-                              </div>
 
-                              {/* Escalation Content (Accordion Body) */}
-                              <AnimatePresence>
-                                {isExpanded && (
-                                  <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: "auto" }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="p-4 border-t border-[#BFD7EA] bg-white"
-                                  >
-                                    {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                                {/* Escalation Content (Accordion Body) */}
+                                <AnimatePresence>
+                                  {isExpanded && (
+                                    <motion.div
+                                      initial={{ opacity: 0, height: 0 }}
+                                      animate={{ opacity: 1, height: "auto" }}
+                                      exit={{ opacity: 0, height: 0 }}
+                                      transition={{ duration: 0.3 }}
+                                      className="p-4 border-t border-[#BFD7EA] bg-white"
+                                    >
+                                      {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                                       <div>
                                         <p className="font-semibold text-[#1E516A] text-sm">
                                           Escalated From
@@ -498,58 +596,65 @@ export default function UserIssueDetail() {
                                       </div>
                                     </div> */}
 
-                                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                      <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3">
-                                        <p className="font-semibold text-[#1E516A] text-sm mb-1">
-                                          Escalation Reason
-                                        </p>
-                                        <p className="text-gray-700">
-                                          {escalation.reason || "No reason provided"}
-                                        </p>
-                                      </div>
-                                      <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3 text-gray-700">
+                                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3">
+                                          <p className="font-semibold text-[#1E516A] text-sm mb-1">
+                                            Escalation Reason
+                                          </p>
+                                          <p className="text-gray-700">
+                                            {escalation.reason ||
+                                              "No reason provided"}
+                                          </p>
+                                        </div>
+                                        <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3 text-gray-700">
                                           <p className="font-semibold text-[#1E516A] text-sm mb-1">
                                             Reporter Contact
-                                            </p>
+                                          </p>
                                           <p className="text-gray-600">
-                                            {escalation?.escalator?.full_name || "N/A"}
-                                            </p>
-                                            <p className="text-gray-500 text-xs mt-1">
-                                            {escalation?.escalator?.phone_number || "No phone number"}
+                                            {escalation?.escalator?.full_name ||
+                                              "N/A"}
+                                          </p>
+                                          <p className="text-gray-500 text-xs mt-1">
+                                            {escalation?.escalator
+                                              ?.phone_number ||
+                                              "No phone number"}
                                             {/* add email */}
-                                            </p>
-                                             
-                                      </div>
-                                    </div>
-
-                                    {/* Escalation Attachments */}
-                                    {escalationFiles.length > 0 && (
-                                      <div className="mt-4">
-                                        <h5 className="font-semibold text-[#1E516A] mb-3">
-                                          Attachments ({escalationFiles.length})
-                                        </h5>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                          {escalationFiles.map((file, idx) => (
-                                            <FileCard
-                                              key={`${escalation.escalation_id}-${idx}`}
-                                              file={file}
-                                              onOpen={() =>
-                                                openFileViewer(
-                                                  escalationFiles,
-                                                  idx
-                                                )
-                                              }
-                                            />
-                                          ))}
+                                          </p>
                                         </div>
                                       </div>
-                                    )}
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
-                            </div>
-                          );
-                        })}
+
+                                      {/* Escalation Attachments */}
+                                      {escalationFiles.length > 0 && (
+                                        <div className="mt-4">
+                                          <h5 className="font-semibold text-[#1E516A] mb-3">
+                                            Attachments (
+                                            {escalationFiles.length})
+                                          </h5>
+                                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                            {escalationFiles.map(
+                                              (file, idx) => (
+                                                <FileCard
+                                                  key={`${escalation.escalation_id}-${idx}`}
+                                                  file={file}
+                                                  onOpen={() =>
+                                                    openFileViewer(
+                                                      escalationFiles,
+                                                      idx
+                                                    )
+                                                  }
+                                                />
+                                              )
+                                            )}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </div>
+                            );
+                          }
+                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -604,83 +709,94 @@ export default function UserIssueDetail() {
                         transition={{ duration: 0.3 }}
                         className="space-y-4"
                       >
-                        {issue.resolutions.map((resolution, resolutionIndex) => {
-                          const isExpanded = expandedResolutions.includes(
-                            resolution.resolution_id
-                          );
-                          const resolutionFiles =
-                            resolution.attachments?.map((attachment) => ({
-                              url: getFileUrl(attachment.attachment.file_path),
-                              name: attachment.attachment.file_name,
-                              path: attachment.attachment.file_path,
-                              type: getFileType(attachment.attachment.file_name),
-                              uploadedAt: attachment.attachment.created_at,
-                              resolutionId: resolution.resolution_id,
-                              resolvedBy: resolution.resolver?.full_name,
-                              resolvedAt: resolution.resolved_at,
-                              reason: resolution.reason,
-                            })) || [];
+                        {issue.resolutions.map(
+                          (resolution, resolutionIndex) => {
+                            const isExpanded = expandedResolutions.includes(
+                              resolution.resolution_id
+                            );
+                            const resolutionFiles =
+                              resolution.attachments?.map((attachment) => ({
+                                url: getFileUrl(
+                                  attachment.attachment.file_path
+                                ),
+                                name: attachment.attachment.file_name,
+                                path: attachment.attachment.file_path,
+                                type: getFileType(
+                                  attachment.attachment.file_name
+                                ),
+                                uploadedAt: attachment.attachment.created_at,
+                                resolutionId: resolution.resolution_id,
+                                resolvedBy: resolution.resolver?.full_name,
+                                resolvedAt: resolution.resolved_at,
+                                reason: resolution.reason,
+                              })) || [];
 
-                          return (
-                            <div
-                              key={resolution.resolution_id}
-                              className="border border-[#BFD7EA] rounded-lg overflow-hidden"
-                            >
-                              {/* Resolution Header */}
+                            return (
                               <div
-                                className="p-4 cursor-pointer hover:bg-green-50 transition-colors flex items-center justify-between"
-                                onClick={() =>
-                                  toggleResolution(resolution.resolution_id)
-                                }
+                                key={resolution.resolution_id}
+                                className="border border-[#BFD7EA] rounded-lg overflow-hidden"
                               >
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                                    <span className="font-bold text-green-700">
-                                      {resolutionIndex + 1}
-                                    </span>
-                                  </div>
-                                  <div>
-                                    <h4 className="font-semibold text-[#1E516A]">
-                                      {resolution.resolver?.full_name || "Unknown"}
-                                    </h4>
-                                    <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                                      <span>
-                                        By {resolution.resolver?.full_name || "N/A"}
-                                      </span>
-                                      <span>•</span>
-                                      <span>On: {formatDate(resolution.resolved_at)}</span>
-                                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        {resolution.status || "resolved"}
+                                {/* Resolution Header */}
+                                <div
+                                  className="p-4 cursor-pointer hover:bg-green-50 transition-colors flex items-center justify-between"
+                                  onClick={() =>
+                                    toggleResolution(resolution.resolution_id)
+                                  }
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                                      <span className="font-bold text-green-700">
+                                        {resolutionIndex + 1}
                                       </span>
                                     </div>
+                                    <div>
+                                      <h4 className="font-semibold text-[#1E516A]">
+                                        {resolution.resolver?.full_name ||
+                                          "Unknown"}
+                                      </h4>
+                                      <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                                        <span>
+                                          By{" "}
+                                          {resolution.resolver?.full_name ||
+                                            "N/A"}
+                                        </span>
+                                        <span>•</span>
+                                        <span>
+                                          On:{" "}
+                                          {formatDate(resolution.resolved_at)}
+                                        </span>
+                                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                          {resolution.status || "resolved"}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    {resolutionFiles.length > 0 && (
+                                      <span className="text-sm text-gray-500 flex items-center gap-1">
+                                        <FileText className="w-4 h-4" />
+                                        {resolutionFiles.length}
+                                      </span>
+                                    )}
+                                    {isExpanded ? (
+                                      <ChevronUp className="w-5 h-5 text-green-700" />
+                                    ) : (
+                                      <ChevronDown className="w-5 h-5 text-green-700" />
+                                    )}
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                  {resolutionFiles.length > 0 && (
-                                    <span className="text-sm text-gray-500 flex items-center gap-1">
-                                      <FileText className="w-4 h-4" />
-                                      {resolutionFiles.length}
-                                    </span>
-                                  )}
-                                  {isExpanded ? (
-                                    <ChevronUp className="w-5 h-5 text-green-700" />
-                                  ) : (
-                                    <ChevronDown className="w-5 h-5 text-green-700" />
-                                  )}
-                                </div>
-                              </div>
 
-                              {/* Resolution Content (Accordion Body) */}
-                              <AnimatePresence>
-                                {isExpanded && (
-                                  <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: "auto" }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="p-4 border-t border-[#BFD7EA] bg-white"
-                                  >
-                                    {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                                {/* Resolution Content (Accordion Body) */}
+                                <AnimatePresence>
+                                  {isExpanded && (
+                                    <motion.div
+                                      initial={{ opacity: 0, height: 0 }}
+                                      animate={{ opacity: 1, height: "auto" }}
+                                      exit={{ opacity: 0, height: 0 }}
+                                      transition={{ duration: 0.3 }}
+                                      className="p-4 border-t border-[#BFD7EA] bg-white"
+                                    >
+                                      {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                                       <div>
                                         <p className="font-semibold text-[#1E516A] text-sm">
                                           Resolved By
@@ -715,59 +831,66 @@ export default function UserIssueDetail() {
                                       </div>
                                     </div> */}
 
-                                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                      <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3">
-                                        <p className="font-semibold text-[#1E516A] text-sm mb-1">
-                                          Resolution Reason
-                                        </p>
-                                        <p className="text-gray-700">
-                                          {resolution.reason || "No reason provided"}
-                                        </p>
-                                      </div>
-                                      <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3">
-                                        <p className="font-semibold text-[#1E516A] text-sm mb-1">
-                                          Resolver Contact
-                                        </p>
-                                        <div className="text-sm">
-                                          <p className="text-gray-600">
-                                            {resolution.resolver?.email || "N/A"}
+                                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3">
+                                          <p className="font-semibold text-[#1E516A] text-sm mb-1">
+                                            Resolution Reason
                                           </p>
-                                          <p className="text-gray-500 text-xs mt-1">
-                                            {resolution.resolver?.phone_number ||
-                                              "No phone number"}
+                                          <p className="text-gray-700">
+                                            {resolution.reason ||
+                                              "No reason provided"}
                                           </p>
                                         </div>
+                                        <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3">
+                                          <p className="font-semibold text-[#1E516A] text-sm mb-1">
+                                            Resolver Contact
+                                          </p>
+                                          <div className="text-sm">
+                                            <p className="text-gray-600">
+                                              {resolution.resolver?.email ||
+                                                "N/A"}
+                                            </p>
+                                            <p className="text-gray-500 text-xs mt-1">
+                                              {resolution.resolver
+                                                ?.phone_number ||
+                                                "No phone number"}
+                                            </p>
+                                          </div>
+                                        </div>
                                       </div>
-                                    </div>
 
-                                    {/* Resolution Attachments */}
-                                    {resolutionFiles.length > 0 && (
-                                      <div className="mt-4">
-                                        <h5 className="font-semibold text-[#1E516A] mb-3">
-                                          Attachments ({resolutionFiles.length})
-                                        </h5>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                          {resolutionFiles.map((file, idx) => (
-                                            <FileCard
-                                              key={`${resolution.resolution_id}-${idx}`}
-                                              file={file}
-                                              onOpen={() =>
-                                                openFileViewer(
-                                                  resolutionFiles,
-                                                  idx
-                                                )
-                                              }
-                                            />
-                                          ))}
+                                      {/* Resolution Attachments */}
+                                      {resolutionFiles.length > 0 && (
+                                        <div className="mt-4">
+                                          <h5 className="font-semibold text-[#1E516A] mb-3">
+                                            Attachments (
+                                            {resolutionFiles.length})
+                                          </h5>
+                                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                            {resolutionFiles.map(
+                                              (file, idx) => (
+                                                <FileCard
+                                                  key={`${resolution.resolution_id}-${idx}`}
+                                                  file={file}
+                                                  onOpen={() =>
+                                                    openFileViewer(
+                                                      resolutionFiles,
+                                                      idx
+                                                    )
+                                                  }
+                                                />
+                                              )
+                                            )}
+                                          </div>
                                         </div>
-                                      </div>
-                                    )}
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
-                            </div>
-                          );
-                        })}
+                                      )}
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </div>
+                            );
+                          }
+                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -789,6 +912,13 @@ export default function UserIssueDetail() {
                   </div>
                 </>
               )}
+
+              {/* Reopen button for closed/resolved issues */}
+              {(issue.status === "resolved" || issue.status === "closed") && (
+                <div className="mt-4 flex gap-4">
+                  <ReopenIssueButton issueId={issue.issue_id} />
+                </div>
+              )}
             </div>
           </div>
 
@@ -798,8 +928,9 @@ export default function UserIssueDetail() {
               <div className="bg-white rounded-lg w-full max-w-6xl h-[90vh] flex flex-col">
                 <div className="flex justify-between items-center p-4 border-b">
                   <h3 className="text-lg font-semibold text-[#1E516A]">
-                    File Preview <span className="text-xs text-gray-500">
-                    ({fileViewerState.files[fileViewerState.index].name})
+                    File Preview{" "}
+                    <span className="text-xs text-gray-500">
+                      ({fileViewerState.files[fileViewerState.index].name})
                     </span>
                   </h3>
                   <button
@@ -807,7 +938,6 @@ export default function UserIssueDetail() {
                     className="p-2 hover:bg-gray-100 rounded-full"
                   >
                     <X className="w-5 h-5" />
-
                   </button>
                 </div>
                 <div className="flex-1 p-4 flex flex-col">
@@ -848,8 +978,7 @@ export default function UserIssueDetail() {
                               ? prev
                               : {
                                   ...prev,
-                                  index:
-                                    (prev.index + 1) % prev.files.length,
+                                  index: (prev.index + 1) % prev.files.length,
                                 }
                           )
                         }
@@ -912,7 +1041,7 @@ export default function UserIssueDetail() {
             {openTimeline && (
               <IssueHistoryLog
                 logs={issue?.history || []}
-                onClose={() => setOpenTimeline(false)}
+                onClose={() => setOpenTimeline(true)}
               />
             )}
           </AnimatePresence>
@@ -922,4 +1051,6 @@ export default function UserIssueDetail() {
   );
 }
 
-
+function reRaiseIssue(arg0: { issue_id: string }) {
+  throw new Error("Function not implemented.");
+}
