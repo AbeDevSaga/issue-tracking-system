@@ -126,7 +126,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (!fullName || !email || !user_type_id || !selectedRole) {
+    if (!fullName || !email || !selectedRole) {
       toast.error("Please fill all required fields");
       return;
     }

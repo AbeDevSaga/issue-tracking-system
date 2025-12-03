@@ -59,9 +59,11 @@ export default function EscalationPreview({
     >
       <div className="p-6 border-b border-[#D5E3EC] bg-gradient-to-r from-[#1E516A] to-[#2C6B8A]">
         <h2 className="text-xl font-bold text-white">Escalate Issue</h2>
-          <p className="text-white text-sm mt-1">Upload files related to the escalation</p>
-        </div>
-        <div className="flex flex-col px-4 gap-3">
+        <p className="text-white text-sm mt-1">
+          Upload files related to the escalation
+        </p>
+      </div>
+      <div className="flex flex-col px-4 gap-3">
         <h4 className="font-semibold text-[#1E516A] mt-4">Escalation Reason</h4>
         <textarea
           className="w-full border border-[#BFD7EA] rounded-lg p-3 text-sm h-32 focus:outline-none focus:ring-2 focus:ring-[#1E516A]"
@@ -71,8 +73,7 @@ export default function EscalationPreview({
         />
 
         <FileUploadField
-        className="flex flex-col gap-1 font-bold"
-
+          className="flex flex-col gap-1 font-bold"
           id="escalation_attachments"
           label="Upload files"
           value={attachmentIds}
@@ -80,12 +81,10 @@ export default function EscalationPreview({
           accept="image/*,.pdf,.doc,.docx"
           multiple={true}
           labelClass="text-sm  text-[#1E516A] "
-
         />
 
-       
         <div className="w-full flex justify-end gap-3 mt-3">
-        <button
+          <button
             onClick={onClose}
             disabled={isLoading}
             className="px-5 py-2 rounded-md bg-gray-200 border text-gray-700 font-semibold disabled:opacity-50"
@@ -99,7 +98,6 @@ export default function EscalationPreview({
           >
             {isLoading ? "Submitting..." : "Confirm"}
           </button>
-          
         </div>
       </div>
     </motion.div>

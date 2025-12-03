@@ -25,6 +25,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useDeleteUserMutation } from "../../redux/services/userApi";
+import { UserGroupIcon } from "@heroicons/react/24/solid";
 
 // Type for wrapped API response
 interface UserApiResponse {
