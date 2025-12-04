@@ -35,11 +35,11 @@ const ProjectUserTableColumns = (deleteUser: any) => [
     cell: ({ row }: any) => <div>{row.original.user?.email || "N/A"}</div>,
   },
   {
-    accessorKey: "role.name",
-    header: "Role",
+    accessorKey: "projectMetric.name",
+    header: "Resource",
     cell: ({ row }: any) => (
       <div className="font-medium text-gray-700">
-        {row.original.role?.name || "N/A"}
+        {row.original.projectMetric?.name || "N/A"}
       </div>
     ),
   },

@@ -25,6 +25,7 @@ import Project from "./pages/project/project";
 import Permission from "./pages/permission/permission";
 import Woreda from "./pages/woreda/woreda";
 import ProjectLevel from "./pages/priorityLevel/priorityLevel";
+import ResponseTimes from "./pages/responseTimes/ResponseTimes";
 import IssueCategory from "./pages/issueCategory/issueCategory";
 import MyIssue from "./pages/issue/my_issue";
 import IssueFlowConfig from "./pages/IssueFlowConfiguration/IssueFlowConfiguration";
@@ -172,6 +173,9 @@ function AppContent() {
             element={<InternalProjectDetail />}
           />
           <Route path="/issue_flow/:id" element={<IssueFlow />} />
+          {/* ResponseTimes */}
+          <Route path="/response_times" element={<ResponseTimes />} />
+
           <Route path="/priority_level" element={<ProjectLevel />} />
           <Route path="/priority_level/:id" element={<PriorityLevelDetail />} />
           <Route path="/permission" element={<Permission />} />
