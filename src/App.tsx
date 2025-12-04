@@ -14,8 +14,6 @@ import Home from "./pages/Dashboard/Home";
 import NotFound from "./pages/OtherPage/NotFound";
 import Organization from "./pages/organization/organization";
 import Inistitutes from "./InternalPages/Organization/organization";
-import BunchCreation from "./pages/BunchCreation/organization";
-import Branch from "./pages/branch/branch";
 import Login from "./components/auth/Login";
 import Project from "./pages/project/project";
 import Permission from "./pages/permission/permission";
@@ -32,8 +30,6 @@ import ProtectedRoute from "./ProtectedRoute";
 import MyissueForm from "./pages/issue/my_issue_form";
 // import TeamLeaderTask from "./pages/TeamLeaderTaskList/TeamLeaderTaskList";
 // import TeamLeaderTaskDetail from "./pages/TeamLeaderTaskList/TeamLeaderTaskDetail";
-import CentralAdminTaskList from "./pages/CentralAdminTaskList/CentralAdminTaskList";
-import CentralAdminTaskDetail from "./pages/CentralAdminTaskList/CentralAdminTaskDetail";
 
 // internal
 import InternalTaskList from "./InternalPages/Tasks/TaskList";
@@ -134,10 +130,8 @@ function AppContent() {
           <Route path="/users/:id" element={<UserDetail />} />
           <Route path="/organization" element={<Organization />} />
           <Route path="/inistitutes" element={<Inistitutes />} />
-          <Route path="/bunch" element={<BunchCreation />} />
           <Route path="/organization/:id" element={<OrganizationDetail />} />
           <Route path="/inistitutes/:id" element={<InistituteDetail />} />
-          <Route path="/branch" element={<Branch />} />
 
           <Route path="/project" element={<Project />} />
           <Route path="/project/:id" element={<ProjectDetail />} />
@@ -163,14 +157,7 @@ function AppContent() {
           <Route path="/issue_flow/:id" element={<IssueFlow />} />
           {/* IssueFlowConfig */}
           <Route path="/add_issue" element={<MyissueForm />} />
-          <Route
-            path="/central_admin_task_list"
-            element={<CentralAdminTaskList />}
-          />
-          <Route
-            path="/central_admin_task_detail"
-            element={<CentralAdminTaskDetail />}
-          />
+         
 
           <Route path="/org_structure" element={<OrgStructure />} />
           <Route path="/org_structure/:id" element={<OrgStructureDetail />} />
