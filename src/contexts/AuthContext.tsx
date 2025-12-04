@@ -122,10 +122,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     },
     clearError: () => setError(null),
     isAuthenticated: !!user && !!token,
-    hasPermission: () => false,
-    hasAnyPermission: () => false,
-    hasAllPermissions: () => false,
-    hasRole: () => false,
+    hasPermission: (permission: string): boolean => {
+      const flat = getFlatPermissions(user);
+      return flat.includes(permission);
+    },
+
+    hasAnyPermission: (permissions: string[]): boolean => {
+      const flat = getFlatPermissions(user);
+      return permissions.some((p) => flat.includes(p));
+    },
+
+    hasAllPermissions: (permissions: string[]): boolean => {
+      const flat = getFlatPermissions(user);
+      return permissions.every((p) => flat.includes(p));
+    },
+    hasRole: (roleName: string): boolean => {
+      if (!user) return false;
+      return user.roles.some((r) => r.name === roleName);
+    },
   };
 
   if (loading) {
@@ -138,3 +152,35 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+
+const getFlatPermissions = (user: User | null): string[] => {
+  if (!user) return [];
+
+  // Step 1: Collect raw permissions
+  const rawPerms = user.roles.flatMap((role) => role.permissions || []);
+
+  // Step 2: Remove null or undefined values
+  const cleanPerms = rawPerms.filter((p) => p && p.resource && p.action);
+
+  console.log("Clean Permissions:", cleanPerms);
+
+  if (cleanPerms.length === 0) return [];
+
+  // Step 3: Convert
+  const converted = convertPermissions(cleanPerms);
+
+  // Step 4: Remove duplicates
+  return Array.from(new Set(converted));
+};
+
+export const convertPermissions = (permissions: any[]) => {
+  return permissions.map(
+    (p) => `${p.resource.toUpperCase()}:${p.action.toUpperCase()}`
+  );
+};
+
+// Usage Example:
+// auth.hasPermission("REPORTS:VIEW");
+// auth.hasAnyPermission(["FINANCE:READ", "USERS:EDIT"]);
+// auth.hasAllPermissions(["REPORTS:VIEW", "AUDIT_LOGS:VIEW"]);
+// auth.hasRole("Admin");

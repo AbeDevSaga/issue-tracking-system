@@ -26,11 +26,11 @@ const HierarchyNodeTableColumns = (deleteNode: any) => [
       <div className="font-medium text-blue-600">{row.getValue("name")}</div>
     ),
   },
-  {
-    accessorKey: "description",
-    header: "Description",
-    cell: ({ row }: any) => <div>{row.getValue("description") || "N/A"}</div>,
-  },
+  // {
+  //   accessorKey: "description",
+  //   header: "Description",
+  //   cell: ({ row }: any) => <div>{row.getValue("description") || "N/A"}</div>,
+  // },
   // {
   //   accessorKey: "project",
   //   header: "Project",

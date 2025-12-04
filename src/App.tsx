@@ -101,7 +101,8 @@ const PublicRoute = ({ children }: { children: ReactNode }) => {
 };
 
 function AppContent() {
-  const { loading } = useAuth();
+  const { loading, user } = useAuth();
+  console.log("Current User in App.tsx:", user);
 
   if (loading) {
     return <AuthLoader />;
@@ -111,65 +112,70 @@ function AppContent() {
       <ScrollToTop />
 
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/track_request" element={<TrackPage />} />
         <Route path="/track_request/:id" element={<TrackPageDetail />} />
+
+        {/* Protected Routes */}
+
         <Route element={<AppLayout />}>
+          {/* Common Routes */}
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requiredPermissions={["dashboard_access"]}>
                 <Home />
               </ProtectedRoute>
             }
           />
-
-          {/* <Route
-            path="/users"
-            element={
-              <ProtectedRoute requiredPermissions={['user_read']}>
-                <Users />
-              </ProtectedRoute>
-            }
-          // /> */}
-          {/* InternalTaskList */}
-
-          <Route path="/task_list" element={<InternalTaskList />} />
-          <Route path="/task_list/:id" element={<InternalTaskDetail />} />
-
-          <Route path="/task" element={<UserTaskList />} />
-          <Route path="/task/:id" element={<UserTaskDetail />} />
-          <Route path="/issue/:id" element={<IssueDetail />} />
-
+          {/* User Related Route */}
           <Route path="/profile" element={<Profile />} />
           <Route
             path="/organization_profile"
-            element={<OrganizationProfile />}
+            element={
+              <ProtectedRoute>
+                <OrganizationProfile />
+              </ProtectedRoute>
+            }
           />
+
+          {/* Users Related Routes */}
           <Route path="/users" element={<Users />} />
           <Route path="/users/:id" element={<UserDetail />} />
-          <Route path="/organization" element={<Organization />} />
-          <Route path="/inistitutes" element={<Inistitutes />} />
-          <Route path="/bunch" element={<BunchCreation />} />
-          <Route path="/organization/:id" element={<OrganizationDetail />} />
-          <Route path="/inistitutes/:id" element={<InistituteDetail />} />
-          <Route path="/branch" element={<Branch />} />
-          <Route path="/region" element={<Region />} />
-          <Route path="/zone" element={<Zone />} />
 
-          <Route path="/city" element={<City />} />
-          <Route path="/subcity" element={<SubCity />} />
-          <Route path="/woreda" element={<Woreda />} />
-          <Route path="/project" element={<Project />} />
-          <Route path="/project/:id" element={<ProjectDetail />} />
+          {/* Internal Specific Routes */}
+          {/* Organization Management */}
+          <Route path="/inistitutes" element={<Inistitutes />} />
+          <Route path="/inistitutes/:id" element={<InistituteDetail />} />
           <Route
             path="/inistitutes/project/:id"
             element={<InternalProjectDetail />}
           />
-          <Route path="/issue_flow/:id" element={<IssueFlow />} />
-          {/* ResponseTimes */}
-          <Route path="/response_times" element={<ResponseTimes />} />
 
+          {/* InternalTaskList */}
+          <Route path="/task_list" element={<InternalTaskList />} />
+          <Route path="/task_list/:id" element={<InternalTaskDetail />} />
+
+          {/* External Specific Routes */}
+
+          {/* Task Related Routes */}
+          <Route path="/task" element={<UserTaskList />} />
+          <Route path="/task/:id" element={<UserTaskDetail />} />
+
+          {/* Issue Related Routes */}
+          <Route path="/issue/:id" element={<IssueDetail />} />
+
+          <Route path="/organization" element={<Organization />} />
+          <Route path="/bunch" element={<BunchCreation />} />
+          <Route path="/organization/:id" element={<OrganizationDetail />} />
+
+          <Route path="/project" element={<Project />} />
+          <Route path="/project/:id" element={<ProjectDetail />} />
+
+          <Route path="/issue_flow/:id" element={<IssueFlow />} />
+          {/* Base Data Management */}
+          <Route path="/response_times" element={<ResponseTimes />} />
           <Route path="/priority_level" element={<ProjectLevel />} />
           <Route path="/priority_level/:id" element={<PriorityLevelDetail />} />
           <Route path="/permission" element={<Permission />} />
@@ -178,15 +184,41 @@ function AppContent() {
           <Route path="/role/create" element={<CreateRole />} />
           <Route path="/issue_category" element={<IssueCategory />} />
           <Route path="/issue_category/:id" element={<IssueCategoryDetail />} />
-          <Route path="/my_issue" element={<MyIssue />} />
           <Route path="/issue_configuration" element={<IssueFlowConfig />} />
+
           <Route
             path="/issue_configuration/:id"
             element={<IssueConfigurationDetail />}
           />
           <Route path="/issue_flow/:id" element={<IssueFlow />} />
           {/* IssueFlowConfig */}
+          <Route path="/my_issue" element={<MyIssue />} />
           <Route path="/add_issue" element={<MyissueForm />} />
+
+          <Route path="/org_structure" element={<OrgStructure />} />
+          <Route path="/org_structure/:id" element={<OrgStructureDetail />} />
+          {/* Metrics */}
+          <Route path="/human_resource" element={<Metrics />} />
+          <Route path="/basedata" element={<BaseData />} />
+          <Route path="/subroles" element={<Subroles />} />
+
+          <Route
+            path="/roles"
+            element={
+              //<ProtectedRoute requiredPermissions={['role_read']}>
+              <Roles />
+              //</ProtectedRoute>
+            }
+          />
+
+          <Route path="/branch" element={<Branch />} />
+          <Route path="/region" element={<Region />} />
+          <Route path="/zone" element={<Zone />} />
+
+          <Route path="/city" element={<City />} />
+          <Route path="/subcity" element={<SubCity />} />
+          <Route path="/woreda" element={<Woreda />} />
+
           <Route path="/qa_tasks" element={<QATask />} />
           <Route path="/qa_tasks_detail" element={<QATaskDetail />} />
           <Route path="/tl_tasks" element={<QAExpertTask />} />
@@ -204,21 +236,6 @@ function AppContent() {
           <Route
             path="/developer_tasks_detail"
             element={<DeveloperTaskDetail />}
-          />
-          <Route path="/org_structure" element={<OrgStructure />} />
-          <Route path="/org_structure/:id" element={<OrgStructureDetail />} />
-          {/* Metrics */}
-          <Route path="/human_resource" element={<Metrics />} />
-          <Route path="/basedata" element={<BaseData />} />
-          <Route path="/subroles" element={<Subroles />} />
-
-          <Route
-            path="/roles"
-            element={
-              //<ProtectedRoute requiredPermissions={['role_read']}>
-              <Roles />
-              //</ProtectedRoute>
-            }
           />
         </Route>
 

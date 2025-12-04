@@ -38,7 +38,7 @@ export function CreateInternalNodeModal({
   const [navigationStack, setNavigationStack] = useState<any[]>([]);
 
   const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState("description");
 
   // Fetch all nodes of a project - skip if parent_hierarchy_node_id is provided
   const { data: parentNodesData, isFetching: isFetchingParents } =
@@ -172,7 +172,7 @@ export function CreateInternalNodeModal({
       toast.success("Structure created!");
       
       setName("");
-      setDescription("");
+      setDescription("description");
       // resetNavigation();
       // setHasSelectedParent(false);
       // onClose();

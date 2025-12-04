@@ -1,3 +1,12 @@
+export interface UserRole {
+  role_id: string;
+  name: string;
+  permissions: {
+    permission_id: string;
+    resource: string;
+    action: string;
+  }[];
+}
 export interface User {
   user_id: string;
   full_name: string;
@@ -10,28 +19,7 @@ export interface User {
     institute_id: string;
     name: string;
   } | null;
-  roles: {
-    project_user_role_id: string;
-    role?: {
-      role_id: string;
-      name: string;
-      subRoles: {
-        subRole: {
-          sub_role_id: string;
-          name: string;
-        };
-        permissions: {
-          permission_id: string;
-          resource: string;
-          action: string;
-        }[];
-      }[];
-    } | null;
-    subRole?: {
-      sub_role_id: string;
-      name: string;
-    } | null;
-  }[];
+  roles: UserRole[];
 }
 
 export interface AuthResponse {
