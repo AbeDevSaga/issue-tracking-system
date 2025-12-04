@@ -113,7 +113,7 @@ export const navItems: NavItem[] = [
         name: "Organization Profile",
         path: "/organization_profile",
         allowedFor: ["external_user", "internal_user"],
-        permission: ["ORGANIZATION:UPDATE"],
+        // permission: ["ORGANIZATION:UPDATE"],
       },
       {
         name: "Settings",
