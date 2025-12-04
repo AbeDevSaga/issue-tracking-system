@@ -23,6 +23,7 @@ interface FileUploadFieldProps {
   labelClass?: string;
   fieldClass?: string;
   multiple?: boolean;
+  showPreview?: boolean;
 }
 
 export const FileUploadField: React.FC<FileUploadFieldProps> = ({
@@ -37,6 +38,7 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
   labelClass = "",
   fieldClass = "",
   multiple = true,
+  showPreview = true,
 }) => {
   const [uploadAttachments, { isLoading: isUploading }] =
     useUploadAttachmentsMutation();
@@ -134,13 +136,13 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
     <div className={`space-y-2 ${className}`}>
       <Label
         htmlFor={id}
-        className={`${labelClass ?? "text-sm font-medium"} cursor-pointer`}
+        className={`${labelClass ?? "text-sm font-medium"}  cursor-pointer`}
       >
         {label} {required && <span className="text-red-500">*</span>}
       </Label>
 
       <div
-        className={`${fieldClass} relative flex flex-col items-center justify-center border border-[#B1C9E3] rounded-md border-dashed p-3 hover:bg-gray-50 transition cursor-pointer ${
+        className={`${fieldClass} mt-2 relative flex flex-col items-center justify-center border border-[#B1C9E3] rounded-md border-dashed p-3 hover:bg-gray-50 transition cursor-pointer ${
           error ? "border-red-500" : ""
         }`}
       >
@@ -165,7 +167,7 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
       </div>
 
       {/* Uploaded files */}
-      {files.length > 0 && (
+      {files.length > 0 && showPreview && (
         <div className="grid grid-cols-1 gap-2 mt-2">
           {files.map((file) => (
             <div
@@ -213,7 +215,7 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
       {error && <p className="text-red-500 text-sm">{error}</p>}
 
       {/* Modal */}
-      {previewFile && (
+      {previewFile && showPreview && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] p-4 relative overflow-auto">
             <button

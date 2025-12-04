@@ -13,6 +13,11 @@ import {
   SelectContent,
   SelectItem,
 } from "../ui/cn/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "../ui/cn/popover";
 
 import {
   useCreateUserMutation,
@@ -23,7 +28,7 @@ import {
   useGetInstitutesQuery,
   Institute,
 } from "../../redux/services/instituteApi";
-import { Check, XIcon } from "lucide-react";
+import { Check, XIcon, ChevronDown } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { getUserPositionId } from "../../utils/helper/userPosition";
 import { useGetRolesQuery } from "../../redux/services/roleApi";
@@ -278,69 +283,89 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                 className="w-full h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
               />
             </div>
-            {/* ROLE */}
             {/* ROLE MULTI SELECT */}
 
             <div className="w-full space-y-2">
               <Label className="text-sm font-medium text-[#094C81]">
                 Role <span className="text-red-500">*</span>
               </Label>
-              <Select
-                value="multi" // dummy value to prevent Radix from overriding
-                onValueChange={(value) => {
-                  setSelectedRoles(
-                    (prev) =>
-                      prev.includes(value)
-                        ? prev.filter((id) => id !== value) // unselect
-                        : [...prev, value] // select
-                  );
-                }}
-              >
-                <SelectTrigger className="w-full h-12 border p-2 rounded mt-1 text-[#094C81]">
-                  <div className="flex items-center justify-between w-full">
-                    <SelectValue asChild>
-                      <span>
-                        {selectedRoles.length === 0
-                          ? "Select Role"
-                          : `${selectedRoles.length} role${
-                              selectedRoles.length > 1 ? "s" : ""
-                            } selected`}
-                      </span>
-                    </SelectValue>
-                    {selectedRoles.length > 0 && (
-                      <span className="text-xs bg-[#094C81] text-white rounded-full w-5 h-5 flex items-center justify-center">
-                        {selectedRoles.length}
-                      </span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="w-full max-h-28 min-h-12 h-fit border border-gray-300 p-2 rounded-md mt-1 text-[#094C81] bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#094C81] focus:ring-offset-2 transition-all duration-200"
+                  >
+                    <div className="flex flex-wrap items-center gap-2 w-full">
+                      {selectedRoles.length === 0 && (
+                        <span className="text-sm w-full justify-between text-gray-400 flex items-center gap-2">
+                          Select Role
+                          <ChevronDown className="h-4 w-4 ml-auto" />
+                        </span>
+                      )}
+
+                      {selectedRoles.map((roleId) => {
+                        const r = roles.find(
+                          (rr: any) => rr.role_id === roleId
+                        );
+                        if (!r) return null;
+
+                        return (
+                          <span
+                            key={roleId}
+                            className="inline-flex items-center gap-1 rounded-md justify-center bg-[#094C81]/10 text-[#094C81] px-2 py-1 text-xs"
+                          >
+                            <span className="truncate max-w-[120px]">
+                              {r.name}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedRoles((prev) =>
+                                  prev.filter((id) => id !== roleId)
+                                );
+                              }}
+                              className="flex h-4 w-4 items-center justify-center rounded-full hover:bg-[#094C81]/20 transition-colors"
+                              aria-label={`Remove ${r.name}`}
+                            >
+                              <XIcon className="h-3 w-3" />
+                            </button>
+                          </span>
+                        );
+                      })}
+                      {selectedRoles.length > 0 && (
+                        <ChevronDown className="h-4 w-4 ml-auto text-gray-400" />
+                      )}
+                    </div>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-[300px] p-2 bg-white"
+                  align="start"
+                >
+                  <div className="max-h-64 overflow-y-auto">
+                    {roles
+                      .filter((r: any) => !selectedRoles.includes(r.role_id))
+                      .map((r: any) => (
+                        <button
+                          key={r.role_id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedRoles((prev) => [...prev, r.role_id]);
+                          }}
+                          className="w-full text-left px-3 py-2 text-sm text-[#094C81] hover:bg-[#094C81]/10 rounded-md cursor-pointer transition-colors"
+                        >
+                          <span className="block truncate">{r.name}</span>
+                        </button>
+                      ))}
+                    {roles.filter((r: any) => !selectedRoles.includes(r.role_id)).length === 0 && (
+                      <div className="px-3 py-2 text-sm text-gray-400 text-center">
+                        All roles selected
+                      </div>
                     )}
                   </div>
-                </SelectTrigger>
-
-                <SelectContent className="text-[#094C81] bg-white max-h-64 overflow-y-auto">
-                  {roles.map((r: any) => {
-                    const isSelected = selectedRoles.includes(r.role_id);
-                    return (
-                      <SelectItem
-                        key={r.role_id}
-                        value={r.role_id}
-                        className="relative pr-8 cursor-pointer"
-                        onPointerDown={(e) => e.preventDefault()} // ✅ keep dropdown open
-                      >
-                        <span className="block truncate">{r.name}</span>
-
-                        <div
-                          className={`absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 border-2 rounded flex items-center justify-center transition-all duration-200 ${
-                            isSelected
-                              ? "bg-[#094C81] border-[#094C81] text-white"
-                              : "border-gray-300 bg-white"
-                          }`}
-                        >
-                          {isSelected && <Check className="w-3 h-3 stroke-3" />}
-                        </div>
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
           {/* metrics panel */}

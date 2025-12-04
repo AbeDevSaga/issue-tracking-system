@@ -1,10 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useCreateInstituteMutation } from "../../redux/services/instituteApi";
 import { Button } from "../ui/cn/button";
 import { XIcon } from "lucide-react";
 import { toast } from "sonner";
+import { FileUploadField } from "../common/FileUploadField";
+import { getFileUrl } from "../../utils/fileUrl";
+import { useGetAttachmentsQuery } from "../../redux/services/attachmentApi";
 interface CreateInstituteModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -15,12 +18,56 @@ export const CreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
   onClose,
 }) => {
   const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState(""); // Reserved for future API integration
   const [isActive, setIsActive] = useState(true);
+  const [logoAttachmentIds, setLogoAttachmentIds] = useState<string[]>([]);
+  const [previewFile, setPreviewFile] = useState<{
+    file_name: string;
+    previewUrl: string;
+  } | null>(null);
+
+  // Mark as intentionally unused until API integration
+  void description;
 
   const [createInstitute, { isLoading }] = useCreateInstituteMutation();
+  const { data: attachmentsResponse } = useGetAttachmentsQuery();
+
+  // Handle logo attachment change - ensure only one file is kept (replace previous)
+  const handleLogoChange = (newAttachmentIds: string[]) => {
+    // Since multiple={false}, we should only get one ID, but ensure we only keep the latest one
+    if (newAttachmentIds.length > 0) {
+      // Replace the entire array with just the new attachment ID
+      setLogoAttachmentIds([newAttachmentIds[newAttachmentIds.length - 1]]);
+    } else {
+      setLogoAttachmentIds([]);
+    }
+  };
+
+  // Get attachment data for preview
+  useEffect(() => {
+    if (!attachmentsResponse || logoAttachmentIds.length === 0) {
+      setPreviewFile(null);
+      return;
+    }
+
+    const attachmentId = logoAttachmentIds[0];
+    const attachment = attachmentsResponse.attachments?.find(
+      (a) => a.attachment_id === attachmentId
+    );
+
+    if (attachment) {
+      setPreviewFile({
+        file_name: attachment.file_name,
+        previewUrl: getFileUrl(attachment.file_path),
+      });
+    } else {
+      setPreviewFile(null);
+    }
+  }, [logoAttachmentIds, attachmentsResponse]);
 
   const handleSubmit = async () => {
+    console.log(logoAttachmentIds);
+
     if (!name.trim()) {
       toast.error("Name is required");
       return;
@@ -37,10 +84,15 @@ export const CreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
       setName("");
       setDescription("");
       setIsActive(true);
+      setLogoAttachmentIds([]);
+      setPreviewFile(null);
+      toast.success("Institute created successfully");
     } catch (err) {
       console.error(err);
+      toast.error("Failed to create institute");
     }
   };
+
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
@@ -55,7 +107,7 @@ export const CreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-200"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white p-6 rounded-2xl w-full max-w-[450px] shadow-2xl transform transition-all duration-200 scale-100">
+      <div className="bg-white p-6 rounded-2xl w-full max-w-[500px] shadow-2xl transform transition-all duration-200 scale-100 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-[20px] font-bold text-[#094C81]">
@@ -70,10 +122,10 @@ export const CreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
         </div>
 
         {/* Form */}
-        <div className="space-y-5 flex w-full gap-10">
+        <div className="space-y-5">
           {/* Name Field */}
           <div className="w-full">
-            <label className="block text-sm text-[#094C81] font-medium  mb-2">
+            <label className="block text-sm text-[#094C81] font-medium mb-2">
               Name <span className="text-red-500">*</span>
             </label>
             <input
@@ -83,52 +135,42 @@ export const CreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
               onChange={(e) => setName(e.target.value)}
             />
           </div>
+           <div className="flex gap-5 ">
+           {previewFile && (
+            <div className="min-w-24">
+              <label className="block mt-1 text-sm text-[#094C81] font-medium mb-2">
+                Logo Preview
+              </label>
+              <div className="flex items-start gap-4">
+                {/* Thumbnail Preview - 1:1 ratio */}
+                <div className="relative w-20 h-20 border-2 border-[#BFD7EA] rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center shrink-0">
+                <img
+                      src={previewFile.previewUrl}
+                      alt={previewFile.file_name}
+                      className="w-full h-full object-cover cursor-pointer"
+                    />
+                </div>
+                 
+              </div>
+            </div>
+          )}
 
-          {/* Description Field
-          <div className="w-1/2">
-            <label className="block text-sm text-[#094C81] font-medium mb-2">
-              Description
-            </label>
-            <textarea
-              rows={4}
-              className="w-full border border-gray-300 px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none"
-              placeholder="Enter Organization description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div> */}
+          {/* upload the image */}
+          <FileUploadField
+            id="logo-upload"
+            label="Organization Logo"
+            value={logoAttachmentIds}
+            onChange={handleLogoChange}
+            showPreview={false}
+            // Restrict selectable types at browser level; actual upload & preview are handled inside FileUploadField
+            accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
+            multiple={false}
+            className="w-full h-full"
+            labelClass="text-sm text-[#094C81]  font-medium"
+          />
+           </div>
         </div>
-        {/* Active Toggle */}
-        {/* <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
-          <div className="relative inline-block w-12 h-6">
-            <input
-              type="checkbox"
-              checked={isActive}
-              onChange={(e) => setIsActive(e.target.checked)}
-              className="opacity-0 w-0 h-0 peer"
-              id="active-toggle"
-            />
-            <label
-              htmlFor="active-toggle"
-              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 bg-gray-300 transition-colors duration-200 rounded-full peer-checked:bg-blue-500 ${
-                isActive ? "bg-blue-500" : "bg-gray-300"
-              }`}
-            >
-              <span
-                className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-200 ${
-                  isActive ? "transform translate-x-6" : ""
-                }`}
-              />
-            </label>
-          </div>
-          <label
-            htmlFor="active-toggle"
-            className="text-sm font-medium text-gray-700 cursor-pointer"
-          >
-            Active Organization
-          </label>
-        </div> */}
-        {/* Footer Actions */}
+         
         <div className="flex justify-end space-x-3 mt-8 pt-4 border-t border-gray-200">
           <Button
             variant="outline"
@@ -156,6 +198,8 @@ export const CreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
           </Button>
         </div>
       </div>
+
+ 
     </div>
   );
 };

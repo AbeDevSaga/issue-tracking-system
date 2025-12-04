@@ -22,7 +22,7 @@ export function CreateChildInternalNodeModal({
   onClose,
 }: CreateChildInternalNodeModalProps) {
   const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState("description");
 
   const [createNode, { isLoading: isCreatingNode }] =
     useCreateInternalNodeMutation();
@@ -57,7 +57,7 @@ export function CreateChildInternalNodeModal({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-[700px] max-h-[85vh] overflow-y-auto">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-[400px] max-h-[85vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-[#094C81]">
             Create Child
@@ -74,9 +74,9 @@ export function CreateChildInternalNodeModal({
           <div className="flex gap-10">
             <div className="w-full flex justify-between gap-4">
               {/* Node Name */}
-              <div className="w-1/2">
+              <div className="w-full">
                 <Label className="block text-sm text-[#094C81] font-medium mb-2">
-                  Support Request Flow Name *
+                  Support Request Flow Name <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="issue-flow-name"
@@ -88,22 +88,7 @@ export function CreateChildInternalNodeModal({
                 />
               </div>
 
-              {/* Description */}
-              <div className="w-1/2">
-                <Label
-                  htmlFor="issue-flow-description"
-                  className="block text-sm text-[#094C81] font-medium mb-2"
-                >
-                  Description
-                </Label>
-                <Textarea
-                  id="issue-flow-description"
-                  placeholder="Enter support request flow description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
-                />
-              </div>
+              
             </div>
           </div>
 
