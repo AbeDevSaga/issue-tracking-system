@@ -16,41 +16,29 @@ import Organization from "./pages/organization/organization";
 import Inistitutes from "./InternalPages/Organization/organization";
 import BunchCreation from "./pages/BunchCreation/organization";
 import Branch from "./pages/branch/branch";
-import Region from "./pages/region/region";
-import Zone from "./pages/zone/zone";
 import Login from "./components/auth/Login";
-import City from "./pages/city/city";
-import SubCity from "./pages/subcity/subcity";
 import Project from "./pages/project/project";
 import Permission from "./pages/permission/permission";
-import Woreda from "./pages/woreda/woreda";
 import ProjectLevel from "./pages/priorityLevel/priorityLevel";
 import IssueCategory from "./pages/issueCategory/issueCategory";
 import MyIssue from "./pages/issue/my_issue";
 import IssueFlowConfig from "./pages/IssueFlowConfiguration/IssueFlowConfiguration";
 import Roles from "./pages/role/role";
-import Subroles from "./pages/subRole/subRole";
 // import Users from "./pages/Tables/Users";
 import BaseData from "./pages/Basedata/Basedata";
 import Metrics from "./pages/metrics/Metrics";
 import OrgStructure from "./pages/org_structure/org_structure";
 import ProtectedRoute from "./ProtectedRoute";
 import MyissueForm from "./pages/issue/my_issue_form";
-import QATask from "./pages/QATaskList/QATaskList";
-import QATaskDetail from "./pages/QATaskList/QATaskDetail";
-import QAExpertTask from "./pages/QAExpertTaskList/QAExpertTaskList";
-import QAExpertTaskDetail from "./pages/QAExpertTaskList/QAExpertTaskDetail";
 // import TeamLeaderTask from "./pages/TeamLeaderTaskList/TeamLeaderTaskList";
 // import TeamLeaderTaskDetail from "./pages/TeamLeaderTaskList/TeamLeaderTaskDetail";
 import CentralAdminTaskList from "./pages/CentralAdminTaskList/CentralAdminTaskList";
 import CentralAdminTaskDetail from "./pages/CentralAdminTaskList/CentralAdminTaskDetail";
-import DeveloperTaskDetail from "./pages/DeveloperTaskList/DeveloperTaskDetail";
 
 // internal
 import InternalTaskList from "./InternalPages/Tasks/TaskList";
 import InternalTaskDetail from "./InternalPages/Tasks/TaskDetail";
 
-import DeveloperTaskList from "./pages/DeveloperTaskList/DeveloperTaskList";
 import UserTaskList from "./pages/userTasks/TaskList";
 import UserTaskDetail from "./pages/userTasks/TaskDetail";
 import IssueDetail from "./pages/issue/issueDetail";
@@ -150,12 +138,7 @@ function AppContent() {
           <Route path="/organization/:id" element={<OrganizationDetail />} />
           <Route path="/inistitutes/:id" element={<InistituteDetail />} />
           <Route path="/branch" element={<Branch />} />
-          <Route path="/region" element={<Region />} />
-          <Route path="/zone" element={<Zone />} />
 
-          <Route path="/city" element={<City />} />
-          <Route path="/subcity" element={<SubCity />} />
-          <Route path="/woreda" element={<Woreda />} />
           <Route path="/project" element={<Project />} />
           <Route path="/project/:id" element={<ProjectDetail />} />
           <Route
@@ -180,10 +163,6 @@ function AppContent() {
           <Route path="/issue_flow/:id" element={<IssueFlow />} />
           {/* IssueFlowConfig */}
           <Route path="/add_issue" element={<MyissueForm />} />
-          <Route path="/qa_tasks" element={<QATask />} />
-          <Route path="/qa_tasks_detail" element={<QATaskDetail />} />
-          <Route path="/tl_tasks" element={<QAExpertTask />} />
-          <Route path="/tl_tasks_detail" element={<QAExpertTaskDetail />} />
           <Route
             path="/central_admin_task_list"
             element={<CentralAdminTaskList />}
@@ -193,17 +172,11 @@ function AppContent() {
             element={<CentralAdminTaskDetail />}
           />
 
-          <Route path="/developer_tasks" element={<DeveloperTaskList />} />
-          <Route
-            path="/developer_tasks_detail"
-            element={<DeveloperTaskDetail />}
-          />
           <Route path="/org_structure" element={<OrgStructure />} />
           <Route path="/org_structure/:id" element={<OrgStructureDetail />} />
           {/* Metrics */}
           <Route path="/human_resource" element={<Metrics />} />
           <Route path="/basedata" element={<BaseData />} />
-          <Route path="/subroles" element={<Subroles />} />
 
           <Route
             path="/roles"

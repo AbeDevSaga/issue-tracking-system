@@ -1,21 +1,19 @@
 // src/layout/AppHeader.tsx
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
 import NotificationDropdown from "../components/header/NotificationDropdown";
 import UserDropdown from "../components/header/UserDropdown";
 import { useAuth } from "../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { useSidebar } from "../context/SidebarContext";
-import { GlobeAltIcon } from "@heroicons/react/24/solid";
-import { Globe, Globe2Icon } from "lucide-react";
+import { Globe } from "lucide-react";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
   const { user } = useAuth();
   const isStudent = user?.user_type === "student";
   const [langOpen, setLangOpen] = useState(false);
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
 
   // get sidebar functions from context (some pages may not be wrapped, so guard)
   let isMobileOpen = false;
@@ -60,7 +58,7 @@ const AppHeader: React.FC = () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
-  const changeLanguage = (lng) => {
+  const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
     setLangOpen(false);
   };
