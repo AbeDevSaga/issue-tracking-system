@@ -19,6 +19,11 @@ import AssignUserModal from "../../modals/AssignUserToProjectModal";
 // =======================
 const columns = [
   {
+    accessorKey: "project.id",
+    header: "#",
+    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+  },
+  {
     accessorKey: "user.full_name",
     header: "User",
     cell: ({ row }: any) => (

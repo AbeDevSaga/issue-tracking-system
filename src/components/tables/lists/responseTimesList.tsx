@@ -32,6 +32,11 @@ export default function IssueResponseTimeList() {
   // --- Define table columns ---
   const ResponseTimeTableColumns = [
     {
+      accessorKey: "project.id",
+      header: "#",
+      cell: ({ row }: any) => <div>{row.index + 1}</div>,
+    },
+    {
       accessorKey: "duration",
       header: "Duration",
       cell: ({ row }: any) => <div>{row.getValue("duration")}</div>,

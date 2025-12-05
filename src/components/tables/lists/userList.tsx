@@ -39,6 +39,11 @@ export default function UserList({
   // --- Define table columns ---
   const UserTableColumns = [
     {
+      accessorKey: "project.id",
+      header: "#",
+      cell: ({ row }: any) => <div>{row.index + 1}</div>,
+    },
+    {
       accessorKey: "full_name",
       header: "Full Name",
       cell: ({ row }: any) => (

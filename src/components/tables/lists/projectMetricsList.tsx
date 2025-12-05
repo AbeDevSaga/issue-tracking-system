@@ -31,6 +31,11 @@ export default function ProjectMetricsList() {
   // --- Table columns ---
   const metricColumns = [
     {
+      accessorKey: "project.id",
+      header: "#",
+      cell: ({ row }: any) => <div>{row.index + 1}</div>,
+    },
+    {
       accessorKey: "name",
       header: "Human Resource Name",
       cell: ({ row }: any) => (

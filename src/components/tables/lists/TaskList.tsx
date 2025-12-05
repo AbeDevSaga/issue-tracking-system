@@ -14,6 +14,11 @@ import { formatStatus } from "../../../utils/statusFormatter";
 
 const TaskTableColumns = [
   {
+    accessorKey: "project.id",
+    header: "#",
+    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+  },
+  {
     accessorKey: "project.ticket_number",
     header: "Ticket Number",
     cell: ({ row }: any) => <div>{row.original.ticket_number || "N/A"}</div>,

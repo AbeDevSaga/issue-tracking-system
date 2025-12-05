@@ -1,8 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Clock, X } from "lucide-react";
+import { ArrowRight, Clock, X, User, ChevronRight, Users } from "lucide-react";
 import { formatStatus } from "../../utils/statusFormatter";
+import { useState } from "react";
 
 interface User {
   full_name: string;
@@ -34,7 +35,27 @@ interface LogsPreviewProps {
   onClose?: () => void;
 }
 
+// Group logs by user
+const groupLogsByUser = (logs: IssueHistoryLog[]) => {
+  const grouped: { [key: string]: IssueHistoryLog[] } = {};
+
+  logs.forEach((log) => {
+    const userName = log.performed_by?.full_name || "System";
+    if (!grouped[userName]) {
+      grouped[userName] = [];
+    }
+    grouped[userName].push(log);
+  });
+
+  return grouped;
+};
+
 export default function IssueHistoryLog({ logs, onClose }: LogsPreviewProps) {
+  const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set());
+
+  const groupedLogs = groupLogsByUser(logs);
+  const userNames = Object.keys(groupedLogs);
+
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
       case "resolved":
@@ -56,110 +77,270 @@ export default function IssueHistoryLog({ logs, onClose }: LogsPreviewProps) {
     return "bg-gray-50 border-gray-200";
   };
 
+  const toggleUserExpansion = (userName: string) => {
+    const newExpanded = new Set(expandedUsers);
+    if (newExpanded.has(userName)) {
+      newExpanded.delete(userName);
+    } else {
+      newExpanded.add(userName);
+    }
+    setExpandedUsers(newExpanded);
+  };
+
+  const getUserInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const getUserColor = (userName: string) => {
+    // Generate a consistent color based on user name
+    const colors = [
+      "bg-blue-500",
+      "bg-purple-500",
+      "bg-green-500",
+      "bg-amber-500",
+      "bg-pink-500",
+      "bg-indigo-500",
+      "bg-teal-500",
+      "bg-rose-500",
+      "bg-cyan-500",
+    ];
+    const index =
+      userName.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) %
+      colors.length;
+    return colors[index];
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 100 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 100 }}
       transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="absolute top-0 right-0 w-full lg:w-[360px] bg-white border-l border-[#D5E3EC] h-full flex flex-col gap-3 shadow-lg overflow-y-auto"
+      className="absolute top-0 right-0 w-full lg:w-[350px] bg-gradient-to-b from-white to-gray-50 border-l border-gray-200 h-full flex flex-col shadow-xl overflow-y-auto"
     >
-      <div className="p-6 relative border-b border-[#D5E3EC] bg-gradient-to-r from-[#1E516A] to-[#2C6B8A]">
-        <h2 className="text-xl font-bold text-white">Support Request Timeline</h2>
-        <p className="text-white text-sm mt-1">View the timeline of the support request</p>
-     <div className="absolute top-5 right-5">
-     {onClose && (
-          <button
-            onClick={onClose}
-            className="text-white font-bold hover:text-white transition-colors"
-          >
-            <X className="w-5 font-bold h-5" />
-          </button>
-        )}
+      {/* Header */}
+      <div className="sticky top-0 z-10 p-6 bg-gradient-to-r from-blue-600 to-indigo-700 border-b border-indigo-600 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+              <Clock className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">Issue Timeline</h2>
+              <p className="text-blue-100 text-sm mt-0.5">
+                {logs.length} events • {userNames.length} users
+              </p>
+            </div>
+          </div>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5 text-white" />
+            </button>
+          )}
         </div>
       </div>
 
+      {/* Summary Stats */}
+      <div className="p-4 bg-white border-b border-gray-100">
+        <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-gray-500" />
+              <span className="font-medium text-gray-700">
+                {userNames.length} users
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-gray-500" />
+              <span className="font-medium text-gray-700">
+                {logs.length} actions
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={() => setExpandedUsers(new Set(userNames))}
+            className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+          >
+            Expand all
+          </button>
+        </div>
+      </div>
 
-      <div className="relative px-4 my-5 mb-8">
-        {/* Vertical timeline line */}
-        <div className="absolute left-5 top-2 bottom-2 w-0.5 bg-gradient-to-b from-blue-200 via-purple-200 to-green-200"></div>
+      {/* Timeline Content */}
+      <div className="flex-1 p-4">
+        {userNames.length === 0 ? (
+          <div className="text-center py-12">
+            <Clock className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <p className="text-gray-500 text-sm">No history available</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {userNames.map((userName, userIndex) => {
+              const userLogs = groupedLogs[userName];
+              const isExpanded = expandedUsers.has(userName);
+              const hasMultipleLogs = userLogs.length > 1;
 
-        <div className="space-y-4">
-          {logs.map((log, index) => (
-            <div key={log.history_id} className="relative flex gap-3">
-              {/* Timeline number */}
-              <div className="relative w-6 h-6 ">
+              return (
                 <div
-                  className={`w-6 h-6 bg-blue-500 text-white absolute text-xs top-0 -left-2 rounded-full border-2 border-white flex items-center justify-center z-10 font-semibold `}
+                  key={userName}
+                  className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"
                 >
-                  {index + 1}
-                </div>
-              </div>
-
-              {/* Content card */}
-              <div
-                className={`flex-1 p-2 rounded-lg border -ml-2 text-sm ${getActionColor(
-                  log
-                )}`}
-              >
-                <div className="flex justify-between items-center mb-1">
-                  <span className="font-medium text-gray-700">
-                    {log.performed_by?.full_name || "System"}
-                  </span>
-                  <span
-                    className={`px-1 py-0.5 rounded-full text-[10px] font-semibold border ${getStatusColor(
-                      log.status_at_time
-                    )}`}
+                  {/* User Header */}
+                  <button
+                    onClick={() => toggleUserExpansion(userName)}
+                    className={`w-full p-4 flex items-center justify-between transition-colors ${
+                      isExpanded ? "bg-gray-50" : "hover:bg-gray-50"
+                    }`}
                   >
-                    {formatStatus(log.status_at_time) || "N/A"}
-                  </span>
-                </div>
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`${getUserColor(
+                          userName
+                        )} w-10 h-10 rounded-full flex items-center justify-center text-white font-bold`}
+                      >
+                        {getUserInitials(userName)}
+                      </div>
+                      <div className="text-left">
+                        <h3 className="font-semibold text-gray-800">
+                          {userName}
+                        </h3>
+                        <p className="text-xs text-gray-500">
+                          {userLogs.length} action
+                          {userLogs.length > 1 ? "s" : ""} • Last:{" "}
+                          {new Date(
+                            userLogs[0].created_at
+                          ).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {hasMultipleLogs && (
+                        <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full font-medium">
+                          {userLogs.length}
+                        </span>
+                      )}
+                      <ChevronRight
+                        className={`w-4 h-4 text-gray-400 transition-transform ${
+                          isExpanded ? "rotate-90" : ""
+                        }`}
+                      />
+                    </div>
+                  </button>
 
-                {/* Action description */}
-                <div className="flex justify-between items-center">
-                  <p className="capitalize mb-1 text-gray-800">{log.action}</p>
+                  {/* User's Actions - Collapsible */}
+                  {isExpanded && (
+                    <div className="border-t border-gray-100 p-4">
+                      <div className="relative pl-6">
+                        {/* Vertical line */}
+                        <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-200 via-gray-200 to-gray-100"></div>
 
-                  {log.escalation && (
-                    <div className="flex items-center gap-1 text-purple-700 bg-purple-50 p-1 rounded border border-purple-100 text-[11px]">
-                      <span className="font-medium">
-                        {log.escalation.fromTierNode.name}
-                      </span>
-                      <ArrowRight className="w-3 h-3" />
-                      <span className="font-medium">
-                        {log.escalation.toTierNode?.name ?? "EAII"}
-                      </span>
+                        <div className="space-y-3">
+                          {userLogs.map((log, logIndex) => (
+                            <div key={log.history_id} className="relative">
+                              {/* Timeline dot */}
+                              <div
+                                className={`absolute left-[-24px] top-2 w-3 h-3 rounded-full border-2 border-white ${
+                                  logIndex === 0
+                                    ? getUserColor(userName).replace(
+                                        "bg-",
+                                        "bg-"
+                                      )
+                                    : "bg-gray-300"
+                                }`}
+                              ></div>
+
+                              {/* Log card */}
+                              <div
+                                className={`p-3 rounded-lg border ${getActionColor(
+                                  log
+                                )}`}
+                              >
+                                <div className="flex justify-between items-start mb-2">
+                                  <div>
+                                    <p className="font-medium text-gray-800 capitalize">
+                                      {log.action}
+                                    </p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <span
+                                        className={`px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(
+                                          log.status_at_time
+                                        )}`}
+                                      >
+                                        {formatStatus(log.status_at_time) ||
+                                          "N/A"}
+                                      </span>
+                                      {log.escalation && (
+                                        <div className="flex items-center gap-1 text-purple-700 bg-purple-50 px-2 py-0.5 rounded text-xs">
+                                          <span className="font-medium">
+                                            {log.escalation.fromTierNode.name}
+                                          </span>
+                                          <ArrowRight className="w-3 h-3" />
+                                          <span className="font-medium">
+                                            {log.escalation.toTierNode?.name ||
+                                              "EAII"}
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
+                                    <Clock className="w-3 h-3" />
+                                    {new Date(
+                                      log.created_at
+                                    ).toLocaleTimeString([], {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </div>
+                                </div>
+
+                                <div className="text-xs text-gray-500">
+                                  {new Date(log.created_at).toLocaleDateString(
+                                    "en-US",
+                                    {
+                                      weekday: "short",
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric",
+                                    }
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
-
-                {/* {log.resolution && (
-                  <div className="flex items-center gap-1 text-green-700 bg-green-50 p-1 rounded border border-green-100 text-[11px]">
-                    {log.resolution.reason}
-                  </div>
-                )} */}
-
-                {/* Timestamp */}
-                <div className="flex items-center gap-1 text-[10px] text-gray-500 mt-1">
-                  <Clock className="w-3 h-3" />
-                  {new Date(log.created_at).toLocaleString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {logs.length === 0 && (
-        <div className="text-center py-6 text-gray-500 text-sm">
-          <Clock className="w-10 h-10 mx-auto mb-1 text-gray-300" />
-          <p>No history available</p>
+      {/* Footer */}
+      <div className="sticky bottom-0 p-4 bg-white border-t border-gray-100">
+        <div className="flex items-center justify-between text-sm text-gray-600">
+          <div>
+            Showing {logs.length} events across {userNames.length} users
+          </div>
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="text-blue-600 hover:text-blue-700 font-medium"
+          >
+            Back to top
+          </button>
         </div>
-      )}
+      </div>
     </motion.div>
   );
 }

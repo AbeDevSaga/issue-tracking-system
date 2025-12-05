@@ -561,41 +561,6 @@ export default function UserIssueDetail() {
                                       transition={{ duration: 0.3 }}
                                       className="p-4 border-t border-[#BFD7EA] bg-white"
                                     >
-                                      {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                                      <div>
-                                        <p className="font-semibold text-[#1E516A] text-sm">
-                                          Escalated From
-                                        </p>
-                                        <p className="text-gray-700">
-                                          {escalation.fromTierNode?.name || "N/A"}
-                                        </p>
-                                      </div>
-                                      <div>
-                                        <p className="font-semibold text-[#1E516A] text-sm">
-                                          Escalated To
-                                        </p>
-                                        <p className="text-gray-700">
-                                          {escalation.toTierNode?.name || "EAII"}
-                                        </p>
-                                      </div>
-                                      <div>
-                                        <p className="font-semibold text-[#1E516A] text-sm">
-                                          Escalated By
-                                        </p>
-                                        <p className="text-gray-700">
-                                          {escalation.escalator?.full_name || "N/A"}
-                                        </p>
-                                      </div>
-                                      <div>
-                                        <p className="font-semibold text-[#1E516A] text-sm">
-                                          Escalated On
-                                        </p>
-                                        <p className="text-gray-700">
-                                          {formatDate(escalation.escalated_at)}
-                                        </p>
-                                      </div>
-                                    </div> */}
-
                                       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3">
                                           <p className="font-semibold text-[#1E516A] text-sm mb-1">
@@ -796,41 +761,6 @@ export default function UserIssueDetail() {
                                       transition={{ duration: 0.3 }}
                                       className="p-4 border-t border-[#BFD7EA] bg-white"
                                     >
-                                      {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                                      <div>
-                                        <p className="font-semibold text-[#1E516A] text-sm">
-                                          Resolved By
-                                        </p>
-                                        <p className="text-gray-700">
-                                          {resolution.resolver?.full_name || "N/A"}
-                                        </p>
-                                      </div>
-                                      <div>
-                                        <p className="font-semibold text-[#1E516A] text-sm">
-                                          Resolver Position
-                                        </p>
-                                        <p className="text-gray-700">
-                                          {resolution.resolver?.position || "N/A"}
-                                        </p>
-                                      </div>
-                                      <div>
-                                        <p className="font-semibold text-[#1E516A] text-sm">
-                                          Resolved On
-                                        </p>
-                                        <p className="text-gray-700">
-                                          {formatDate(resolution.resolved_at)}
-                                        </p>
-                                      </div>
-                                      <div>
-                                        <p className="font-semibold text-[#1E516A] text-sm">
-                                          Resolution Status
-                                        </p>
-                                        <p className="text-gray-700">
-                                          {resolution.status || "resolved"}
-                                        </p>
-                                      </div>
-                                    </div> */}
-
                                       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="bg-[#094C810D] border border-[#BFD7EA] rounded-md p-3">
                                           <p className="font-semibold text-[#1E516A] text-sm mb-1">

@@ -115,10 +115,10 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (!fullName || !email || !user_type_id || !selectedRoles.length) {
-      toast.error("Please fill all required fields");
-      return;
-    }
+    // if (!fullName || !email || !user_type_id || !selectedRoles.length) {
+    //   toast.error("Please fill all required fields");
+    //   return;
+    // }
 
     if (user_type === "external_user" && !instituteId) {
       toast.error("Please select an institute for external users");
