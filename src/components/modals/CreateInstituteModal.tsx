@@ -66,7 +66,7 @@ export const CreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
   }, [logoAttachmentIds, attachmentsResponse]);
 
   const handleSubmit = async () => {
-    console.log(logoAttachmentIds);
+    // 4console.log(logoAttachmentIds);
 
     if (!name.trim()) {
       toast.error("Name is required");

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Plus, Edit, Trash2 } from "lucide-react";
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
@@ -27,6 +27,8 @@ export default function IssuePriorityList() {
   const [deletePriority,{isLoading: isDeleteLoading}] = useDeleteIssuePriorityMutation();
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletePriorityId, setDeletePriorityId] = useState<string>("");
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [editPriorityId, setEditPriorityId] = useState<string>("");
 // --- Define table columns ---
 const PriorityTableColumns = [
   {
@@ -47,6 +49,11 @@ const PriorityTableColumns = [
     cell: ({ row }: any) => <div>{row.getValue("response_time") || "N/A"}</div>,
   },
   {
+    accessorKey: "Escalate to Admin",
+    header: "Escalate to Admin",
+    cell: ({ row }: any) => <div>{row.getValue("is_active") ? "Yes" : "No"}</div>,
+  },
+  {
     id: "actions",
     header: "Actions",
     cell: ({ row }: any) => {
@@ -54,7 +61,7 @@ const PriorityTableColumns = [
 
       return (
         <div className="flex items-center space-x-2">
-          {/* show button to view priority */}
+          {/* show button to view priority
           <Button
             variant="outline"
             size="sm"
@@ -62,13 +69,16 @@ const PriorityTableColumns = [
             // onClick={() => openViewModal(priority)}
           >
             <Eye className="h-4 w-4" />
-          </Button>
-          {/* Edit button - can implement edit modal if needed */}
+          </Button> */}
+          {/* Edit button */}
           <Button
             variant="outline"
             size="sm"
             className="h-8 w-8 p-0"
-            // onClick={() => openEditModal(priority)}
+            onClick={() => {
+              setEditPriorityId(priority.priority_id);
+              setEditModalOpen(true);
+            }}
           >
             <Edit className="h-4 w-4" />
           </Button>
@@ -122,8 +132,10 @@ const PriorityTableColumns = [
 
   useEffect(() => {
     if (!isError && !isLoading && data) {
-      setResponse(data.data || []);
-      setFilteredResponse(data.data || []);
+      // Handle both array and object with data property
+      const priorities = Array.isArray(data) ? data : (data as any)?.data || [];
+      setResponse(priorities);
+      setFilteredResponse(priorities);
     }
   }, [data, isError, isLoading]);
 
@@ -172,6 +184,14 @@ const PriorityTableColumns = [
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
       />
+      {/* <EditPriorityModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setEditPriorityId("");
+        }}
+        priorityId={editPriorityId}
+      /> */}
       <DeleteModal
         message="Are you sure you want to delete this priority?"
         onCancel={() => setDeleteModalOpen(false)}
