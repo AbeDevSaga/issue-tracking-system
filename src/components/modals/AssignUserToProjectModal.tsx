@@ -60,7 +60,8 @@ export default function AssignUserModal({
 
   const [assignUserToProject] = useAssignUserToProjectMutation();
 
-  const users = usersResponse || [];
+const users = usersResponse?.data || [];
+
   console.log("userssssssssssssssssssssss", users);
   const roles = rolesResponse?.data || [];
 
@@ -87,6 +88,7 @@ export default function AssignUserModal({
     }
 
     const user = users.find((u) => u.user_id === selectedUser);
+    console.log("Selected user:", user);
     const isExternal = user?.userType?.name === "external_user";
 
     // External users must have hierarchy node
@@ -157,33 +159,6 @@ export default function AssignUserModal({
               </Select>
             </div>
 
-            {/* ROLE */}
-            {/* <div className="w-1/2">
-              <Label className="text-sm font-medium text-[#094C81]">
-                Select Role
-              </Label>
-              <Select
-                value={selectedRole || ""}
-                onValueChange={setSelectedRole}
-              >
-                <SelectTrigger className="w-full border p-2 rounded mt-1 text-[#094C81]">
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent className="text-[#094C81] bg-white">
-                  {availableRoles.length > 0 ? (
-                    availableRoles.map((r) => (
-                      <SelectItem key={r.role_id} value={r.role_id}>
-                        {r.name}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem key="no-role" value="none" disabled>
-                      No roles available for this user
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-            </div> */}
           </div>
         </div>
 

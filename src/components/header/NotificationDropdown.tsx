@@ -309,7 +309,7 @@ export default function NotificationDropdown() {
 
                     <span className="block flex-1">
                       <span className="mb-1.5 block text-theme-sm text-gray-800 dark:text-white/90">
-                        {notification.title}
+                        {notification.body}
                       </span>
                       <span className="block text-theme-sm text-gray-600 dark:text-gray-400 mb-2">
                         {notification.reason || notification.message}

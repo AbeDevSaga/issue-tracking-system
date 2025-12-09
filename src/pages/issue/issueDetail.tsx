@@ -844,7 +844,7 @@ export default function UserIssueDetail() {
               )}
 
               {/* Reopen button for closed/resolved issues */}
-              {(issue.status === "resolved" || issue.status === "closed") && (
+              {(issue.status === "closed") && (
                 <div className="mt-4 flex gap-4">
                   <ReopenIssueButton issueId={issue.issue_id} />
                 </div>

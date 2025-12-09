@@ -87,7 +87,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
     const id = user?.institute?.institute_id || inistitute_id || "";
     setInstituteId(id);
   }, [user, inistitute_id, isOpen]);
-
+ const positionId = getUserPositionId(logged_user_type, user_type, true);
   // Update selectAll state
   useEffect(() => {
     if (metrics.length > 0) {
