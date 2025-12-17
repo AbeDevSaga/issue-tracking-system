@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Plus, Eye, Edit, Trash2 } from "lucide-react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useMemo } from "react";
+import { Plus, Eye } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import { useGetInstitutesQuery } from "../../../redux/services/instituteApi";
 import { Button } from "../../ui/cn/button";
@@ -10,8 +10,9 @@ import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
 import { CreateInstituteModal } from "../../modals/CreateInstituteModal";
+import { useGlobalSearch } from "../../../context/GlobalSearchContext";
 
-// --- Define table columns ---
+// --- Table columns ---
 const InstituteTableColumns = [
   {
     id: "serial",
@@ -25,27 +26,6 @@ const InstituteTableColumns = [
       <div className="font-medium text-blue-600">{row.getValue("name")}</div>
     ),
   },
-  // {
-  //   accessorKey: "description",
-  //   header: "Description",
-  //   cell: ({ row }: any) => <div>{row.getValue("description") || "N/A"}</div>,
-  // },
-  // {
-  //   accessorKey: "has_branch",
-  //   header: "Type",
-  //   cell: ({ row }: any) => {
-  //     const hasBranch = row.getValue("has_branch");
-  //     return (
-  //       <span
-  //         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-  //           hasBranch ? "bg-green-600 text-white" : "bg-red-600 text-white"
-  //         }`}
-  //       >
-  //         {hasBranch ? "Multi-Branch" : "Central Only"}
-  //       </span>
-  //     );
-  //   },
-  // },
   {
     accessorKey: "is_active",
     header: "Status",
@@ -74,21 +54,6 @@ const InstituteTableColumns = [
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
-          {/* <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/organization/${institute.institute_id}`}>
-              <Edit className="h-4 w-4" />
-            </Link>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-            onClick={() => {
-              console.log("Delete institute:", institute.institute_id);
-            }}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button> */}
         </div>
       );
     },
@@ -96,6 +61,8 @@ const InstituteTableColumns = [
 ];
 
 export default function OrganizationList() {
+  const { search } = useGlobalSearch();
+
   const [response, setResponse] = useState<any[]>([]);
   const [filteredResponse, setFilteredResponse] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -110,8 +77,8 @@ export default function OrganizationList() {
     {
       label: "Create",
       icon: <Plus className="h-4 w-4" />,
-      variant: "default", // matches allowed type
-      size: "default", // matches allowed type
+      variant: "default",
+      size: "default",
       onClick: () => setModalOpen(true),
     },
   ];
@@ -135,6 +102,7 @@ export default function OrganizationList() {
 
   const { isLoading, isError, data } = useGetInstitutesQuery();
 
+  // Initialize response
   useEffect(() => {
     if (!isError && !isLoading && data) {
       setResponse(data || []);
@@ -142,23 +110,30 @@ export default function OrganizationList() {
     }
   }, [data, isError, isLoading]);
 
-  // Apply status filter
+  // Apply status filter + global search
   useEffect(() => {
     const filtered = response.filter((item) => {
-      if (!statusFilter || statusFilter === "all") return true;
-      if (statusFilter === "ACTIVE") return item.is_active;
-      if (statusFilter === "INACTIVE") return !item.is_active;
-      return true;
+      // Status filter
+      if (statusFilter !== "all") {
+        if (statusFilter === "ACTIVE" && !item.is_active) return false;
+        if (statusFilter === "INACTIVE" && item.is_active) return false;
+      }
+
+      // Global search
+      if (!search) return true;
+      const q = search.toLowerCase();
+      return (
+        item.name?.toLowerCase().includes(q) ||
+        (item.is_active ? "active" : "inactive").includes(q)
+      );
     });
+
     setFilteredResponse(filtered);
-  }, [response, statusFilter]);
+    setPageDetail((prev) => ({ ...prev, pageIndex: 0 })); // Reset pagination
+  }, [response, statusFilter, search]);
 
   const handlePagination = (index: number, size: number) => {
-    setPageDetail({
-      ...pageDetail,
-      pageIndex: index,
-      pageSize: size,
-    });
+    setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
   };
 
   return (
@@ -177,6 +152,7 @@ export default function OrganizationList() {
           currentIndex={pageDetail.pageIndex}
         />
       </PageLayout>
+
       <CreateInstituteModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}

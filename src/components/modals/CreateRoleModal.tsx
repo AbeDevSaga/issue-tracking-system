@@ -61,6 +61,11 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
   const { data: permissionsData, isLoading: loadingPermissions } =
     useGetPermissionsQuery();
   const [createRole, { isLoading: isCreating }] = useCreateRoleMutation();
+  const roleNameRegex = /^[A-Za-z\s]*$/;
+
+  const [errors, setErrors] = useState<{
+    name?: string;
+  }>({});
 
   // Group permissions by resource with icons
   const resourceGroups = useMemo((): ResourceGroup[] => {
@@ -192,10 +197,23 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const newErrors: any = {};
+
     if (!name.trim()) {
-      toast.error("Role name is required");
+      newErrors.name = "Role name is required";
+    }
+    if (!/^[A-Za-z\s]+$/.test(name.trim())) {
+      toast.error("Role name must contain only letters and spaces");
       return;
     }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      toast.error("Please fix the errors below");
+      return;
+    }
+
+    setErrors({});
 
     const selectedPermissionIds = getSelectedPermissions();
 
@@ -237,7 +255,7 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4">
       <div
-        className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden"
+        className="bg-white rounded-2xl shadow-xl w-full max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -265,9 +283,9 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
 
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col h-[calc(90vh-80px)]"
+          className="flex flex-col max-h-[calc(90vh-80px)]"
         >
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className="overflow-y-auto p-6 space-y-6">
             {/* Basic Information */}
             <Card>
               <CardHeader className="pb-4">
@@ -276,7 +294,7 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label
                       htmlFor="name"
@@ -286,13 +304,32 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
                     </Label>
                     <Input
                       id="name"
-                      placeholder="e.g., Project Manager, Developer"
+                      placeholder="e.g., Project Manager"
                       value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required
-                      className="w-full"
+                      onChange={(e) => {
+                        // Allow only letters and spaces
+                        const value = e.target.value;
+                        if (/^[A-Za-z\s]*$/.test(value)) {
+                          setName(value);
+                        }
+                      }}
+                      onPaste={(e) => {
+                        const pasted = e.clipboardData.getData("text");
+                        if (/[^A-Za-z\s]/.test(pasted)) {
+                          e.preventDefault();
+                          toast.error("Only letters and spaces are allowed");
+                        }
+                      }}
+                      className={`w-full ${
+                        errors.name ? "border-red-500 focus:ring-red-500" : ""
+                      }`}
                     />
+
+                    {errors.name && (
+                      <p className="text-sm text-red-500">{errors.name}</p>
+                    )}
                   </div>
+
                   <div className="space-y-2">
                     <Label
                       htmlFor="description"
@@ -360,10 +397,15 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
                         >
                           {/* Resource Header */}
                           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-t-lg">
+                            {/* Left side: Chevron + Icon + Text */}
                             <div className="flex items-center space-x-3 flex-1">
+                              {/* Collapse/Expand Icon */}
                               <button
                                 type="button"
-                                onClick={() => toggleResource(group.resource)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleResource(group.resource);
+                                }}
                                 className="p-1 hover:bg-gray-200 rounded"
                               >
                                 {isExpanded ? (
@@ -372,9 +414,13 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
                                   <ChevronRight className="h-4 w-4" />
                                 )}
                               </button>
+
+                              {/* Resource Icon */}
                               <div className="p-2 bg-white rounded-lg shadow-sm">
                                 {group.icon}
                               </div>
+
+                              {/* Resource Text */}
                               <div>
                                 <h3 className="font-semibold text-gray-900 capitalize">
                                   {group.resource}
@@ -385,6 +431,8 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
                                 </p>
                               </div>
                             </div>
+
+                            {/* Right side: Selection Status & Toggle */}
                             <div className="flex items-center space-x-3">
                               <span
                                 className={`px-2 py-1 text-xs font-medium border rounded-full ${getSelectionStatusClass(
@@ -395,12 +443,13 @@ export const CreateRoleModal: React.FC<CreateRoleModalProps> = ({
                               </span>
                               <button
                                 type="button"
-                                onClick={() =>
+                                onClick={(e) => {
+                                  e.stopPropagation(); // prevent accordion toggle
                                   selectAllInResource(
                                     group.resource,
                                     !isAllSelected
-                                  )
-                                }
+                                  );
+                                }}
                                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
                                   isAllSelected ? "bg-blue-600" : "bg-gray-200"
                                 }`}

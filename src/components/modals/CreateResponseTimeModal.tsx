@@ -1,19 +1,23 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/cn/button";
 import { Input } from "../ui/cn/input";
 import { Label } from "../ui/cn/label";
-import { useCreateIssueResponseTimeMutation } from "../../redux/services/issueResponseTimeApi";
+import {
+  useCreateIssueResponseTimeMutation,
+  useUpdateIssueResponseTimeMutation,
+  IssueResponseTime,
+} from "../../redux/services/issueResponseTimeApi";
 import { XIcon } from "lucide-react";
 
-// Strongly typed unit values
 type ResponseUnit = "hour" | "day" | "month";
 
-interface CreateResponseTimeModalProps {
+interface ResponseTimeModalProps {
   isOpen: boolean;
   onClose: () => void;
+  existingResponseTime?: IssueResponseTime; // If present → edit mode
 }
 
 const responseTimeUnitOptions: { label: string; value: ResponseUnit }[] = [
@@ -22,13 +26,31 @@ const responseTimeUnitOptions: { label: string; value: ResponseUnit }[] = [
   { label: "Month", value: "month" },
 ];
 
-export const CreateResponseTimeModal: React.FC<
-  CreateResponseTimeModalProps
-> = ({ isOpen, onClose }) => {
+export const ResponseTimeModal: React.FC<ResponseTimeModalProps> = ({
+  isOpen,
+  onClose,
+  existingResponseTime,
+}) => {
   const [duration, setDuration] = useState<number>(0);
   const [unit, setUnit] = useState<ResponseUnit>("hour");
-  const [createResponseTime, { isLoading }] =
+
+  const [createResponseTime, { isLoading: isCreating }] =
     useCreateIssueResponseTimeMutation();
+  const [updateResponseTime, { isLoading: isUpdating }] =
+    useUpdateIssueResponseTimeMutation();
+
+  const isEditMode = !!existingResponseTime;
+
+  // Populate form if edit
+  useEffect(() => {
+    if (existingResponseTime) {
+      setDuration(existingResponseTime.duration);
+      setUnit(existingResponseTime.unit);
+    } else {
+      setDuration(0);
+      setUnit("hour");
+    }
+  }, [existingResponseTime]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,25 +60,28 @@ export const CreateResponseTimeModal: React.FC<
       return;
     }
 
-    // Validate unit is one of the enum options
     if (!["hour", "day", "month"].includes(unit)) {
       toast.error("Invalid unit selected");
       return;
     }
 
     try {
-      // Type assertion ensures TypeScript accepts the correct union type
-      await createResponseTime({
-        duration,
-        unit: unit as ResponseUnit,
-      }).unwrap();
-      toast.success("Response time created successfully");
-      setDuration(0);
-      setUnit("hour");
+      if (isEditMode) {
+        await updateResponseTime({
+          id: existingResponseTime!.response_time_id,
+          data: { duration, unit },
+        }).unwrap();
+        toast.success("Response time updated successfully");
+      } else {
+        await createResponseTime({ duration, unit }).unwrap();
+        toast.success("Response time created successfully");
+        setDuration(0);
+        setUnit("hour");
+      }
       onClose();
     } catch (err: any) {
       console.error(err);
-      toast.error(err?.data?.message || "Failed to create response time");
+      toast.error(err?.data?.message || "Operation failed");
     }
   };
 
@@ -67,7 +92,7 @@ export const CreateResponseTimeModal: React.FC<
       <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-[20px] font-bold text-[#094C81]">
-            Create New Response Time
+            {isEditMode ? "Edit Response Time" : "Create New Response Time"}
           </h2>
           <button
             onClick={onClose}
@@ -132,8 +157,14 @@ export const CreateResponseTimeModal: React.FC<
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Creating..." : "Create"}
+            <Button type="submit" disabled={isCreating || isUpdating}>
+              {isEditMode
+                ? isUpdating
+                  ? "Updating..."
+                  : "Update"
+                : isCreating
+                ? "Creating..."
+                : "Create"}
             </Button>
           </div>
         </form>

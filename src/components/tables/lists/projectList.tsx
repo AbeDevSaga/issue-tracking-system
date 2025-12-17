@@ -1,13 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Plus, Eye, Edit, Trash2 } from "lucide-react";
+import { Plus, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
-
 import {
-  useGetProjectsQuery,
-  useDeleteProjectMutation,
   useGetProjectsByInstituteIdQuery,
+  useDeleteProjectMutation,
 } from "../../../redux/services/projectApi";
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
@@ -15,15 +13,18 @@ import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
 import { CreateProjectModal } from "../../modals/CreateProjectModal";
 import { isPermittedActionButton } from "../../../utils/guards/isPermittedActionButton";
+import { useGlobalSearch } from "../../../context/GlobalSearchContext";
 
 interface ProjectListProps {
   userType: string;
   insistitute_id: string;
 }
+
 export default function ProjectList({
   insistitute_id,
   userType,
 }: ProjectListProps) {
+  const { search } = useGlobalSearch(); // ✅ global search
   const [response, setResponse] = useState<any[]>([]);
   const [filteredResponse, setFilteredResponse] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -34,7 +35,9 @@ export default function ProjectList({
     pageSize: 10,
   });
 
-  // --- Define table columns ---
+  const { data, isLoading, isError } =
+    useGetProjectsByInstituteIdQuery(insistitute_id);
+
   const ProjectTableColumns = [
     {
       id: "serial",
@@ -76,9 +79,6 @@ export default function ProjectList({
       header: "Actions",
       cell: ({ row }: any) => {
         const project = row.original;
-        const [deleteProject] = useDeleteProjectMutation();
-
-        // Dynamic link depending on userType
         const projectLink =
           userType === "external_user"
             ? `/project/${project.project_id}`
@@ -91,19 +91,6 @@ export default function ProjectList({
                 <Eye className="h-4 w-4" />
               </Link>
             </Button>
-            {/* <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/edit/${project.project_id}`}>
-              <Edit className="h-4 w-4" />
-            </Link>
-          </Button> */}
-            {/* <Button
-            variant="outline"
-            size="sm"
-            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-            onClick={() => deleteProject(project.project_id)}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button> */}
           </div>
         );
       },
@@ -117,12 +104,10 @@ export default function ProjectList({
       variant: "default",
       size: "default",
       onClick: () => setModalOpen(true),
-      // permissions: ["create:projects"],
       allowedFor: ["internal_user"],
     },
   ];
 
-  // Filter the actions once
   const permittedActions = actions.filter((action) =>
     isPermittedActionButton(action)
   );
@@ -139,15 +124,12 @@ export default function ProjectList({
       value: statusFilter,
       onChange: (value: string | string[]) => {
         setStatusFilter(Array.isArray(value) ? value[0] : value);
-        setPageDetail({ ...pageDetail, pageIndex: 0 });
+        setPageDetail((prev) => ({ ...prev, pageIndex: 0 }));
       },
     },
   ];
 
-  // const { data, isLoading, isError } = useGetProjectsQuery();
-  const { data, isLoading, isError } =
-    useGetProjectsByInstituteIdQuery(insistitute_id);
-
+  // ✅ Load data
   useEffect(() => {
     if (!isError && !isLoading && data) {
       setResponse(data || []);
@@ -155,22 +137,31 @@ export default function ProjectList({
     }
   }, [data, isError, isLoading]);
 
+  // ✅ Apply status + search filter
   useEffect(() => {
-    const filtered = response.filter((item) => {
-      if (!statusFilter || statusFilter === "all") return true;
-      if (statusFilter === "ACTIVE") return item.is_active;
-      if (statusFilter === "INACTIVE") return !item.is_active;
-      return true;
+    const lowerSearch = search.toLowerCase();
+
+    const filtered = response.filter((project) => {
+      const statusMatch =
+        !statusFilter ||
+        statusFilter === "all" ||
+        (statusFilter === "ACTIVE" && project.is_active) ||
+        (statusFilter === "INACTIVE" && !project.is_active);
+
+      const searchMatch =
+        !search ||
+        project.name?.toLowerCase().includes(lowerSearch) ||
+        project.description?.toLowerCase().includes(lowerSearch);
+
+      return statusMatch && searchMatch;
     });
+
     setFilteredResponse(filtered);
-  }, [response, statusFilter]);
+    setPageDetail((prev) => ({ ...prev, pageIndex: 0 }));
+  }, [response, statusFilter, search]);
 
   const handlePagination = (index: number, size: number) => {
-    setPageDetail({
-      ...pageDetail,
-      pageIndex: index,
-      pageSize: size,
-    });
+    setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
   };
 
   return (

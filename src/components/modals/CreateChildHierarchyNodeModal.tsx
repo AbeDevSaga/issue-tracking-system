@@ -62,9 +62,7 @@ export function CreateChildHierarchyNodeModal({
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-[400px] max-h-[85vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-[#094C81]">
-            Create Child
-          </h2>
+          <h2 className="text-lg font-semibold text-[#094C81]">Create Child</h2>
           <button
             onClick={onClose}
             className="text-[#094C81] hover:text-gray-600 transition-colors duration-200"
@@ -86,7 +84,13 @@ export function CreateChildHierarchyNodeModal({
                   placeholder="Enter structure name"
                   value={name}
                   className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => {
+                    // Allow only letters and spaces
+                    const value = e.target.value;
+                    if (/^[A-Za-z\s]*$/.test(value)) {
+                      setName(value);
+                    }
+                  }}
                   required
                 />
               </div>

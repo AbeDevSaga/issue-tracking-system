@@ -140,7 +140,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   // Handle manual date input parsing
   const parseDateInput = (inputValue: string): Date | null => {
     if (!inputValue) return null;
-    
+
     // Try parsing MM/DD/YYYY format
     const dateMatch = inputValue.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
     if (dateMatch) {
@@ -148,7 +148,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       const day = parseInt(dateMatch[2], 10);
       const year = parseInt(dateMatch[3], 10);
       const date = new Date(year, month, day);
-      
+
       // Validate the date
       if (
         date.getFullYear() === year &&
@@ -158,13 +158,13 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         return date;
       }
     }
-    
+
     // Try parsing as ISO date string
     const isoDate = new Date(inputValue);
     if (!isNaN(isoDate.getTime())) {
       return isoDate;
     }
-    
+
     return null;
   };
 
@@ -229,7 +229,13 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                 <input
                   type="text"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => {
+                    // Allow only letters and spaces
+                    const value = e.target.value;
+                    if (/^[A-Za-z\s]*$/.test(value)) {
+                      setName(value);
+                    }
+                  }}
                   placeholder="Enter project name"
                   className="w-full border border-gray-300 px-4 py-3 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none"
                 />
@@ -242,7 +248,13 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                 <Textarea
                   rows={3}
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  onChange={(e) => {
+                    // Allow only letters and spaces
+                    const value = e.target.value;
+                    if (/^[A-Za-z\s]*$/.test(value)) {
+                      setDescription(value);
+                    }
+                  }}
                   placeholder="Project description"
                   className="w-full min-h-[40px] max-w-[350px] border border-gray-300 px-4 py-2 rounded-md focus:ring-2 focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
                 />
@@ -379,7 +391,9 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                           ? "bg-[#094C81]/10 border-[#094C81] shadow-sm"
                           : "bg-white border-gray-200 hover:border-[#094C81]/50 hover:bg-gray-50"
                       }`}
-                      onClick={() => handleMetricSelect(metric.project_metric_id)}
+                      onClick={() =>
+                        handleMetricSelect(metric.project_metric_id)
+                      }
                     >
                       <div
                         className={`w-4 h-4 border-2 rounded flex items-center justify-center transition-all duration-200 shrink-0 ${
@@ -388,12 +402,14 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                             : "border-gray-300 bg-white"
                         }`}
                       >
-                        {projectMetricsIds.includes(metric.project_metric_id) ? (
+                        {projectMetricsIds.includes(
+                          metric.project_metric_id
+                        ) ? (
                           <Check className="w-2.5 h-2.5 stroke-3" />
                         ) : null}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div 
+                        <div
                           className="font-medium text-sm text-gray-900 truncate leading-tight"
                           title={metric.name}
                         >

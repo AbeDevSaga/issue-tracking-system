@@ -25,7 +25,6 @@ export const CreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
       toast.error("Name is required");
       return;
     }
-  
 
     try {
       await createInstitute({
@@ -80,7 +79,13 @@ export const CreateInstituteModal: React.FC<CreateInstituteModalProps> = ({
               className="w-full border border-gray-300 px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none"
               placeholder="Enter Organization name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                // Allow only letters and spaces
+                const value = e.target.value;
+                if (/^[A-Za-z\s]*$/.test(value)) {
+                  setName(value);
+                }
+              }}
             />
           </div>
 

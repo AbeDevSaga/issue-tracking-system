@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import {
@@ -14,6 +15,7 @@ export default function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useAuth();
   const userId = user?.user_id;
+  const navigate = useNavigate();
 
   // Fetch notifications and unread count
   const {
@@ -111,15 +113,19 @@ export default function NotificationDropdown() {
     }
   };
 
-  const handleNotificationClick = async (notificationId: string) => {
+  const handleNotificationClick = async (
+    notificationId: string,
+    link: string
+  ) => {
     try {
       await markAsRead(notificationId).unwrap();
-      // Refetch counts after marking as read
       refetchUnreadCount();
+
+      closeDropdown(); // optional
+      navigate(link); // ⬅️ redirect here
     } catch (error) {
       console.error("Failed to mark notification as read:", error);
     }
-    closeDropdown();
   };
 
   const handleMarkAllAsRead = async () => {
@@ -274,55 +280,62 @@ export default function NotificationDropdown() {
             </div>
           ) : (
             <ul className="flex flex-col h-auto">
-              {notifications.map((notification) => (
-                <li key={notification.notification_id}>
-                  <DropdownItem
-                    onItemClick={() =>
-                      handleNotificationClick(notification.notification_id)
-                    }
-                    className={`flex gap-3 rounded-lg border-b border-gray-100 p-3 px-4.5 py-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5 ${
-                      !notification.is_read
-                        ? "bg-blue-50 dark:bg-blue-900/20"
-                        : ""
-                    }`}
-                    to={getNotificationLink(notification)}
-                  >
-                    <span className="relative block w-full h-10 rounded-full z-1 max-w-10">
-                      <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center ${getNotificationColor(
-                          notification.type
-                        )}`}
-                      >
-                        <svg
-                          className="w-5 h-5 text-white"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                          dangerouslySetInnerHTML={{
-                            __html: getNotificationIcon(notification.type),
-                          }}
-                        />
-                      </div>
-                      {!notification.is_read && (
-                        <span className="absolute top-0 right-0 z-10 h-2.5 w-2.5 rounded-full bg-blue-500"></span>
-                      )}
-                    </span>
+              {notifications.map((notification) => {
+                const link = getNotificationLink(notification);
+                return (
+                  <li key={notification.notification_id}>
+                    <DropdownItem
+                      onItemClick={() =>
+                        handleNotificationClick(
+                          notification.notification_id,
+                          link
+                        )
+                      }
+                      className={`flex gap-3 rounded-lg border-b border-gray-100 p-3 px-4.5 py-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5 ${
+                        !notification.is_read
+                          ? "bg-blue-50 dark:bg-blue-900/20"
+                          : ""
+                      }`}
+                    >
+                      <span className="relative block w-full h-10 rounded-full z-1 max-w-10">
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center ${getNotificationColor(
+                            notification.type
+                          )}`}
+                        >
+                          <svg
+                            className="w-5 h-5 text-white"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                            dangerouslySetInnerHTML={{
+                              __html: getNotificationIcon(notification.type),
+                            }}
+                          />
+                        </div>
+                        {!notification.is_read && (
+                          <span className="absolute top-0 right-0 z-10 h-2.5 w-2.5 rounded-full bg-blue-500"></span>
+                        )}
+                      </span>
 
-                    <span className="block flex-1">
-                      <span className="mb-1.5 block text-theme-sm text-gray-800 dark:text-white/90">
-                        {notification.body}
+                      <span className="block flex-1">
+                        <span className="mb-1.5 block text-theme-sm text-gray-800 dark:text-white/90">
+                          {notification.body}
+                        </span>
+                        <span className="block text-theme-sm text-gray-600 dark:text-gray-400 mb-2">
+                          {notification.reason || notification.message}
+                        </span>
+                        <span className="flex items-center gap-2 text-gray-500 text-theme-xs dark:text-gray-400">
+                          <span>
+                            {formatNotificationType(notification.type)}
+                          </span>
+                          <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
+                          <span>{formatTimeAgo(notification.created_at)}</span>
+                        </span>
                       </span>
-                      <span className="block text-theme-sm text-gray-600 dark:text-gray-400 mb-2">
-                        {notification.reason || notification.message}
-                      </span>
-                      <span className="flex items-center gap-2 text-gray-500 text-theme-xs dark:text-gray-400">
-                        <span>{formatNotificationType(notification.type)}</span>
-                        <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
-                        <span>{formatTimeAgo(notification.created_at)}</span>
-                      </span>
-                    </span>
-                  </DropdownItem>
-                </li>
-              ))}
+                    </DropdownItem>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
@@ -392,11 +405,21 @@ function formatTimeAgo(dateString: string): string {
 }
 
 function getNotificationLink(notification: any): string {
-  if (notification.issue_id) {
-    return `/issues/${notification.issue_id}`;
+  console.log("🔍 Notification object:", notification);
+
+  if (
+    notification.reference_type === "issue" ||
+    notification.reference_type === "escalation"
+  ) {
+    return `/task/${notification.reference_id}`;
   }
-  if (notification.project_id) {
-    return `/projects/${notification.project_id}`;
+
+  if (
+    notification.reference_type === "assignment" ||
+    notification.reference_type === "escalation"
+  ) {
+    return `/task_list/${notification.reference_id}`;
   }
+
   return "/notifications";
 }

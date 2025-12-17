@@ -13,6 +13,15 @@ export interface UserPosition {
   name: string;
   description?: string;
 }
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    pageCount: number;
+  };
+}
 
 export interface Institute {
   institute_id: string;
@@ -95,29 +104,26 @@ export interface GetUsersParams {
 // --------------------- API ---------------------
 export const userApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // Get all users (with optional filters)
-    getUsers: builder.query<User[], GetUsersParams | void>({
-      query: (params) => {
-        if (!params || Object.keys(params).length === 0) {
-          // No filters passed → fetch all users
-          return `/users`;
-        }
+getUsers: builder.query<
+  PaginatedResponse<User>,
+  GetUsersParams & { page?: number; limit?: number }
+>({
+  query: (params) => {
+    const queryString =
+      "?" +
+      new URLSearchParams(
+        Object.entries(params || {}).reduce((acc, [key, value]) => {
+          if (value !== undefined && value !== null)
+            acc[key] = String(value);
+          return acc;
+        }, {} as Record<string, string>)
+      ).toString();
 
-        // Build query string from params
-        const queryString =
-          "?" +
-          new URLSearchParams(
-            Object.entries(params).reduce((acc, [key, value]) => {
-              if (value !== undefined && value !== null)
-                acc[key] = String(value);
-              return acc;
-            }, {} as Record<string, string>)
-          ).toString();
+    return `/users${queryString}`;
+  },
+  providesTags: ["User"],
+}),
 
-        return `/users${queryString}`;
-      },
-      providesTags: ["User"],
-    }),
 
     // Get users by institute ID
     getUsersByInstituteId: builder.query<User[], string>({

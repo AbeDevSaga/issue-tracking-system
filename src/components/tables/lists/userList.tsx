@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Eye, Edit, Trash2 } from "lucide-react";
+import { Plus, Eye, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -16,8 +16,10 @@ import {
   useDeleteUserMutation,
   User,
 } from "../../../redux/services/userApi";
+
 import { useAuth } from "../../../contexts/AuthContext";
 import { getUserPositionId } from "../../../utils/helper/userPosition";
+import { useGlobalSearch } from "../../../context/GlobalSearchContext";
 
 interface UserListProps {
   user_type?: string;
@@ -36,117 +38,11 @@ export default function UserList({
   inistitute_id,
   toggleActions,
 }: UserListProps) {
-  // --- Define table columns ---
-  const UserTableColumns = [
-    {
-      accessorKey: "project.id",
-      header: "#",
-      cell: ({ row }: any) => <div>{row.index + 1}</div>,
-    },
-    {
-      accessorKey: "full_name",
-      header: "Full Name",
-      cell: ({ row }: any) => (
-        <div className="font-medium text-blue-600">
-          {row.getValue("full_name")}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "email",
-      header: "Email",
-      cell: ({ row }: any) => <div>{row.getValue("email")}</div>,
-    },
-    {
-      accessorKey: "phone_number",
-      header: "Phone Number",
-      cell: ({ row }: any) => <div>{row.getValue("phone_number")}</div>,
-    },
-    logged_user_type !== "external_user" &&
-      user_type === "external_user" && {
-        accessorKey: "institute.name", // ✅ Access nested userType name
-        header: "Institute",
-        cell: ({ row }: any) => {
-          const inst = row.original.institute?.name || "N/A";
-          return (
-            <span className={`px-2 py-1 text-xs font-semibold rounded-full`}>
-              {inst.replace("_", " ")}
-            </span>
-          );
-        },
-      },
-    {
-      accessorKey: "is_active",
-      header: "Status",
-      cell: ({ row }: any) => {
-        const isActive = row.getValue("is_active");
-        return (
-          <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              isActive
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
-            }`}
-          >
-            {isActive ? "Active" : "Inactive"}
-          </span>
-        );
-      },
-    },
-    {
-      id: "actions",
-      header: "Actions",
-      cell: ({ row }: any) => {
-        const user = row.original as User;
-        const [deleteUser] = useDeleteUserMutation();
-
-        const handleDelete = async () => {
-          try {
-            await deleteUser(user.user_id).unwrap();
-            toast.success("User deleted successfully!");
-          } catch (err: any) {
-            toast.error(err?.data?.message || "Failed to delete user");
-          }
-        };
-
-        return (
-          <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-              <Link to={`/users/${user.user_id}`}>
-                <Eye className="h-4 w-4" />
-              </Link>
-            </Button>
-            {/* <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/users/${user.user_id}`}>
-              <Edit className="h-4 w-4" />
-            </Link>
-          </Button> */}
-            {/* <Button
-            variant="outline"
-            size="sm"
-            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-            onClick={handleDelete}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button> */}
-          </div>
-        );
-      },
-    },
-  ].filter(Boolean);
   const { user } = useAuth();
+  const { search } = useGlobalSearch();
   const positionId = getUserPositionId(logged_user_type, user_type, false);
 
-  // user_position_id
-  const { data, isLoading, isError } = useGetUsersQuery({
-    institute_id: user?.institute?.institute_id || inistitute_id,
-    user_position_id: user_position_id || positionId,
-    user_type_id: user_type_id,
-  });
-  // useGetUsersByInstituteIdQuery
-  const [response, setResponse] = useState<User[]>([]);
-  const [filteredResponse, setFilteredResponse] = useState<User[]>([]);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [isModalOpen, setModalOpen] = useState(false);
 
   const [pageDetail, setPageDetail] = useState({
@@ -155,44 +51,119 @@ export default function UserList({
     pageCount: 1,
   });
 
-  // --- Convert API data to array ---
-  useEffect(() => {
-    if (!isError && !isLoading && data?.data) {
-      setResponse(data.data);
-      setFilteredResponse(data.data);
-    }
-  }, [data, isError, isLoading]);
+  const { data, isLoading } = useGetUsersQuery({
+    institute_id: user?.institute?.institute_id || inistitute_id,
+    user_position_id: user_position_id || positionId,
+    user_type_id,
+    page: pageDetail.pageIndex + 1,
+    limit: pageDetail.pageSize,
+    search,
+    is_active: statusFilter === "all" ? undefined : statusFilter === "active",
+  });
 
-  // --- Filter by status ---
+  // ✅ sync page count
   useEffect(() => {
-    const filtered = response.filter((user) => {
-      if (statusFilter === "all") return true;
-      if (statusFilter === "active") return user.is_active;
-      if (statusFilter === "inactive") return !user.is_active;
-      return true;
-    });
-    setFilteredResponse(filtered);
-  }, [response, statusFilter]);
+    if (data?.meta?.pageCount) {
+      setPageDetail((prev) => ({
+        ...prev,
+        pageCount: data.meta.pageCount,
+      }));
+    }
+  }, [data]);
 
   const handlePagination = (pageIndex: number, pageSize: number) => {
     setPageDetail({ ...pageDetail, pageIndex, pageSize });
   };
 
-  const buttonLabel = toggleActions
-    ? user_type === "internal_user"
-      ? "Create Internal User"
-      : "Create External User"
-    : "Create User";
-  const actions: ActionButton[] = [
-    {
-      label: buttonLabel,
-      icon: <Plus className="h-4 w-4" />,
-      variant: "default",
-      size: "default",
-      onClick: () => setModalOpen(true),
-    },
-  ];
+  const [deleteUser] = useDeleteUserMutation();
 
+  // ================= TABLE COLUMNS =================
+  const UserTableColumns = [
+    {
+      header: "#",
+      cell: ({ row }: any) => row.index + 1,
+    },
+    {
+      accessorKey: "full_name",
+      header: "Full Name",
+      cell: ({ row }: any) => (
+        <span className="font-medium text-blue-600">
+          {row.getValue("full_name")}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "email",
+      header: "Email",
+    },
+    {
+      accessorKey: "phone_number",
+      header: "Phone Number",
+    },
+
+    // ✅ CONDITIONAL COLUMN (KEPT)
+    logged_user_type !== "external_user" &&
+      user_type === "external_user" && {
+        header: "Institute",
+        cell: ({ row }: any) => row.original.institute?.name || "N/A",
+      },
+
+    {
+      accessorKey: "is_active",
+      header: "Status",
+      cell: ({ row }: any) => {
+        const active = row.getValue("is_active");
+        return (
+          <span
+            className={`px-2 py-1 text-xs rounded-full ${
+              active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+            }`}
+          >
+            {active ? "Active" : "Inactive"}
+          </span>
+        );
+      },
+    },
+    {
+      header: "Actions",
+      cell: ({ row }: any) => {
+        const u = row.original as User;
+
+        const handleDelete = async () => {
+          try {
+            await deleteUser(u.user_id).unwrap();
+            toast.success("User deleted successfully");
+          } catch {
+            toast.error("Failed to delete user");
+          }
+        };
+
+        return (
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" asChild>
+              <Link to={`/users/${u.user_id}`}>
+                <Eye className="h-4 w-4" />
+              </Link>
+            </Button>
+
+            {/* delete kept */}
+            {/* 
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-red-600"
+              onClick={handleDelete}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button> 
+            */}
+          </div>
+        );
+      },
+    },
+  ].filter(Boolean);
+
+  // ================= FILTERS =================
   const filterFields: FilterField[] = [
     {
       key: "status",
@@ -203,10 +174,24 @@ export default function UserList({
         { label: "Inactive", value: "inactive" },
       ],
       value: statusFilter,
-      onChange: (val: string | string[]) => {
+      onChange: (val) => {
         setStatusFilter(Array.isArray(val) ? val[0] : val);
-        setPageDetail({ ...pageDetail, pageIndex: 0 });
+        setPageDetail((p) => ({ ...p, pageIndex: 0 }));
       },
+    },
+  ];
+
+  const buttonLabel = toggleActions
+    ? user_type === "internal_user"
+      ? "Create Internal User"
+      : "Create External User"
+    : "Create User";
+
+  const actions: ActionButton[] = [
+    {
+      label: buttonLabel,
+      icon: <Plus className="h-4 w-4" />,
+      onClick: () => setModalOpen(true),
     },
   ];
 
@@ -220,11 +205,12 @@ export default function UserList({
       >
         <DataTable
           columns={UserTableColumns}
-          data={filteredResponse}
+          data={data?.data || []}
           handlePagination={handlePagination}
           tablePageSize={pageDetail.pageSize}
           totalPageCount={pageDetail.pageCount}
           currentIndex={pageDetail.pageIndex}
+          loading={isLoading}
         />
       </PageLayout>
 

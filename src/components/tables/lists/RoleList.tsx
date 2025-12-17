@@ -14,7 +14,7 @@ import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
 import DetailHeader from "../../common/DetailHeader";
-
+import { useGlobalSearch } from "../../../context/GlobalSearchContext";
 const RoleTableColumns = (
   handleDelete: (id: string) => void,
   handleEdit: (role: any) => void
@@ -95,6 +95,8 @@ export default function RoleList() {
   const [response, setResponse] = useState<any[]>([]);
   const [filteredResponse, setFilteredResponse] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const { search } = useGlobalSearch();
+
   const navigate = useNavigate();
   const [pageDetail, setPageDetail] = useState({
     pageIndex: 0,
@@ -152,14 +154,28 @@ export default function RoleList() {
   }, [data, isError, isLoading]);
 
   useEffect(() => {
-    const filtered = response.filter((item) => {
-      if (!statusFilter || statusFilter === "all") return true;
-      if (statusFilter === "ACTIVE") return item.is_active;
-      if (statusFilter === "INACTIVE") return !item.is_active;
-      return true;
+    const lowerSearch = search.toLowerCase();
+
+    const filtered = response.filter((role) => {
+      // ✅ Status filter
+      const statusMatch =
+        !statusFilter ||
+        statusFilter === "all" ||
+        (statusFilter === "ACTIVE" && role.is_active) ||
+        (statusFilter === "INACTIVE" && !role.is_active);
+
+      // ✅ Global search across fields
+      const searchMatch =
+        !search ||
+        role.name?.toLowerCase().includes(lowerSearch) ||
+        role.description?.toLowerCase().includes(lowerSearch);
+
+      return statusMatch && searchMatch;
     });
+
     setFilteredResponse(filtered);
-  }, [response, statusFilter]);
+    setPageDetail((prev) => ({ ...prev, pageIndex: 0 }));
+  }, [response, statusFilter, search]);
 
   const handlePagination = (index: number, size: number) => {
     setPageDetail({
@@ -171,10 +187,11 @@ export default function RoleList() {
 
   return (
     <>
-    {/* <DetailHeader className="mb-5 mt-2" breadcrumbs={[{ title: "Roles", link: "" }]} /> */}
+      {/* <DetailHeader className="mb-5 mt-2" breadcrumbs={[{ title: "Roles", link: "" }]} /> */}
 
       <PageLayout
         filters={filterFields}
+        title="Role Management"
         filterColumnsPerRow={1}
         actions={actions}
       >

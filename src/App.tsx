@@ -83,6 +83,8 @@ import TrackPage from "./pages/home/TrackPage";
 import TrackPageDetail from "./pages/home/TrackPageDetail";
 import OrganizationProfile from "./pages/profile/OrganizationProfile";
 import ExternalLogin from "./components/auth/ExternalLogin";
+
+import { GlobalSearchProvider } from "./context/GlobalSearchContext";
 const AuthLoader = () => {
   return (
     <div className="fixed inset-0 bg-white bg-opacity-80 flex justify-center items-center z-50">
@@ -265,8 +267,10 @@ export default function App() {
   return (
     <Provider store={store}>
       <AuthProvider>
-        <AppContent />
-        <Toaster position="top-right" richColors />
+        <GlobalSearchProvider>
+          <AppContent />
+          <Toaster position="top-right" richColors />
+        </GlobalSearchProvider>
       </AuthProvider>
     </Provider>
   );

@@ -1,54 +1,45 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Plus, Eye, Edit, Trash2 } from "lucide-react";
+import React, { useEffect, useState, useMemo } from "react";
+import { Plus, Eye } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
-import {
-  useGetIssuesByUserIdQuery,
-  useGetIssuesQuery,
-} from "../../../redux/services/issueApi";
+import { useGetIssuesByUserIdQuery } from "../../../redux/services/issueApi";
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
 import { useGetCurrentUserQuery } from "../../../redux/services/authApi";
 import { formatStatus } from "../../../utils/statusFormatter";
+import { useGlobalSearch } from "../../../context/GlobalSearchContext";
 
-// --- Define table columns ---
-// ticket_number
+// --- Table columns ---
 const IssueTableColumns = [
   {
     accessorKey: "project.id",
     header: "#",
-    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+    cell: ({ row }: any) => row.index + 1,
   },
   {
     accessorKey: "project.ticket_number",
     header: "Ticket Number",
-    cell: ({ row }: any) => <div>{row.original.ticket_number || "N/A"}</div>,
+    cell: ({ row }: any) => row.original.ticket_number || "N/A",
   },
   {
     accessorKey: "project.name",
     header: "Project",
-    cell: ({ row }: any) => <div>{row.original.project?.name || "N/A"}</div>,
+    cell: ({ row }: any) => row.original.project?.name || "N/A",
   },
   {
     accessorKey: "priority.name",
     header: "Priority",
-    cell: ({ row }: any) => <div>{row.original.priority?.name || "N/A"}</div>,
+    cell: ({ row }: any) => row.original.priority?.name || "N/A",
   },
   {
     accessorKey: "category.name",
     header: "Category",
-    cell: ({ row }: any) => <div>{row.original.category?.name || "N/A"}</div>,
+    cell: ({ row }: any) => row.original.category?.name || "N/A",
   },
-  {
-    accessorKey: "priority.name",
-    header: "Priority",
-    cell: ({ row }: any) => <div>{row.original.priority?.name || "N/A"}</div>,
-  },
-
   {
     accessorKey: "status",
     header: "Status",
@@ -71,38 +62,22 @@ const IssueTableColumns = [
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }: any) => {
-      const issue = row.original;
-      return (
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/issue/${issue.issue_id}`}>
-              <Eye className="h-4 w-4" />
-            </Link>
-          </Button>
-          {/* <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/issues/edit/${issue.issue_id}`}>
-              <Edit className="h-4 w-4" />
-            </Link>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-            onClick={() => console.log("Delete issue:", issue.issue_id)}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button> */}
-        </div>
-      );
-    },
+    cell: ({ row }: any) => (
+      <div className="flex items-center space-x-2">
+        <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
+          <Link to={`/issue/${row.original.issue_id}`}>
+            <Eye className="h-4 w-4" />
+          </Link>
+        </Button>
+      </div>
+    ),
   },
 ];
 
 export default function IssueList() {
   const navigate = useNavigate();
+  const { search } = useGlobalSearch();
   const [response, setResponse] = useState<any[]>([]);
-  const [filteredResponse, setFilteredResponse] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [pageDetail, setPageDetail] = useState({
     pageIndex: 0,
@@ -111,6 +86,15 @@ export default function IssueList() {
   });
 
   const { data: loggedUser, isLoading: userLoading } = useGetCurrentUserQuery();
+  const userId = loggedUser?.user?.user_id ?? "";
+
+  const { isLoading, isError, data } = useGetIssuesByUserIdQuery(userId, {
+    skip: !userId,
+  });
+
+  useEffect(() => {
+    if (!isError && !isLoading && data) setResponse(data);
+  }, [data, isError, isLoading]);
 
   const actions: ActionButton[] = [
     {
@@ -135,40 +119,77 @@ export default function IssueList() {
       value: statusFilter,
       onChange: (value: string | string[]) => {
         setStatusFilter(Array.isArray(value) ? value[0] : value);
-        setPageDetail({ ...pageDetail, pageIndex: 0 });
+        setPageDetail((prev) => ({ ...prev, pageIndex: 0 }));
       },
     },
   ];
 
-  const { isLoading, isError, data } = useGetIssuesByUserIdQuery(
-    loggedUser?.user?.user_id ?? "",
-    {
-      skip: !loggedUser?.user?.user_id,
-    }
-  );
-
-  useEffect(() => {
-    if (!isError && !isLoading && data) {
-      setResponse(data);
-      setFilteredResponse(data);
-    }
-  }, [data, isError, isLoading]);
-
-  // Apply status filter
-  useEffect(() => {
-    const filtered = response.filter((item) => {
-      if (!statusFilter || statusFilter === "all") return true;
-      return item.status === statusFilter;
+  // ---------------- Filter + Search + Pagination ----------------
+  const filteredResponse = useMemo(() => {
+    const safeData = Array.isArray(response) ? response : [];
+    const filtered = safeData.filter((item) => {
+      if (statusFilter !== "all" && item.status !== statusFilter) return false;
+      if (!search) return true;
+      const q = search.toLowerCase();
+      return (
+        item.ticket_number?.toLowerCase().includes(q) ||
+        item.project?.ticket_number?.toLowerCase().includes(q) ||
+        item.project?.name?.toLowerCase().includes(q) ||
+        item.priority?.name?.toLowerCase().includes(q) ||
+        item.category?.name?.toLowerCase().includes(q) ||
+        item.status?.toLowerCase().includes(q)
+      );
     });
-    setFilteredResponse(filtered);
-  }, [response, statusFilter]);
+
+    // update page count dynamically
+    setPageDetail((prev) => ({
+      ...prev,
+      pageCount: Math.ceil(filtered.length / prev.pageSize) || 1,
+    }));
+
+    // slice data for current page
+    const start = pageDetail.pageIndex * pageDetail.pageSize;
+    return filtered.slice(start, start + pageDetail.pageSize);
+  }, [
+    response,
+    statusFilter,
+    search,
+    pageDetail.pageIndex,
+    pageDetail.pageSize,
+  ]);
 
   const handlePagination = (index: number, size: number) => {
     setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
   };
 
+  const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSize = parseInt(e.target.value, 10);
+    setPageDetail({ ...pageDetail, pageSize: newSize, pageIndex: 0 });
+  };
+
+  if (userLoading || isLoading) {
+    return (
+      <PageLayout>
+        <div className="flex justify-center items-center h-64">
+          Loading issues...
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (isError) {
+    return (
+      <PageLayout>
+        <div className="flex justify-center items-center h-64 text-red-600">
+          Error loading issues.
+        </div>
+      </PageLayout>
+    );
+  }
+
   return (
     <PageLayout
+      title="My Requests"
       filters={filterFields}
       filterColumnsPerRow={1}
       actions={actions}

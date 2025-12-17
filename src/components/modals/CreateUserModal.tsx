@@ -66,6 +66,8 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
   const [position, setPosition] = useState("");
   const [instituteId, setInstituteId] = useState<string>("");
   const [selectAll, setSelectAll] = useState(false);
+  const fullNameRegex = /^[A-Za-z\s]*$/;
+  const phoneRegex = /^[0-9+]*$/;
 
   const { data: institutes, isLoading: loadingInstitutes } =
     useGetInstitutesQuery();
@@ -87,7 +89,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
     const id = user?.institute?.institute_id || inistitute_id || "";
     setInstituteId(id);
   }, [user, inistitute_id, isOpen]);
- const positionId = getUserPositionId(logged_user_type, user_type, true);
+  const positionId = getUserPositionId(logged_user_type, user_type, true);
   // Update selectAll state
   useEffect(() => {
     if (metrics.length > 0) {
@@ -130,6 +132,27 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
         "Please select at least one project metric for internal users"
       );
       return;
+    }
+    if (!fullName.trim()) {
+      toast.error("Please enter full name");
+      return;
+    }
+
+    if (!/^[A-Za-z\s]+$/.test(fullName.trim())) {
+      toast.error("Full name must contain only letters and spaces");
+      return;
+    }
+    if (!email.trim()) {
+      toast.error("Please enter email");
+      return;
+    }
+    if (phoneNumber) {
+      if (!/^\+?[0-9]{9,15}$/.test(phoneNumber.trim())) {
+        toast.error(
+          "Phone number must contain only digits and may start with + (9–15 digits)"
+        );
+        return;
+      }
     }
 
     const finalInstituteId = user?.institute?.institute_id || instituteId;
@@ -236,7 +259,13 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
               </Label>
               <Input
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+
+                  if (fullNameRegex.test(value)) {
+                    setFullName(value.replace(/\s{2,}/g, " "));
+                  }
+                }}
                 placeholder="John Doe"
                 className="w-full h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
               />
@@ -247,8 +276,14 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
               </Label>
               <Input
                 value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="+251 9xxxxxxx"
+                onChange={(e) => {
+                  const value = e.target.value;
+
+                  if (phoneRegex.test(value)) {
+                    setPhoneNumber(value);
+                  }
+                }}
+                placeholder="+2519xxxxxxx"
                 className="w-full h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
               />
             </div>
@@ -267,66 +302,52 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
             {/* ROLE */}
             {/* ROLE MULTI SELECT */}
 
-            <div className="w-full space-y-2">
+            <div className="w-full space-y-2 relative">
               <Label className="text-sm font-medium text-[#094C81]">
                 Role <span className="text-red-500">*</span>
               </Label>
-              <Select
-                value="multi" // dummy value to prevent Radix from overriding
-                onValueChange={(value) => {
-                  setSelectedRoles(
-                    (prev) =>
-                      prev.includes(value)
-                        ? prev.filter((id) => id !== value) // unselect
-                        : [...prev, value] // select
-                  );
-                }}
-              >
-                <SelectTrigger className="w-full h-12 border p-2 rounded mt-1 text-[#094C81]">
-                  <div className="flex items-center justify-between w-full">
-                    <SelectValue asChild>
-                      <span>
-                        {selectedRoles.length === 0
-                          ? "Select Role"
-                          : `${selectedRoles.length} role${
-                              selectedRoles.length > 1 ? "s" : ""
-                            } selected`}
-                      </span>
-                    </SelectValue>
-                    {selectedRoles.length > 0 && (
-                      <span className="text-xs bg-[#094C81] text-white rounded-full w-5 h-5 flex items-center justify-center">
-                        {selectedRoles.length}
-                      </span>
-                    )}
-                  </div>
-                </SelectTrigger>
 
-                <SelectContent className="text-[#094C81] bg-white max-h-64 overflow-y-auto">
-                  {roles.map((r: any) => {
+              <div
+                className="border rounded h-12 px-4 flex items-center justify-between cursor-pointer"
+                onClick={() => setOpen((prev) => !prev)}
+              >
+                <span className="text-sm text-[#094C81]">
+                  {selectedRoles.length === 0
+                    ? "Select Role"
+                    : `${selectedRoles.length} role${
+                        selectedRoles.length > 1 ? "s" : ""
+                      } selected`}
+                </span>
+                <span className="text-[#094C81]">{open ? "▲" : "▼"}</span>
+              </div>
+
+              {open && (
+                <div className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto bg-white border rounded shadow-lg">
+                  {roles.map((r) => {
                     const isSelected = selectedRoles.includes(r.role_id);
                     return (
-                      <SelectItem
+                      <div
                         key={r.role_id}
-                        value={r.role_id}
-                        className="relative pr-8 cursor-pointer"
-                        onPointerDown={(e) => e.preventDefault()} // ✅ keep dropdown open
+                        className={`flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-[#094C81]/10 ${
+                          isSelected ? "bg-[#094C81]/10" : ""
+                        }`}
+                        onClick={() =>
+                          setSelectedRoles((prev) =>
+                            prev.includes(r.role_id)
+                              ? prev.filter((id) => id !== r.role_id)
+                              : [...prev, r.role_id]
+                          )
+                        }
                       >
-                        <span className="block truncate">{r.name}</span>
-
-                        <div
-                          className={`absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 border-2 rounded flex items-center justify-center transition-all duration-200 ${
-                            isSelected
-                              ? "bg-[#094C81] border-[#094C81] text-white"
-                              : "border-gray-300 bg-white"
-                          }`}
-                        >
-                          {isSelected && <Check className="w-3 h-3 stroke-3" />}
-                        </div>
-                      </SelectItem>
+                        <span className="text-[#094C81]">{r.name}</span>
+                        {isSelected && (
+                          <Check className="w-4 h-4 text-[#094C81]" />
+                        )}
+                      </div>
                     );
                   })}
-                </SelectContent>
-              </Select>
+                </div>
+              )}
             </div>
           </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Plus, Edit, Trash2, Eye } from "lucide-react";
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
@@ -12,12 +12,16 @@ import {
   useGetProjectMetricsQuery,
 } from "../../../redux/services/projectMetricApi";
 import { CreateProjectMetricModal } from "../../modals/CreateProjectMetricModal";
+import { useGlobalSearch } from "../../../context/GlobalSearchContext";
 
 export default function ProjectMetricsList() {
+  const { search } = useGlobalSearch();
+
   const [response, setResponse] = useState<any[]>([]);
   const [filteredResponse, setFilteredResponse] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isModalOpen, setModalOpen] = useState(false);
+  const [editingMetric, setEditingMetric] = useState<any>(undefined);
   const [pageDetail, setPageDetail] = useState({
     pageIndex: 0,
     pageCount: 1,
@@ -27,6 +31,43 @@ export default function ProjectMetricsList() {
     useDeleteProjectMetricMutation();
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteMetricId, setDeleteMetricId] = useState<string>("");
+
+  const { data, isLoading, isError } = useGetProjectMetricsQuery({});
+
+  useEffect(() => {
+    if (!isError && !isLoading && data) {
+      setResponse(
+        data.map((m: any) => ({
+          ...m,
+          projects: m.projects || [],
+          users: m.users || [],
+        }))
+      );
+    }
+  }, [data, isError, isLoading]);
+
+  // Filter + Global search
+  const filteredMetrics = useMemo(() => {
+    return response.filter((item) => {
+      if (statusFilter === "ACTIVE" && !item.is_active) return false;
+      if (statusFilter === "INACTIVE" && item.is_active) return false;
+      if (!search) return true;
+      const q = search.toLowerCase();
+      return (
+        item.name?.toLowerCase().includes(q) ||
+        item.description?.toLowerCase().includes(q)
+      );
+    });
+  }, [response, statusFilter, search]);
+
+  useEffect(() => {
+    setFilteredResponse(filteredMetrics);
+    setPageDetail((prev) => ({ ...prev, pageIndex: 0 }));
+  }, [filteredMetrics]);
+
+  const handlePagination = (index: number, size: number) => {
+    setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
+  };
 
   // --- Table columns ---
   const metricColumns = [
@@ -47,28 +88,21 @@ export default function ProjectMetricsList() {
       header: "Description",
       cell: ({ row }: any) => <div>{row.getValue("description") || "N/A"}</div>,
     },
-
     {
       id: "actions",
       header: "Actions",
       cell: ({ row }: any) => {
         const metric = row.original;
-
         return (
-          <div className="flex items-center  space-x-2">
+          <div className="flex items-center space-x-2">
             <Button
               variant="outline"
               size="sm"
               className="h-8 w-8 p-0"
-              // onClick={() => openViewModal(metric)}
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 w-8 p-0"
-              // onClick={() => openEditModal(metric)}
+              onClick={() => {
+                setEditingMetric(metric);
+                setModalOpen(true);
+              }}
             >
               <Edit className="h-4 w-4" />
             </Button>
@@ -77,8 +111,8 @@ export default function ProjectMetricsList() {
               size="sm"
               className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
               onClick={() => {
-                setDeleteModalOpen(true);
                 setDeleteMetricId(metric.project_metric_id);
+                setDeleteModalOpen(true);
               }}
             >
               <Trash2 className="h-4 w-4" />
@@ -89,73 +123,22 @@ export default function ProjectMetricsList() {
     },
   ];
 
-  const { data, isLoading, isError } = useGetProjectMetricsQuery({});
-
   const actions: ActionButton[] = [
     {
-      label: "Create ",
-      icon: <Plus className="h-4 w-4" />,
+      label: "Create",
+      icon: <Plus />,
       variant: "default",
       size: "default",
-      onClick: () => setModalOpen(true),
-    },
-  ];
-
-  const filterFields: FilterField[] = [
-    {
-      key: "status",
-      label: "Status",
-      type: "multiselect",
-      options: [
-        { label: "Active", value: "ACTIVE" },
-        { label: "Inactive", value: "INACTIVE" },
-      ],
-      value: statusFilter,
-      onChange: (value: string | string[]) => {
-        setStatusFilter(Array.isArray(value) ? value[0] : value);
-        setPageDetail({ ...pageDetail, pageIndex: 0 });
+      onClick: () => {
+        setEditingMetric(undefined);
+        setModalOpen(true);
       },
     },
   ];
 
-  useEffect(() => {
-    if (!isError && !isLoading && data) {
-      // Map API response to ensure projects and users arrays exist
-      const mapped = (data || []).map((metric: any) => ({
-        ...metric,
-        projects: metric.projects || [],
-        users: metric.users || [],
-      }));
-      setResponse(mapped);
-      setFilteredResponse(mapped);
-    }
-  }, [data, isError, isLoading]);
-
-  useEffect(() => {
-    const filtered = response.filter((item) => {
-      if (!statusFilter || statusFilter === "all") return true;
-      if (statusFilter === "ACTIVE") return item.is_active;
-      if (statusFilter === "INACTIVE") return !item.is_active;
-      return true;
-    });
-    setFilteredResponse(filtered);
-  }, [response, statusFilter]);
-
-  const handlePagination = (index: number, size: number) => {
-    setPageDetail({
-      ...pageDetail,
-      pageIndex: index,
-      pageSize: size,
-    });
-  };
-
   return (
     <>
-      <PageLayout
-        filters={filterFields}
-        filterColumnsPerRow={1}
-        actions={actions}
-      >
+      <PageLayout filters={[]} filterColumnsPerRow={1} actions={actions}>
         <DataTable
           columns={metricColumns}
           data={filteredResponse}
@@ -169,6 +152,7 @@ export default function ProjectMetricsList() {
       <CreateProjectMetricModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
+        editingMetric={editingMetric}
       />
 
       <DeleteModal
