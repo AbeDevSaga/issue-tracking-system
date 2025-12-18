@@ -72,8 +72,7 @@ export default function ChangePasswordPage() {
 
     setLoading(true);
     try {
-      const API_BASE_URL =
-        process.env.REACT_APP_API_URL || "http://localhost:4000";
+      const API_BASE_URL =process.env.VITE_API_URL||'http://196.188.240.103:4038';
       const token = localStorage.getItem("authToken");
 
       const res = await fetch(`${API_BASE_URL}/api/users/change-password`, {

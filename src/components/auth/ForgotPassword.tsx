@@ -232,20 +232,20 @@ export default function ForgotPassword() {
       }
     }
   };
-
-  // Request OTP via SMS or Email reset link
+// ===================== Request Reset =====================
   const handleRequestReset = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validate input
     if (method === "phone") {
       const cleanPhone = cleanPhoneNumber(phoneNumber);
       if (!validateEthiopianPhoneNumber(cleanPhone)) {
         toast.error("Please enter a valid Ethiopian phone number");
         return;
       }
-    } else if (method === "email") {
+    } else {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
+      if (!emailRegex.test(email.trim())) {
         toast.error("Please enter a valid email address");
         return;
       }
@@ -253,17 +253,17 @@ export default function ForgotPassword() {
 
     setLoading(true);
     try {
-      const API_BASE_URL =
-        process.env.REACT_APP_API_URL || "http://localhost:4000";
+      const API_BASE_URL = import.meta.env.VITE_API_URL;
+
       let endpoint = "";
-      let payload = {};
+      let payload: Record<string, string> = {};
 
       if (method === "phone") {
-        endpoint = "/api/auth/password-reset/sms/request";
+        endpoint = "/auth/password-reset/sms/request";
         payload = { phoneNumber: cleanPhoneNumber(phoneNumber) };
-      } else if (method === "email") {
-        endpoint = "/api/auth/password-reset/email/request";
-        payload = { email };
+      } else {
+        endpoint = "/auth/password-reset/email/request";
+        payload = { email: email.trim() };
       }
 
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -279,18 +279,16 @@ export default function ForgotPassword() {
           toast.success("OTP sent to your phone");
           setStep(3);
           setCountdown(60);
-
-          // For development - show OTP in console and toast
           if (data.otp) {
             console.log("Development OTP:", data.otp);
             toast.info(`Development OTP: ${data.otp}`);
           }
-        } else if (method === "email") {
+        } else {
           toast.success("Password reset link sent to your email");
-          setStep(3); // Show email sent confirmation
+          setStep(3);
         }
       } else {
-        toast.error(data.message);
+        toast.error(data.message || "Failed to send reset instructions");
       }
     } catch (error) {
       console.error("Request reset error:", error);
@@ -300,11 +298,10 @@ export default function ForgotPassword() {
     }
   };
 
-  // Verify OTP (phone only)
+  // ===================== Verify OTP =====================
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     const otpString = otp.join("");
-
     if (otpString.length !== 6) {
       toast.error("Please enter the complete 6-digit OTP");
       return;
@@ -312,12 +309,11 @@ export default function ForgotPassword() {
 
     setLoading(true);
     try {
-      const API_BASE_URL =
-        process.env.REACT_APP_API_URL || "http://localhost:4000";
+      const API_BASE_URL = import.meta.env.VITE_API_URL;
       const cleanPhone = cleanPhoneNumber(phoneNumber);
 
       const response = await fetch(
-        `${API_BASE_URL}/api/auth/password-reset/sms/verify`,
+        `${API_BASE_URL}/auth/password-reset/sms/verify`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -329,40 +325,32 @@ export default function ForgotPassword() {
 
       if (data.success) {
         toast.success("OTP verified successfully");
-        setStep(4); // Go to password reset for phone
+        setStep(4);
       } else {
         toast.error(data.message);
-        // Clear OTP on failure
         setOtp(["", "", "", "", "", ""]);
-        setTimeout(() => {
-          otpRefs.current[0]?.focus();
-        }, 10);
+        setTimeout(() => otpRefs.current[0]?.focus(), 10);
       }
     } catch (error) {
       console.error("Verify OTP error:", error);
       toast.error("Failed to verify OTP");
-      // Clear OTP on error
       setOtp(["", "", "", "", "", ""]);
-      setTimeout(() => {
-        otpRefs.current[0]?.focus();
-      }, 10);
+      setTimeout(() => otpRefs.current[0]?.focus(), 10);
     } finally {
       setLoading(false);
     }
   };
 
-  // Resend OTP (phone only)
+  // ===================== Resend OTP =====================
   const handleResendOTP = async () => {
     if (countdown > 0) return;
-
     setLoading(true);
     try {
-      const API_BASE_URL =
-        process.env.REACT_APP_API_URL || "http://localhost:4000";
+      const API_BASE_URL = import.meta.env.VITE_API_URL;
       const cleanPhone = cleanPhoneNumber(phoneNumber);
 
       const response = await fetch(
-        `${API_BASE_URL}/api/auth/password-reset/sms/request`,
+        `${API_BASE_URL}/auth/password-reset/sms/request`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -375,11 +363,8 @@ export default function ForgotPassword() {
       if (data.success) {
         toast.success("OTP sent successfully");
         setCountdown(60);
-        // Clear previous OTP
         setOtp(["", "", "", "", "", ""]);
-        setTimeout(() => {
-          otpRefs.current[0]?.focus();
-        }, 10);
+        setTimeout(() => otpRefs.current[0]?.focus(), 10);
 
         if (data.otp) {
           console.log("Development OTP:", data.otp);
@@ -395,9 +380,10 @@ export default function ForgotPassword() {
     }
   };
 
-  // Reset Password (phone only)
+  // ===================== Reset Password =====================
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (newPassword !== confirmPassword) {
       toast.error("Passwords don't match");
       return;
@@ -409,20 +395,16 @@ export default function ForgotPassword() {
 
     setLoading(true);
     try {
-      const API_BASE_URL =
-        process.env.REACT_APP_API_URL || "http://localhost:4000";
+      const API_BASE_URL = import.meta.env.VITE_API_URL;
       const otpString = otp.join("");
+      const cleanPhone = cleanPhoneNumber(phoneNumber);
 
       const response = await fetch(
-        `${API_BASE_URL}/api/auth/password-reset/sms/reset`,
+        `${API_BASE_URL}/auth/password-reset/sms/reset`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            phoneNumber: cleanPhoneNumber(phoneNumber),
-            otp: otpString,
-            newPassword,
-          }),
+          body: JSON.stringify({ phoneNumber: cleanPhone, otp: otpString, newPassword }),
         }
       );
 
