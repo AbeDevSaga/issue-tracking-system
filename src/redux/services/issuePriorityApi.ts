@@ -17,7 +17,8 @@ export interface CreateIssuePriorityDto {
   name: string;
   description?: string;
   color_value: string;
-  response_time_id: string;
+  response_duration: number;
+  response_unit: string | "hour" | "day" | "month";
   is_active?: boolean;
 }
 

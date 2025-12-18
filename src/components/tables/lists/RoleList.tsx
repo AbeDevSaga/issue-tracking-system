@@ -13,7 +13,6 @@ import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
-import DetailHeader from "../../common/DetailHeader";
 
 const RoleTableColumns = (handleDelete: (id: string) => void) => [
   {

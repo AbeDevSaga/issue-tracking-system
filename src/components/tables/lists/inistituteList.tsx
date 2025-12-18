@@ -13,12 +13,22 @@ import { CreateInstituteModal } from "../../modals/CreateInstituteModal";
 
 // --- Define table columns ---
 const InstituteTableColumns = [
+  // {
+  //   accessorKey: "name",
+  //   header: "Organization Name",
+  //   cell: ({ row }: any) => (
+  //     <div className="font-medium text-blue-600">{row.getValue("name")}</div>
+  //   ),
+  // },
   {
     accessorKey: "name",
     header: "Organization Name",
-    cell: ({ row }: any) => (
-      <div className="font-medium text-blue-600">{row.getValue("name")}</div>
-    ),
+    cell: ({ row }: any) => {
+      const nameObj = row.getValue("name"); // This is your JSON: { en: "CRRSA Organization" }
+      return (
+        <div className="font-medium text-blue-600">{nameObj?.en || ""}</div>
+      );
+    },
   },
   // {
   //   accessorKey: "description",

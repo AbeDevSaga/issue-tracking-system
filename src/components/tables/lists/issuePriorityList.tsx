@@ -13,7 +13,6 @@ import {
 import { CreatePriorityModal } from "../../modals/CreatePriorityModal";
 import DeleteModal from "../../common/DeleteModal";
 
-
 export default function IssuePriorityList() {
   const [response, setResponse] = useState<any[]>([]);
   const [filteredResponse, setFilteredResponse] = useState<any[]>([]);
@@ -24,73 +23,84 @@ export default function IssuePriorityList() {
     pageCount: 1,
     pageSize: 10,
   });
-  const [deletePriority,{isLoading: isDeleteLoading}] = useDeleteIssuePriorityMutation();
+  const [deletePriority, { isLoading: isDeleteLoading }] =
+    useDeleteIssuePriorityMutation();
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletePriorityId, setDeletePriorityId] = useState<string>("");
-// --- Define table columns ---
-const PriorityTableColumns = [
-  {
-    accessorKey: "name",
-    header: "Priority Name",
-    cell: ({ row }: any) => (
-      <div className="font-medium text-blue-600">{row.getValue("name")}</div>
-    ),
-  },
-  {
-    accessorKey: "description",
-    header: "Description",
-    cell: ({ row }: any) => <div>{row.getValue("description") || "N/A"}</div>,
-  },
-  {
-    accessorKey: "response_time",
-    header: "Response Time",
-    cell: ({ row }: any) => <div>{row.getValue("response_time") || "N/A"}</div>,
-  },
-  {
-    id: "actions",
-    header: "Actions",
-    cell: ({ row }: any) => {
-      const priority = row.original;
-
-      return (
-        <div className="flex items-center space-x-2">
-          {/* show button to view priority */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 w-8 p-0"
-            // onClick={() => openViewModal(priority)}
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
-          {/* Edit button - can implement edit modal if needed */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 w-8 p-0"
-            // onClick={() => openEditModal(priority)}
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-            onClick={() => {
-              setDeleteModalOpen(true);
-              setDeletePriorityId(priority.priority_id);
-              console.log("deletePriorityId", deletePriorityId);
-            }}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-
-        </div>
-      );
+  // --- Define table columns ---
+  const PriorityTableColumns = [
+    {
+      accessorKey: "name",
+      header: "Priority Name",
+      cell: ({ row }: any) => (
+        <div className="font-medium text-blue-600">{row.getValue("name")}</div>
+      ),
     },
-  },
-];
+    {
+      accessorKey: "description",
+      header: "Description",
+      cell: ({ row }: any) => <div>{row.getValue("description") || "N/A"}</div>,
+    },
+    {
+      accessorKey: "response_time",
+      header: "Response Time",
+      cell: ({ row }: any) => {
+        const duration = row.original.response_duration;
+        const unit = row.original.response_unit;
+
+        if (!duration || !unit) return "N/A";
+
+        // pluralize if needed
+        const formattedUnit = duration > 1 ? `${unit}s` : unit;
+
+        return `${duration} ${formattedUnit}`;
+      },
+    },
+
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }: any) => {
+        const priority = row.original;
+
+        return (
+          <div className="flex items-center space-x-2">
+            {/* show button to view priority */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 w-8 p-0"
+              // onClick={() => openViewModal(priority)}
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+            {/* Edit button - can implement edit modal if needed */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 w-8 p-0"
+              // onClick={() => openEditModal(priority)}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+              onClick={() => {
+                setDeleteModalOpen(true);
+                setDeletePriorityId(priority.priority_id);
+                console.log("deletePriorityId", deletePriorityId);
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        );
+      },
+    },
+  ];
   const { data, isLoading, isError } = useGetIssuePrioritiesQuery();
 
   const actions: ActionButton[] = [
@@ -175,9 +185,10 @@ const PriorityTableColumns = [
       <DeleteModal
         message="Are you sure you want to delete this priority?"
         onCancel={() => setDeleteModalOpen(false)}
-        onDelete={() => {deletePriority(deletePriorityId).unwrap()
-          setDeleteModalOpen(false);}
-        }
+        onDelete={() => {
+          deletePriority(deletePriorityId).unwrap();
+          setDeleteModalOpen(false);
+        }}
         open={isDeleteModalOpen}
         isLoading={isDeleteLoading || isLoading}
       />

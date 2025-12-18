@@ -51,14 +51,7 @@ export default function Basedata() {
       icon: <FaProjectDiagram size={24} color={"#094C81"} />,
       route: "/issue_configuration",
     },
-    {
-      title: t("Response Time Management"),
-      description: t("Response Time Management", {
-        title: t("basedata.response_time"),
-      }),
-      icon: <FaFlag size={26} color={"#094C81"} />,
-      route: "/response_times",
-    },
+
     {
       title: t("basedata.priority_level_management"),
       description: t("basedata.subtitle", {

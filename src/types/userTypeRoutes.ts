@@ -76,8 +76,7 @@ export const navItems: NavItem[] = [
     name: "BaseData",
     path: "/basedata",
     allowedFor: ["internal_user"],
-    // issue_categories, issue_priorities, response_times
-    // anyPermissions: ["ISSUE_CATEGORIES:READ", "ISSUE_PRIORITIES:READ", "RESPONSE_TIMES:READ"],
+    // anyPermissions: ["ISSUE_CATEGORIES:READ", "ISSUE_PRIORITIES:READ", "ISSUE_FLOWS:READ", "HUMAN_RESOURCES:READ"],
   },
 
   {
@@ -85,6 +84,7 @@ export const navItems: NavItem[] = [
     name: "My Issue",
     path: "/my_issue",
     allowedFor: ["external_user"],
+    // permission: ["ISSUES:READ"],
   },
 
   {
@@ -92,6 +92,7 @@ export const navItems: NavItem[] = [
     name: "Task List",
     path: "/task_list",
     allowedFor: ["internal_user"],
+    // permission: ["ISSUES:READ"],
   },
 
   {
@@ -99,6 +100,7 @@ export const navItems: NavItem[] = [
     name: "Task List",
     path: "/task",
     allowedFor: ["external_user"],
+    // permission: ["ISSUES:READ"],
   },
   {
     icon: "PlugIcon",
