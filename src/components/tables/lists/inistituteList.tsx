@@ -16,10 +16,16 @@ const InstituteTableColumns = [
   {
     accessorKey: "name",
     header: "Organization Name",
-    cell: ({ row }: any) => (
-      <div className="font-medium text-blue-600">{row.getValue("name")}</div>
-    ),
+    cell: ({ row }: any) => {
+      const name = row.original?.name?.en ?? "-";
+      return (
+        <div className="font-medium text-blue-600">
+          {name}
+        </div>
+      );
+    },
   },
+  
   // {
   //   accessorKey: "description",
   //   header: "Description",

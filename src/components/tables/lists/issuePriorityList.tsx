@@ -196,7 +196,7 @@ const PriorityTableColumns = [
         message="Are you sure you want to delete this priority?"
         onCancel={() => setDeleteModalOpen(false)}
         onDelete={() => {deletePriority(deletePriorityId).unwrap()
-          setDeleteModalOpen(false);}
+          setDeleteModalOpen(false)}
         }
         open={isDeleteModalOpen}
         isLoading={isDeleteLoading || isLoading}

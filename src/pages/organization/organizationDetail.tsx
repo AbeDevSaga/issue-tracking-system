@@ -21,6 +21,7 @@ import { useState } from "react";
 import DeleteModal from "../../components/common/DeleteModal";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+
 const OrganizationDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -110,10 +111,12 @@ const OrganizationDetail = () => {
         open={isOpen}
         isLoading={isDeleteLoading}
       />
+
       <PageMeta
-        title={`${organizationDetail.name} - Organization Details`}
-        description={`View details for ${organizationDetail.name}`}
+        title={`${organizationDetail?.name?.en ?? ""} - Organization Details`}
+        description={`View details for ${organizationDetail?.name?.en ?? ""}`}
       />
+
       <div className="min-h-screen bg-[#F9FBFC] p-6 pb-24">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex justify-between">
@@ -131,10 +134,9 @@ const OrganizationDetail = () => {
             </div>
           </div>
 
-          {/* Organization Info Card - Compact Design */}
+          {/* Organization Info Card */}
           <Card className="bg-white rounded-lg shadow-sm border border-[#BFD7EA] overflow-hidden">
             <CardContent className="p-4">
-              {/* Header Row - Compact */}
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
                 <div className="flex items-center gap-2.5">
                   <div className="p-2 bg-[#094C81]/10 rounded-lg">
@@ -142,7 +144,7 @@ const OrganizationDetail = () => {
                   </div>
                   <div>
                     <CardTitle className="text-[#094C81] text-lg font-semibold m-0">
-                      {organizationDetail.name}
+                      {organizationDetail?.name?.en ?? "N/A"}
                     </CardTitle>
                     {organizationDetail.description && (
                       <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">
@@ -171,20 +173,7 @@ const OrganizationDetail = () => {
                 </Badge>
               </div>
 
-              {/* Details - Horizontal Compact Layout */}
-              {/* <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-                <div className="flex items-center gap-1.5">
-                  <CalendarIcon className="h-3.5 w-3.5 text-[#1E516A]" />
-                  <span className="text-xs font-medium text-[#1E516A]">
-                    Created:
-                  </span>
-                  <span className="text-gray-600 text-sm">
-                    {formatDateShort(organizationDetail.created_at)}
-                  </span>
-                </div>
-              </div> */}
-
-              {/* Deleted At - Compact Alert */}
+              {/* Deleted At */}
               {organizationDetail.deleted_at && (
                 <div className="mt-3 pt-3 border-t border-red-200">
                   <div className="flex items-center gap-2 text-xs">

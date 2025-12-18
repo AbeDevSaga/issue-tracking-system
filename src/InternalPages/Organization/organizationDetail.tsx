@@ -18,14 +18,11 @@ import { useState } from "react";
 import DeleteModal from "../../components/common/DeleteModal";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+
 const OrganizationDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const {
-    data: organizationDetail,
-    isLoading,
-    isError,
-  } = useGetInstituteByIdQuery(id!);
+  const { data: organizationDetail, isLoading, isError } = useGetInstituteByIdQuery(id!);
   const [deleteInstitute, { isLoading: isDeleteLoading }] = useDeleteInstituteMutation();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -40,15 +37,6 @@ const OrganizationDetail = () => {
     }
   };
 
-  const formatDateShort = (dateString?: string) => {
-    if (!dateString) return "N/A";
-    try {
-      return format(new Date(dateString), "MMM dd, yyyy");
-    } catch {
-      return dateString;
-    }
-  };
-
   const formatDateWithTime = (dateString?: string) => {
     if (!dateString) return "N/A";
     try {
@@ -58,44 +46,33 @@ const OrganizationDetail = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#F9FBFC] p-6 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#094C81] mx-auto mb-4"></div>
-          <p className="text-[#1E516A] text-lg">
-            Loading organization details...
-          </p>
-        </div>
+  if (isLoading) return (
+    <div className="min-h-screen bg-[#F9FBFC] p-6 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#094C81] mx-auto mb-4"></div>
+        <p className="text-[#1E516A] text-lg">Loading organization details...</p>
       </div>
-    );
-  }
+    </div>
+  );
 
-  if (isError || !organizationDetail) {
-    return (
-      <div className="min-h-screen bg-[#F9FBFC] p-6 flex items-center justify-center">
-        <Card className="max-w-md w-full">
-          <CardContent className="pt-6 text-center">
-            <XCircleIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-[#1E516A] mb-2">
-              Organization Not Found
-            </h2>
-            <p className="text-gray-600 mb-4">
-              The organization you're looking for doesn't exist or has been
-              removed.
-            </p>
-            <Link
-              to="/organization"
-              className="inline-flex items-center gap-2 text-[#094C81] hover:text-[#073954] font-medium"
-            >
-              <ArrowLeftIcon className="h-4 w-4" />
-              Back to Organizations
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  if (isError || !organizationDetail) return (
+    <div className="min-h-screen bg-[#F9FBFC] p-6 flex items-center justify-center">
+      <Card className="max-w-md w-full">
+        <CardContent className="pt-6 text-center">
+          <XCircleIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-[#1E516A] mb-2">Organization Not Found</h2>
+          <p className="text-gray-600 mb-4">The organization you're looking for doesn't exist or has been removed.</p>
+          <Link
+            to="/organization"
+            className="inline-flex items-center gap-2 text-[#094C81] hover:text-[#073954] font-medium"
+          >
+            <ArrowLeftIcon className="h-4 w-4" />
+            Back to Organizations
+          </Link>
+        </CardContent>
+      </Card>
+    </div>
+  );
 
   return (
     <>
@@ -106,10 +83,12 @@ const OrganizationDetail = () => {
         open={isOpen}
         isLoading={isDeleteLoading}
       />
+
       <PageMeta
-        title={`${organizationDetail.name} - Organization Details`}
-        description={`View details for ${organizationDetail.name}`}
+        title={`${organizationDetail?.name?.en ?? ""} - Organization Details`}
+        description={`View details for ${organizationDetail?.name?.en ?? ""}`}
       />
+
       <div className="min-h-screen bg-[#F9FBFC] p-6 pb-24">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex justify-between">
@@ -119,15 +98,17 @@ const OrganizationDetail = () => {
                 <Edit className="h-5 w-5 text-[#094C81] hover:text-[#073954] cursor-pointer text-bold" />
               </span>
               <span>
-                <Trash2 onClick={() => setIsOpen(true)} className="h-5 w-5 text-[#B91C1C] hover:text-[#991B1B] cursor-pointer text-bold" />
-              </span> 
+                <Trash2
+                  onClick={() => setIsOpen(true)}
+                  className="h-5 w-5 text-[#B91C1C] hover:text-[#991B1B] cursor-pointer text-bold"
+                />
+              </span>
             </div>
           </div>
 
-          {/* Organization Info Card - Compact Design */}
+          {/* Organization Info Card */}
           <Card className="bg-white rounded-lg shadow-sm border border-[#BFD7EA] overflow-hidden">
             <CardContent className="p-4">
-              {/* Header Row - Compact */}
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
                 <div className="flex items-center gap-2.5">
                   <div className="p-2 bg-[#094C81]/10 rounded-lg">
@@ -135,7 +116,7 @@ const OrganizationDetail = () => {
                   </div>
                   <div>
                     <CardTitle className="text-[#094C81] text-lg font-semibold m-0">
-                      {organizationDetail.name}
+                      {organizationDetail?.name?.en ?? "N/A"}
                     </CardTitle>
                     {organizationDetail.description && (
                       <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">
@@ -164,20 +145,7 @@ const OrganizationDetail = () => {
                 </Badge>
               </div>
 
-              {/* Details - Horizontal Compact Layout */}
-              {/* <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-                <div className="flex items-center gap-1.5">
-                  <CalendarIcon className="h-3.5 w-3.5 text-[#1E516A]" />
-                  <span className="text-xs font-medium text-[#1E516A]">
-                    Created:
-                  </span>
-                  <span className="text-gray-600 text-sm">
-                    {formatDateShort(organizationDetail.created_at)}
-                  </span>
-                </div>
-              </div> */}
-
-              {/* Deleted At - Compact Alert */}
+              {/* Deleted At */}
               {organizationDetail.deleted_at && (
                 <div className="mt-3 pt-3 border-t border-red-200">
                   <div className="flex items-center gap-2 text-xs">
@@ -193,7 +161,7 @@ const OrganizationDetail = () => {
           </Card>
 
           {/* Projects Section */}
-          <ProjectList insistitute_id={id || ""} userType="internal_user"/>
+          <ProjectList insistitute_id={id || ""} userType="internal_user" />
         </div>
       </div>
     </>
