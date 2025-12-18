@@ -30,6 +30,7 @@ const baseQueryWithAuth = async (args: any, api: any, extraOptions: any) => {
     // Clear token and user on 401
     localStorage.removeItem("authToken");
     localStorage.removeItem("user");
+    window.location.replace("/login");
   }
 
   return result;

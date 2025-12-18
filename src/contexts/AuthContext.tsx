@@ -15,7 +15,9 @@ import {
   User,
 } from "../types/auth";
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined
+);
 
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
@@ -67,7 +69,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   ): Promise<AuthResponse> => {
     try {
       setError(null);
-      setLoading(true); // Set loading to true during login
+      setLoading(true);
 
       const response = await loginMutation(credentials).unwrap();
       const { token: authToken, user: userData } = response;
@@ -78,13 +80,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       localStorage.setItem("authToken", authToken);
       localStorage.setItem("user", JSON.stringify(userData));
 
+      // ⏱ AUTO LOGOUT AFTER 2 MINUTES
+      setTimeout(() => {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("user");
+        window.location.replace("/login");
+      }, 2 * 60 * 1000); // 2 minutes
+
       return response;
     } catch (err: any) {
       const message = err.data?.message || "Login failed";
       setError(message);
       throw new Error(message);
     } finally {
-      setLoading(false); // Always set loading to false
+      setLoading(false);
     }
   };
 
