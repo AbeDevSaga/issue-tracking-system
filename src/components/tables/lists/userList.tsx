@@ -143,13 +143,13 @@ export default function UserList({
               </Link>
             </Button>
 
-            <Button
+            {/* <Button
               size="sm"
               variant="outline"
               onClick={() => setEditingUser(u)}
             >
               <Edit className="h-4 w-4" />
-            </Button>
+            </Button> */}
 
             <Button
               size="sm"
