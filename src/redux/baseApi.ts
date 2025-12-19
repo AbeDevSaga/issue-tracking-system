@@ -1,6 +1,7 @@
 // src/redux/baseApi.ts
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 const API_BASE_URL = import.meta.env.VITE_API_PUBLIC_BASE_URL;
 type RefreshResponse = {
   accessToken: string;

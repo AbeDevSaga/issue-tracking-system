@@ -68,88 +68,84 @@ export default function ResetPasswordPage() {
         return;
       }
 
-      try {
-        const API_BASE_URL =
-          process.env.REACT_APP_API_URL || "http://localhost:4000";
-        const response = await fetch(
-          `${API_BASE_URL}/api/auth/password-reset/email/validate?token=${token}&email=${encodeURIComponent(
-            email
-          )}`
-        );
+     try {
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-        const data = await response.json();
+  const response = await fetch(
+    `${API_BASE_URL}/auth/password-reset/email/validate?token=${token}&email=${encodeURIComponent(email)}`
+  );
 
-        if (data.success && data.valid) {
-          setTokenValid(true);
-        } else {
-          setTokenValid(false);
-          toast.error("Invalid or expired reset link");
-        }
-      } catch (error) {
-        console.error("Token validation error:", error);
-        setTokenValid(false);
-        toast.error("Error validating reset link");
-      } finally {
-        setValidating(false);
-      }
+  const data = await response.json();
+
+  if (data.success && data.valid) {
+    setTokenValid(true);
+  } else {
+    setTokenValid(false);
+    toast.error("Invalid or expired reset link");
+  }
+} catch (error) {
+  console.error("Token validation error:", error);
+  setTokenValid(false);
+  toast.error("Error validating reset link");
+} finally {
+  setValidating(false);
+}
     };
 
     validateToken();
   }, [token, email]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (newPassword !== confirmPassword) {
-      toast.error("Passwords don't match");
-      return;
-    }
+  if (newPassword !== confirmPassword) {
+    toast.error("Passwords don't match");
+    return;
+  }
 
-    // Final backend-side validation
-    if (
-      !passwordRules.length ||
-      !passwordRules.uppercase ||
-      !passwordRules.lowercase ||
-      !passwordRules.number ||
-      !passwordRules.special
-    ) {
-      toast.error("Password does not meet requirements");
-      return;
-    }
+  if (
+    !passwordRules.length ||
+    !passwordRules.uppercase ||
+    !passwordRules.lowercase ||
+    !passwordRules.number ||
+    !passwordRules.special
+  ) {
+    toast.error("Password does not meet requirements");
+    return;
+  }
 
-    setLoading(true);
-    try {
-      const API_BASE_URL =
-        process.env.REACT_APP_API_URL || "http://localhost:4000";
+  setLoading(true);
+  try {
+    const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/auth/password-reset/email/reset`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            token,
-            email,
-            newPassword,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (data.success) {
-        toast.success("Password reset successfully!");
-        setTimeout(() => navigate("/login"), 2000);
-      } else {
-        toast.error(data.message);
+    const response = await fetch(
+      `${API_BASE_URL}/auth/password-reset/email/reset`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token,
+          email,
+          newPassword,
+        }),
       }
-    } catch (error) {
-      console.error("Reset password error:", error);
-      toast.error("Failed to reset password");
-    } finally {
-      setLoading(false);
+    );
+
+    const data = await response.json();
+
+    if (data.success) {
+      toast.success("Password reset successfully!");
+      setTimeout(() => navigate("/login"), 2000);
+    } else {
+      toast.error(data.message);
     }
-  };
+  } catch (error) {
+    console.error("Reset password error:", error);
+    toast.error("Failed to reset password");
+  } finally {
+    setLoading(false);
+  }
+};
 
   // LOADING PAGE
   if (validating) {
