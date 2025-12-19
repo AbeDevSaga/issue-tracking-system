@@ -24,6 +24,8 @@ import DeleteModal from "../../components/common/DeleteModal";
 import ProjectUserList from "../../components/tables/lists/projectUserList";
 import { ActionButton } from "../../types/layout";
 import HierarchyNodeList from "../../components/tables/lists/hierarchyNodeList";
+import { useUpdateProjectMutation } from "../../redux/services/projectApi";
+import { useEffect } from "react";
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
@@ -35,6 +37,24 @@ export default function ProjectDetail() {
   const [activeTab, setActiveTab] = useState<"hierarchy" | "users">(
     "hierarchy"
   );
+  const [isEditOpen, setIsEditOpen] = useState(false);
+
+  const [updateProject, { isLoading: isUpdating }] = useUpdateProjectMutation();
+
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    is_active: true,
+  });
+  useEffect(() => {
+    if (project) {
+      setFormData({
+        name: project.name || "",
+        description: project.description || "",
+        is_active: project.is_active ?? true,
+      });
+    }
+  }, [project]);
 
   const actions: ActionButton[] = [
     {
@@ -52,6 +72,19 @@ export default function ProjectDetail() {
       onClick: () => setActiveTab("users"),
     },
   ];
+  const handleUpdate = async () => {
+    try {
+      await updateProject({
+        id: project.project_id,
+        data: formData,
+      }).unwrap();
+
+      toast.success("Project updated successfully");
+      setIsEditOpen(false);
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to update project");
+    }
+  };
 
   const handleDelete = async () => {
     try {
@@ -141,7 +174,10 @@ export default function ProjectDetail() {
             />
             <div className="flex justify-center items-end gap-4">
               <span>
-                <Edit className="h-5 w-5 text-[#094C81] hover:text-[#073954] cursor-pointer text-bold" />
+                <Edit
+                  onClick={() => setIsEditOpen(true)}
+                  className="h-5 w-5 text-[#094C81] hover:text-[#073954] cursor-pointer"
+                />
               </span>
               <span>
                 <Trash2
@@ -205,17 +241,7 @@ export default function ProjectDetail() {
                     </span>
                   </div>
                 )}
-                {/* {project.created_at && (
-                  <div className="flex items-center gap-1.5">
-                    <CalendarIcon className="h-3.5 w-3.5 text-[#1E516A]" />
-                    <span className="text-xs font-medium text-[#1E516A]">
-                      Created:
-                    </span>
-                    <span className="text-gray-600 text-sm">
-                      {formatDateShort(project.created_at)}
-                    </span>
-                  </div>
-                )} */}
+
                 {project && (
                   <div className="flex items-center gap-1.5">
                     <CalendarIcon className="h-3.5 w-3.5 text-[#1E516A]" />
@@ -263,6 +289,87 @@ export default function ProjectDetail() {
           )}
         </div>
       </div>
+      {isEditOpen && (
+        <div
+          className="
+      fixed inset-0 z-[9999]
+      flex items-center justify-center
+      bg-black/40
+      pointer-events-auto
+    "
+        >
+          <div
+            className="
+        bg-white
+        w-full max-w-md
+        rounded-lg shadow-xl
+        relative
+        z-[10000]
+      "
+          >
+            <div className="p-6 space-y-4">
+              <h3 className="text-lg font-semibold text-[#094C81]">
+                Edit Project
+              </h3>
+
+              <div>
+                <label className="text-sm font-medium">Name</label>
+                <input
+                  className="w-full border rounded px-3 py-2 mt-1"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Description</label>
+                <textarea
+                  className="w-full border rounded px-3 py-2 mt-1"
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      description: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={formData.is_active}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      is_active: e.target.checked,
+                    })
+                  }
+                />
+                <span className="text-sm">Active</span>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  onClick={() => setIsEditOpen(false)}
+                  className="px-4 py-2 border rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUpdate}
+                  disabled={isUpdating}
+                  className="px-4 py-2 bg-[#094C81] text-white rounded"
+                >
+                  {isUpdating ? "Saving..." : "Save"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

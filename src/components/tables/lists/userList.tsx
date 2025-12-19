@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Eye, Trash2 } from "lucide-react";
+import { Plus, Eye, Trash2, Edit } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -44,6 +44,7 @@ export default function UserList({
 
   const [statusFilter, setStatusFilter] = useState("all");
   const [isModalOpen, setModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
 
   const [pageDetail, setPageDetail] = useState({
     pageIndex: 0,
@@ -61,7 +62,9 @@ export default function UserList({
     is_active: statusFilter === "all" ? undefined : statusFilter === "active",
   });
 
-  // ✅ sync page count
+  const [deleteUser] = useDeleteUserMutation();
+
+  // Sync page count from API
   useEffect(() => {
     if (data?.meta?.pageCount) {
       setPageDetail((prev) => ({
@@ -71,11 +74,23 @@ export default function UserList({
     }
   }, [data]);
 
+  // Reset page index on global search
+  useEffect(() => {
+    setPageDetail((p) => ({ ...p, pageIndex: 0 }));
+  }, [search, statusFilter]);
+
   const handlePagination = (pageIndex: number, pageSize: number) => {
     setPageDetail({ ...pageDetail, pageIndex, pageSize });
   };
 
-  const [deleteUser] = useDeleteUserMutation();
+  const handleDelete = async (userId: string) => {
+    try {
+      await deleteUser(userId).unwrap();
+      toast.success("User deleted successfully");
+    } catch (err) {
+      toast.error("Failed to delete user");
+    }
+  };
 
   // ================= TABLE COLUMNS =================
   const UserTableColumns = [
@@ -92,22 +107,13 @@ export default function UserList({
         </span>
       ),
     },
-    {
-      accessorKey: "email",
-      header: "Email",
-    },
-    {
-      accessorKey: "phone_number",
-      header: "Phone Number",
-    },
-
-    // ✅ CONDITIONAL COLUMN (KEPT)
+    { accessorKey: "email", header: "Email" },
+    { accessorKey: "phone_number", header: "Phone Number" },
     logged_user_type !== "external_user" &&
       user_type === "external_user" && {
         header: "Institute",
         cell: ({ row }: any) => row.original.institute?.name || "N/A",
       },
-
     {
       accessorKey: "is_active",
       header: "Status",
@@ -129,15 +135,6 @@ export default function UserList({
       cell: ({ row }: any) => {
         const u = row.original as User;
 
-        const handleDelete = async () => {
-          try {
-            await deleteUser(u.user_id).unwrap();
-            toast.success("User deleted successfully");
-          } catch {
-            toast.error("Failed to delete user");
-          }
-        };
-
         return (
           <div className="flex gap-2">
             <Button size="sm" variant="outline" asChild>
@@ -146,17 +143,22 @@ export default function UserList({
               </Link>
             </Button>
 
-            {/* delete kept */}
-            {/* 
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setEditingUser(u)}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+
             <Button
               size="sm"
               variant="outline"
               className="text-red-600"
-              onClick={handleDelete}
+              onClick={() => handleDelete(u.user_id)}
             >
               <Trash2 className="h-4 w-4" />
-            </Button> 
-            */}
+            </Button>
           </div>
         );
       },
@@ -176,20 +178,16 @@ export default function UserList({
       value: statusFilter,
       onChange: (val) => {
         setStatusFilter(Array.isArray(val) ? val[0] : val);
-        setPageDetail((p) => ({ ...p, pageIndex: 0 }));
       },
     },
   ];
 
-  const buttonLabel = toggleActions
-    ? user_type === "internal_user"
-      ? "Create Internal User"
-      : "Create External User"
-    : "Create User";
-
   const actions: ActionButton[] = [
     {
-      label: buttonLabel,
+      label:
+        user_type === "internal_user"
+          ? "Create Internal User"
+          : "Create External User",
       icon: <Plus className="h-4 w-4" />,
       onClick: () => setModalOpen(true),
     },
@@ -210,17 +208,23 @@ export default function UserList({
           tablePageSize={pageDetail.pageSize}
           totalPageCount={pageDetail.pageCount}
           currentIndex={pageDetail.pageIndex}
+          totalRecords={data?.meta?.total || 0}
           loading={isLoading}
         />
       </PageLayout>
 
+      {/* Create / Edit Modal */}
       <CreateUserModal
         logged_user_type={logged_user_type || ""}
         user_type={user_type || "internal_user"}
         user_type_id={user_type_id || ""}
         inistitute_id={inistitute_id || ""}
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
+        existingUser={editingUser || undefined}
+        isOpen={isModalOpen || !!editingUser}
+        onClose={() => {
+          setModalOpen(false);
+          setEditingUser(null);
+        }}
       />
     </>
   );

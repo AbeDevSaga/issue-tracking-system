@@ -11,9 +11,9 @@ import {
   AuthContextType,
   AuthResponse,
   LoginCredentials,
-  RegisterData,
   User,
 } from "../types/auth";
+import { useIdleLogout } from "../hooks/useIdleLogout";
 
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
@@ -30,40 +30,33 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [loginMutation] = useLoginMutation();
   const [logoutMutation] = useLogoutMutation();
 
-  // src/contexts/AuthContext.tsx (updated useEffect)
+  // ✅ Idle logout handles inactivity
+  useIdleLogout(token);
+
+  // 🔁 Restore session
   useEffect(() => {
-    const restoreSession = async () => {
-      try {
-        const storedToken = localStorage.getItem("authToken");
-        const storedUser = localStorage.getItem("user");
+    try {
+      const storedToken = localStorage.getItem("authToken");
+      const storedUser = localStorage.getItem("user");
 
-        if (storedToken && storedUser) {
-          // Optional: You can validate the token here with an API call
-          setToken(storedToken);
-          setUser(JSON.parse(storedUser));
-          console.log("Auth restored");
-        }
-      } catch (error) {
-        console.error("Failed to restore session:", error);
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("user");
-      } finally {
-        setLoading(false);
+      if (storedToken && storedUser) {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
       }
-    };
-
-    restoreSession();
+    } catch {
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("user");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // LOGIN
-  // src/contexts/AuthContext.tsx
-  // In the login function, add setLoading to prevent race conditions:
   const login = async (
     credentials: LoginCredentials
   ): Promise<AuthResponse> => {
@@ -72,20 +65,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       setLoading(true);
 
       const response = await loginMutation(credentials).unwrap();
-      const { token: authToken, user: userData } = response;
+      setUser(response.user);
+      setToken(response.token);
 
-      setUser(userData);
-      setToken(authToken);
-
-      localStorage.setItem("authToken", authToken);
-      localStorage.setItem("user", JSON.stringify(userData));
-
-      // ⏱ AUTO LOGOUT AFTER 2 MINUTES
-      setTimeout(() => {
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("user");
-        window.location.replace("/login");
-      }, 2 * 60 * 1000); // 2 minutes
+      localStorage.setItem("authToken", response.token);
+      localStorage.setItem("user", JSON.stringify(response.user));
 
       return response;
     } catch (err: any) {
@@ -106,13 +90,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     setToken(null);
     localStorage.removeItem("authToken");
     localStorage.removeItem("user");
-  };
-
-  const updateProfile = async (profileData: Partial<User>): Promise<User> => {
-    const updated = { ...user, ...profileData } as User;
-    setUser(updated);
-    localStorage.setItem("user", JSON.stringify(updated));
-    return updated;
+    window.location.replace("/login");
   };
 
   const value: AuthContextType = {
@@ -121,26 +99,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     loading,
     error,
     login,
-    register: async () => {
-      throw new Error("Not implemented");
-    },
     logout,
-    updateProfile,
-    changePassword: async () => {
-      throw new Error("Not implemented");
-    },
     clearError: () => setError(null),
     isAuthenticated: !!user && !!token,
     hasPermission: () => false,
     hasAnyPermission: () => false,
     hasAllPermissions: () => false,
     hasRole: () => false,
+    updateProfile: async () => {
+      throw new Error("Not implemented");
+    },
+    register: async () => {
+      throw new Error("Not implemented");
+    },
+    changePassword: async () => {
+      throw new Error("Not implemented");
+    },
   };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#269A99] border-r-transparent"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#269A99] border-r-transparent" />
       </div>
     );
   }

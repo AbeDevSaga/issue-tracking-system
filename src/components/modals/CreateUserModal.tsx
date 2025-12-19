@@ -66,6 +66,8 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
   const [position, setPosition] = useState("");
   const [instituteId, setInstituteId] = useState<string>("");
   const [selectAll, setSelectAll] = useState(false);
+
+  const [roleSearch, setRoleSearch] = useState("");
   const fullNameRegex = /^[A-Za-z\s]*$/;
   const phoneRegex = /^[0-9+]*$/;
 
@@ -204,6 +206,10 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
   const showMetricsSelect =
     logged_user_type === "internal_user" && user_type === "internal_user";
 
+  function setOpen(arg0: (prev: any) => boolean): void {
+    throw new Error("Function not implemented.");
+  }
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
@@ -299,53 +305,70 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                 className="w-full h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
               />
             </div>
-            {/* ROLE */}
-            {/* ROLE MULTI SELECT */}
 
+            {/* ROLE MULTI SELECT */}
             <div className="w-full space-y-2 relative">
               <Label className="text-sm font-medium text-[#094C81]">
                 Role <span className="text-red-500">*</span>
               </Label>
 
+              {/* Selector box */}
               <div
-                className="border rounded h-12 px-4 flex items-center justify-between cursor-pointer"
+                className="border rounded h-12 px-4 flex items-center justify-between cursor-pointer select-none"
                 onClick={() => setOpen((prev) => !prev)}
               >
-                <span className="text-sm text-[#094C81]">
+                <span className="text-sm text-[#094C81] truncate">
                   {selectedRoles.length === 0
                     ? "Select Role"
-                    : `${selectedRoles.length} role${
-                        selectedRoles.length > 1 ? "s" : ""
-                      } selected`}
+                    : selectedRoles
+                        .map((id) => roles.find((r) => r.role_id === id)?.name)
+                        .join(", ")}
                 </span>
                 <span className="text-[#094C81]">{open ? "▲" : "▼"}</span>
               </div>
 
+              {/* Dropdown */}
               {open && (
-                <div className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto bg-white border rounded shadow-lg">
-                  {roles.map((r) => {
-                    const isSelected = selectedRoles.includes(r.role_id);
-                    return (
-                      <div
-                        key={r.role_id}
-                        className={`flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-[#094C81]/10 ${
-                          isSelected ? "bg-[#094C81]/10" : ""
-                        }`}
-                        onClick={() =>
-                          setSelectedRoles((prev) =>
-                            prev.includes(r.role_id)
-                              ? prev.filter((id) => id !== r.role_id)
-                              : [...prev, r.role_id]
-                          )
-                        }
-                      >
-                        <span className="text-[#094C81]">{r.name}</span>
-                        {isSelected && (
-                          <Check className="w-4 h-4 text-[#094C81]" />
-                        )}
-                      </div>
-                    );
-                  })}
+                <div className="absolute z-50 mt-1 w-full max-h-34 overflow-y-auto bg-white border rounded shadow-lg">
+                  {/* Search input */}
+                  <input
+                    type="text"
+                    placeholder="Search roles..."
+                    className="w-full px-3 py-2 border-b border-gray-200 text-sm focus:outline-none"
+                    value={roleSearch}
+                    onChange={(e) => setRoleSearch(e.target.value)}
+                  />
+
+                  {/* Role options */}
+                  {roles
+                    .filter((r) =>
+                      r.name.toLowerCase().includes(roleSearch.toLowerCase())
+                    )
+                    .map((r) => {
+                      const isSelected = selectedRoles.includes(r.role_id);
+                      return (
+                        <div
+                          key={r.role_id}
+                          className={`flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-[#094C81]/10 ${
+                            isSelected ? "bg-[#094C81]/10" : ""
+                          }`}
+                          onClick={() =>
+                            setSelectedRoles((prev) =>
+                              prev.includes(r.role_id)
+                                ? prev.filter((id) => id !== r.role_id)
+                                : [...prev, r.role_id]
+                            )
+                          }
+                        >
+                          <span className="text-[#094C81] truncate">
+                            {r.name}
+                          </span>
+                          {isSelected && (
+                            <Check className="w-4 h-4 text-[#094C81]" />
+                          )}
+                        </div>
+                      );
+                    })}
                 </div>
               )}
             </div>
