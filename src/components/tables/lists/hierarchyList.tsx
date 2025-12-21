@@ -150,6 +150,8 @@ export default function HierarchyList() {
         filters={filterFields}
         filterColumnsPerRow={1}
         actions={actions}
+        title="Hierarchy List"
+        description="List of all hierarchy Structures"
       >
         <DataTable
           columns={HierarchyTableColumns}

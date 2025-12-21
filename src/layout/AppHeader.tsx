@@ -7,6 +7,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { useSidebar } from "../context/SidebarContext";
 import { Globe } from "lucide-react";
+import HeaderBreadcrumb from "../components/common/HeaderBreadcrumb";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
@@ -66,6 +67,8 @@ const AppHeader: React.FC = () => {
     <header className="sticky top-0 mx-auto mt-5 w-[95%] bg-white border-gray-200 z-40 dark:border-gray-800 dark:bg-gray-900 border-b rounded-2xl">
       <div className="flex flex-col items-center justify-between grow lg:flex-row lg:px-6">
         <div className="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
+         
+          
           {/* Only show sidebar toggle for non-students when sidebar functions are available */}
           {!isStudent && toggleSidebar !== undefined && (
             <button
@@ -131,7 +134,10 @@ const AppHeader: React.FC = () => {
               />
             </svg>
           </button>
-
+ {/* Breadcrumb - Hidden on mobile, visible on desktop */}
+ <div className="hidden lg:flex flex-1 min-w-0">
+            <HeaderBreadcrumb />
+          </div>
           {/* Search Form - Hidden on mobile, visible on desktop */}
         </div>
 

@@ -14,7 +14,7 @@ const DetailHeader = ({ breadcrumbs = [], className = "" }: { breadcrumbs: Crumb
   return (
     <div className={className}>
       {/* Breadcrumb Section */}
-      <div className="flex items-center gap-2 text-sm text-gray-600 mb-5">
+      {/* <div className="flex items-center gap-2 text-sm text-gray-600 mb-5">
         {breadcrumbs.map((crumb, idx) => (
           <div key={idx} className="flex items-center ">
             {crumb.link ? (
@@ -33,7 +33,7 @@ const DetailHeader = ({ breadcrumbs = [], className = "" }: { breadcrumbs: Crumb
             </span>
           </div>
         ))}
-      </div>
+      </div> */}
 
       {/* Back Button */}
       <button

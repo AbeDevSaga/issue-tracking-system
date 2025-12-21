@@ -94,6 +94,17 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
               </div>
             )}
           </div>
+          {/* Title and Description */}
+          {/* make it to left start of the page */}
+          <div className="hidden lg:flex flex-col justify-start items-start mr-auto">
+            {title && (
+              <div className="text-xl font-bold text-[#094C81]">{title}</div>
+            )}
+            {description && (
+              <div className="text-gray-500 text-sm">{description}</div>
+            )}
+          </div>
+
 
           {/* Right side - Search, Filters, and Actions */}
           <div className="flex flex-wrap items-center gap-3">

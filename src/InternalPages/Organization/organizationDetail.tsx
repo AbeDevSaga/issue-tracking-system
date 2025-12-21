@@ -5,7 +5,6 @@ import Badge from "../../components/ui/badge/Badge";
 import { format } from "date-fns";
 import {
   BuildingOfficeIcon,
-  CalendarIcon,
   CheckCircleIcon,
   XCircleIcon,
   ArrowLeftIcon,
@@ -18,6 +17,7 @@ import { useState } from "react";
 import DeleteModal from "../../components/common/DeleteModal";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useBreadcrumbTitleEffect } from "../../hooks/useBreadcrumbTitleEffect";
 const OrganizationDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -29,6 +29,8 @@ const OrganizationDetail = () => {
   const [deleteInstitute, { isLoading: isDeleteLoading }] = useDeleteInstituteMutation();
   const [isOpen, setIsOpen] = useState(false);
 
+  // breadcrumbs
+  useBreadcrumbTitleEffect(organizationDetail?.name, organizationDetail?.institute_id);
   const handleDelete = async () => {
     try {
       await deleteInstitute(id!).unwrap();

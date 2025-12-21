@@ -193,7 +193,12 @@ export default function TaskList() {
   }
 
   return (
-    <PageLayout filters={filterFields} filterColumnsPerRow={1}>
+    <PageLayout
+      filters={filterFields}
+      filterColumnsPerRow={1}
+      title="Task List"
+      description="List of all tasks"
+    >
       <DataTable
         columns={TaskTableColumns}
         data={filteredIssues}

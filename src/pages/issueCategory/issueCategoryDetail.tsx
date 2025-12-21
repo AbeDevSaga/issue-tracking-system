@@ -2,6 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useGetIssueCategoryByIdQuery } from '../../redux/services/issueCategoryApi';
 import PageMeta from '../../components/common/PageMeta';
 import { format } from 'date-fns';
+import { useBreadcrumbTitleEffect } from '../../hooks/useBreadcrumbTitleEffect';
 import { 
   TagIcon,
   CalendarIcon, 
@@ -17,7 +18,10 @@ import {
 
 const IssueCategoryDetail = () => {
   const { id } = useParams<{ id: string }>();
-    const { data: issueCategory, isLoading, isError } = useGetIssueCategoryByIdQuery(id!);
+  const { data: issueCategory, isLoading, isError } = useGetIssueCategoryByIdQuery(id!);
+  
+  // Set breadcrumb title and ID dynamically from API data
+  useBreadcrumbTitleEffect(issueCategory?.name, issueCategory?.category_id);
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';

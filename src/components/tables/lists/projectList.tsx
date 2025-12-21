@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Plus, Eye, Edit, Trash2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 import {
   useGetProjectsQuery,
@@ -33,6 +33,7 @@ export default function ProjectList({
     pageCount: 1,
     pageSize: 10,
   });
+  const { id } = useParams<{ id: string }>();
 
   // --- Define table columns ---
   const ProjectTableColumns = [
@@ -72,12 +73,12 @@ export default function ProjectList({
       cell: ({ row }: any) => {
         const project = row.original;
         const [deleteProject] = useDeleteProjectMutation();
-
+        // id from local storage
         // Dynamic link depending on userType
         const projectLink =
           userType === "external_user"
             ? `/project/${project.project_id}`
-            : `/inistitutes/project/${project.project_id}`;
+            : `projects/${project.project_id}`;
 
         return (
           <div className="flex items-center space-x-2">
@@ -174,6 +175,8 @@ export default function ProjectList({
         filters={filterFields}
         filterColumnsPerRow={1}
         actions={permittedActions}
+        title="Project List"
+        description="List of all projects"
       >
         <DataTable
           columns={ProjectTableColumns}

@@ -159,6 +159,8 @@ export default function InstituteList() {
   return (
     <>
       <PageLayout
+        title="Institute List"
+        description="List of all institutes"
         filters={filterFields}
         filterColumnsPerRow={1}
         actions={actions}

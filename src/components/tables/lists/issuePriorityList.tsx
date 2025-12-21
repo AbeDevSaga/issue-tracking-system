@@ -169,6 +169,8 @@ const PriorityTableColumns = [
         filters={filterFields}
         filterColumnsPerRow={1}
         actions={actions}
+        title="Request Priority List"
+        description="List of all request priorities"
       >
         <DataTable
           columns={PriorityTableColumns}

@@ -159,6 +159,8 @@ export default function RoleList() {
         filters={filterFields}
         filterColumnsPerRow={1}
         actions={actions}
+        title="Role List"
+        description="List of all roles"
       >
         <DataTable
           columns={RoleTableColumns(handleDelete)}

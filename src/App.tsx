@@ -9,6 +9,7 @@ import {
 import { ScrollToTop } from "./components/common/ScrollToTop";
 
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { BreadcrumbProvider } from "./contexts/BreadcrumbContext";
 import AppLayout from "./layout/AppLayout";
 import Home from "./pages/Dashboard/Home";
 import NotFound from "./pages/OtherPage/NotFound";
@@ -91,7 +92,8 @@ function AppContent() {
   }
   return (
     <Router>
-      <ScrollToTop />
+      <BreadcrumbProvider>
+        <ScrollToTop />
 
       <Routes>
         <Route path='/' element={<LandingPage/>}/>
@@ -135,10 +137,8 @@ function AppContent() {
 
           <Route path="/project" element={<Project />} />
           <Route path="/project/:id" element={<ProjectDetail />} />
-          <Route
-            path="/inistitutes/project/:id"
-            element={<InternalProjectDetail />}
-          />
+          
+          <Route path="/inistitutes/:instituteId/projects/:id" element={<InternalProjectDetail />} />
           <Route path="/issue_flow/:id" element={<IssueFlow />} />
           <Route path="/priority_level" element={<ProjectLevel />} />
           <Route path="/priority_level/:id" element={<PriorityLevelDetail />} />
@@ -198,6 +198,7 @@ function AppContent() {
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </BreadcrumbProvider>
     </Router>
   );
 }

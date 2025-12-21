@@ -180,6 +180,8 @@ export default function HierarchyUsersList({
       filters={filterFields}
       filterColumnsPerRow={1}
       actions={actions}
+      title=" Users List in Structure"
+      description="List of all users in the structure"
     >
       <DataTable
         columns={columns}

@@ -150,6 +150,8 @@ export default function ProjectMetricsList() {
         filters={filterFields}
         filterColumnsPerRow={1}
         actions={actions}
+        title="Project Metrics List"
+        description="List of all project metrics"
       >
         <DataTable
           columns={metricColumns}

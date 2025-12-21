@@ -159,6 +159,8 @@ export default function OrganizationList() {
   return (
     <>
       <PageLayout
+        title="Organization List"
+        description="List of organizations"
         filters={filterFields}
         filterColumnsPerRow={1}
         actions={actions}

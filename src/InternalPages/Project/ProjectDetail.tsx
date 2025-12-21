@@ -26,10 +26,15 @@ import { ActionButton } from "../../types/layout";
 import HierarchyNodeList from "../../components/tables/lists/hierarchyNodeList";
 import IssueFlowList from "../../components/tables/lists/issueFlowList";
 import ProjectAssignedUsers from "../../components/tables/lists/projectAssignedUsers";
+import { useBreadcrumbTitleEffect, useBreadcrumbTitleById } from "../../hooks/useBreadcrumbTitleEffect";
+import { useGetInstituteByIdQuery } from "../../redux/services/instituteApi";
 
 export default function ProjectDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { id, instituteId } = useParams<{ id: string; instituteId?: string }>();
   const { data: project, isLoading, isError } = useGetProjectByIdQuery(id!);
+  const { data: institute } = useGetInstituteByIdQuery(instituteId || "", {
+    skip: !instituteId,
+  });
   const [deleteProject, { isLoading: deletingProjectLoading }] =
     useDeleteProjectMutation();
   const [isOpen, setIsOpen] = useState(false);
@@ -37,7 +42,13 @@ export default function ProjectDetail() {
   const [activeTab, setActiveTab] = useState<"issueFlow" | "users">(
     "issueFlow"
   );
-
+  
+  // Set institute title for the middle breadcrumb (Institute Details)
+  useBreadcrumbTitleById(instituteId, institute?.name);
+  
+  // Set project title for the last breadcrumb (Project Details)
+  useBreadcrumbTitleEffect(project?.name, id);
+    
   // Save project ID to localStorage on every load/update
   useEffect(() => {
     if (id) {

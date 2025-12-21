@@ -155,6 +155,8 @@ export default function IssueCategoryList() {
         filters={filterFields}
         filterColumnsPerRow={1}
         actions={actions}
+        title="Issue Category List"
+        description="List of all issue categories"
       >
         <DataTable
           columns={CategoryTableColumns}

@@ -4,6 +4,7 @@ import { Link } from "react-router";
 import NotificationDropdown from "../../components/header/NotificationDropdown";
 import UserDropdown from "../../components/header/UserDropdown";
 import { Globe } from "lucide-react";
+import HeaderBreadcrumb from "../../components/common/HeaderBreadcrumb";
 
 const InternalAppHeader = () => {
     const [langOpen, setLangOpen] = useState(false);
@@ -20,6 +21,11 @@ const InternalAppHeader = () => {
     <header className="sticky top-0 mx-auto  bg-white border-gray-200 z-50 dark:border-gray-800 dark:bg-gray-900 border-b">
       <div className="flex flex-col items-center justify-between grow lg:flex-row lg:px-6">
         <div className="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
+          {/* Breadcrumb - Hidden on mobile, visible on desktop */}
+          <div className="hidden lg:flex flex-1 min-w-0 ml-4">
+            <HeaderBreadcrumb />
+          </div>
+          
           <Link to="/" className="flex items-center  ">
             <img className="w-30" src="/logo.jpeg" alt="Logo" />
             <div className="flex -ml-5 flex-col">

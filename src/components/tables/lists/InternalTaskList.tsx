@@ -176,7 +176,12 @@ export default function InternalTaskList() {
   }
 
   return (
-    <PageLayout filters={filterFields} filterColumnsPerRow={1}>
+    <PageLayout
+      filters={filterFields}
+      filterColumnsPerRow={1}
+      title="Internal Task List"
+      description="List of all internal tasks"
+    >
       <DataTable
         columns={TaskTableColumns}
         data={filteredIssues}
