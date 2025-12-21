@@ -5,10 +5,12 @@ interface TextareaProps {
   rows?: number; // Number of rows
   value?: string; // Current value
   onChange?: (value: string) => void; // Change handler
+  onBlur?: () => void; // Blur handler
   className?: string; // Additional CSS classes
   disabled?: boolean; // Disabled state
   error?: boolean; // Error state
   hint?: string; // Hint text to display
+  
 }
 
 const TextArea: React.FC<TextareaProps> = ({
@@ -16,6 +18,7 @@ const TextArea: React.FC<TextareaProps> = ({
   rows = 3, // Default number of rows
   value = "", // Default value
   onChange, // Callback for changes
+  onBlur, // Callback for blur
   className = "", // Additional custom styles
   disabled = false, // Disabled state
   error = false, // Error state
@@ -46,10 +49,11 @@ const TextArea: React.FC<TextareaProps> = ({
         onChange={handleChange}
         disabled={disabled}
         className={textareaClasses}
+        onBlur={onBlur}
       />
       {hint && (
         <p
-          className={`mt-2 text-sm ${
+          className={` text-xs ${
             error ? "text-error-500" : "text-gray-500 dark:text-gray-400"
           }`}
         >

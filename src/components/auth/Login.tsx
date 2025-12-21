@@ -10,8 +10,8 @@ import { ArrowLeftIcon, EyeOffIcon } from "lucide-react";
 import { EyeOpenIcon } from "@radix-ui/react-icons";
 import {
   signInSchema,
-  SignInFormData,
-} from "../../utils/validation/loginSchema";
+  type SignInFormData,
+} from "../../utils/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../../contexts/AuthContext"; // <-- IMPORTANT: Use AuthContext
@@ -42,18 +42,17 @@ export default function Login() {
       // AuthContext will update its state, and AppLayout will detect it
       // Navigate to the intended destination or dashboard
       navigate(from, { replace: true });
-    } catch (err: any) {
+    } catch (err) {
       console.error("Login error:", err);
       // Error is already set in AuthContext, but you can also set form error
-      if (err.message) {
-        setFormError("root", { message: err.message });
-      }
+      const errorMessage = err instanceof Error ? err.message : "An error occurred";
+      setFormError("root", { message: errorMessage });
     }
   };
 
   return (
     <div
-      className="min-h-screen relative flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat relative"
+      className="min-h-screen relative flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${Login_bg})` }}
     >
       <div className="fixed inset-0 w-full h-full z-0 overflow-hidden">
@@ -108,15 +107,10 @@ export default function Login() {
               id="email"
               placeholder="example.xx@gov.et"
               {...register("email")}
-              className={`w-full px-3 py-2 border rounded-md text-sm ${
-                errors.email ? "border-red-500" : "border-blue-300"
-              }`}
+              error={!!errors.email}
+              hint={errors.email?.message}
+              className="w-full"
             />
-            {errors.email && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.email.message}
-              </p>
-            )}
           </div>
 
           {/* Password */}
@@ -133,13 +127,13 @@ export default function Login() {
                 type={showPassword ? "text" : "password"}
                 placeholder="enter your password"
                 {...register("password")}
-                className={`w-full px-3 py-2 pr-10 border rounded-md text-sm ${
-                  errors.password ? "border-red-500" : "border-blue-300"
-                }`}
+                error={!!errors.password}
+                hint={errors.password?.message}
+                className="w-full pr-10"
               />
               <button
                 type="button"
-                className="absolute top-1/2 -translate-y-1/2 inset-y-0 right-0 pr-3 flex items-center"
+                className="absolute top-1/2 -translate-y-1/2 right-0 pr-3 flex items-center"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? (
@@ -149,11 +143,6 @@ export default function Login() {
                 )}
               </button>
             </div>
-            {errors.password && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.password.message}
-              </p>
-            )}
           </div>
 
           {/* Forgot Password */}

@@ -1,32 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/cn/button";
 import { Input } from "../ui/cn/input";
 import { Label } from "../ui/cn/label";
-import { useCreateIssuePriorityMutation } from "../../redux/services/issuePriorityApi";
-import { XIcon } from "lucide-react";
 import { Textarea } from "../ui/cn/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectTrigger,
-  SelectItem,
-  SelectValue,
-} from "../ui/cn/select";
+import { XIcon, ChevronDown } from "lucide-react";
 import { HexColorPicker } from "react-colorful";
+import { useCreateIssuePriorityMutation } from "../../redux/services/issuePriorityApi";
+
 interface CreatePriorityModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-const responseTimeOptions = [
-  { label: "3 Hour", value: "3hour" },
-  { label: "1 Day", value: "1day" },
-  { label: "3 Days", value: "3days" },
-  { label: "1 Week", value: "1week" },
-];
 
 export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
   isOpen,
@@ -35,9 +22,23 @@ export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [responseTime, setResponseTime] = useState("");
-  const [createPriority, { isLoading }] = useCreateIssuePriorityMutation();
+  const [responseUnit, setResponseUnit] = useState("hour");
   const [color, setColor] = useState("#aabbcc");
-  const [open, setOpen] = useState(false);
+  const [escalate, setEscalate] = useState(false);
+
+  const [createPriority, { isLoading }] = useCreateIssuePriorityMutation();
+
+  // Reset form on modal close
+  useEffect(() => {
+    if (!isOpen) {
+      setName("");
+      setDescription("");
+      setResponseTime("");
+      setResponseUnit("hour");
+      setColor("#aabbcc");
+      setEscalate(false);
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,24 +48,38 @@ export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
       return;
     }
 
+    if (
+      !responseTime ||
+      isNaN(Number(responseTime)) ||
+      Number(responseTime) <= 0
+    ) {
+      toast.error("Please enter a valid response time");
+      return;
+    }
+
     try {
       await createPriority({
         name,
         description,
         color_value: color,
-        response_time: responseTime,
+        response_duration: Number(responseTime),
+        response_unit: responseUnit,
+        is_active: escalate,
       }).unwrap();
+
       toast.success("Priority created successfully");
-      setName("");
-      setDescription("");
-      setResponseTime("");
-      setColor("");
       onClose();
     } catch (err: any) {
       console.error(err);
       toast.error(err?.data?.message || "Failed to create priority");
     }
   };
+
+  const unitOptions = [
+    { value: "hour", label: "Hours" },
+    { value: "day", label: "Days" },
+    { value: "month", label: "Months" },
+  ];
 
   if (!isOpen) return null;
 
@@ -82,12 +97,15 @@ export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
             <XIcon className="w-6 h-6 cursor-pointer" />
           </button>
         </div>
+
         <form
           onSubmit={handleSubmit}
           className="space-y-4 flex w-full flex-col"
         >
           <div className="flex w-full gap-10">
-            <div className="flex w-1/2 flex-col gap-3  space-y-1">
+            {/* Left side: Name, Response Time, Description */}
+            <div className="flex w-1/2 flex-col gap-3 space-y-1">
+              {/* Priority Name */}
               <div className="flex flex-col w-full">
                 <Label
                   htmlFor="priority-name"
@@ -102,10 +120,11 @@ export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter priority name"
                   required
-                  className="w-full h-11 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+                  className="w-full h-11 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent outline-none transition-all duration-200"
                 />
               </div>
-              {/* Response Time */}
+
+              {/* Response Time - Combined Input with Dropdown */}
               <div className="flex flex-col w-full">
                 <Label
                   htmlFor="response-time"
@@ -113,30 +132,35 @@ export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
                 >
                   Response Time
                 </Label>
-
-                <Select
-                  value={responseTime}
-                  onValueChange={(value) => setResponseTime(value)}
-                >
-                  <SelectTrigger className="h-11 border w-[300px] border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none">
-                    <SelectValue
-                      className="text-sm text-[#094C81] font-medium"
-                      placeholder="Select response time"
-                    />
-                  </SelectTrigger>
-
-                  <SelectContent className="text-sm bg-white text-[#094C81] font-medium">
-                    {responseTimeOptions.map((item) => (
-                      <SelectItem
-                        key={item.value}
-                        value={item.value}
-                        className="text-sm text-[#094C81] font-medium"
-                      >
-                        {item.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="relative flex items-center">
+                  <Input
+                    id="response-time"
+                    type="number"
+                    min="1"
+                    value={responseTime}
+                    onChange={(e) => setResponseTime(e.target.value)}
+                    placeholder="Enter time"
+                    required
+                    className="w-full h-11 border border-gray-300 px-4 py-3 rounded-r-none border-r-0 focus:ring focus:ring-[#094C81] focus:border-transparent outline-none transition-all duration-200"
+                  />
+                  <div className="relative">
+                    <select
+                      value={responseUnit}
+                      onChange={(e) => setResponseUnit(e.target.value)}
+                      className="h-11 px-3 py-2 border border-gray-300 border-l-0 rounded-r-md bg-white text-[#094C81] focus:outline-none focus:ring-1 focus:ring-[#094C81] focus:border-[#094C81] appearance-none cursor-pointer min-w-[100px]"
+                    >
+                      {unitOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#094C81] pointer-events-none" />
+                  </div>
+                </div>
+                <p className="mt-1 text-xs text-gray-500">
+                  Time until this priority needs a response
+                </p>
               </div>
 
               {/* Description */}
@@ -152,13 +176,30 @@ export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Enter description (optional)"
-                  className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+                  className="w-full min-h-[80px] border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
                 />
+              </div>
+
+              {/* Escalate to central */}
+              <div className="flex items-center gap-2 mt-2">
+                <input
+                  type="checkbox"
+                  checked={escalate}
+                  onChange={() => setEscalate(!escalate)}
+                  id="escalate-checkbox"
+                  className="h-4 w-4 text-[#094C81] border-gray-300 rounded focus:ring focus:ring-[#094C81] transition-all duration-200"
+                />
+                <Label
+                  htmlFor="escalate-checkbox"
+                  className="text-sm text-[#094C81]"
+                >
+                  Escalate to Central Team when triggered
+                </Label>
               </div>
             </div>
 
+            {/* Right side: Color Picker */}
             <div className="flex w-1/2 flex-col gap-3 space-y-1">
-              {/* Priority Color */}
               <div className="flex flex-col w-full">
                 <Label
                   htmlFor="priority-color"
@@ -166,13 +207,10 @@ export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
                 >
                   Priority Color
                 </Label>
-
-                <div className="min-h-[200px]  border bg-white w-full h-full shadow-md p-3 rounded-md">
+                <div className="min-h-[200px] border bg-white w-full h-full shadow-md p-3 rounded-md">
                   <HexColorPicker color={color} onChange={setColor} />
                 </div>
                 <div className="flex justify-end mt-2">
-                  {/* Copy Color Code */}
-                  {/* input field to show the color code */}
                   <Input
                     type="text"
                     value={color}
@@ -184,6 +222,7 @@ export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
             </div>
           </div>
 
+          {/* Submit / Cancel */}
           <div className="flex justify-end space-x-2 pt-2">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
@@ -197,6 +236,3 @@ export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
     </div>
   );
 };
-// .your-component .react-colorful {
-//   height: 240px;
-// }

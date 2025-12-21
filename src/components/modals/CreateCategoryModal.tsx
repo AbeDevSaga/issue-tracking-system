@@ -1,14 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { toast } from "sonner";
-import { Input } from "../ui/cn/input";
 import { Label } from "../ui/cn/label";
+import Input from "../form/input/InputField";
 import { Button } from "../ui/cn/button";
-import { Textarea } from "../ui/cn/textarea";
 import { useCreateIssueCategoryMutation } from "../../redux/services/issueCategoryApi";
 import { XIcon } from "lucide-react";
-
+import { categorySchema, type CategoryFormData } from "../../utils/validation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslation } from "react-i18next";
+import TextArea from "../form/input/TextArea";
+import { useForm } from "react-hook-form";
 interface CreateCategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -18,36 +21,47 @@ export const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-  });
-
+  const { t } = useTranslation();
   const [createCategory, { isLoading }] = useCreateIssueCategoryMutation();
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    trigger,
+    formState: { errors, isSubmitting },
+    setError: setFormError,
+    reset,
+  } = useForm<CategoryFormData>({
+    resolver: zodResolver(categorySchema),
+    mode:"onBlur",
+    defaultValues: {
+      name: "",
+      description: "",
+    },
+  });
+
+  const handleClose = () => {
+    reset({
+      name: "",
+      description: "",
+    });
+    onClose();
   };
 
-  const handleSubmit = async () => {
-    if (!formData.name.trim()) {
-      toast.error("Category name is required");
-      return;
-    }
-
+  const onSubmit = async (data: CategoryFormData) => {
     try {
-      const response = await createCategory(formData).unwrap();
+      await createCategory(data).unwrap();
       toast.success(`Support request category created successfully`);
-      setFormData({ name: "", description: "" });
-      onClose();
-    } catch (error: any) {
-      toast.error(
-        error?.data?.message ||
-          "Failed to create support request category. Please try again."
-      );
+      reset();
+      handleClose();
+    } catch (error: unknown) {
+      const message =
+        (error as { message?: string })?.message ||
+        t("category.generic_error") ||
+        "Failed to create support request category";
+      setFormError("root", { message });
     }
   };
 
@@ -57,49 +71,66 @@ export const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-[400px] rounded-2xl bg-white p-6 shadow-xl">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-[20px] font-bold text-[#094C81]">Create Support Request Category</h2>
+          <h2 className="text-[20px] font-bold text-[#094C81]">
+            Create Support Request Category
+          </h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="text-[#094C81] hover:text-gray-600 transition-colors duration-200"
           >
             <XIcon className="w-6 h-6 cursor-pointer" />
           </button>
         </div>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-4 flex-col flex w-full "
+        >
+          <div className="space-y-4 flex-col flex w-full ">
+            <div className="">
+              <Label
+                htmlFor="name"
+                className="block text-sm text-[#094C81] font-medium mb-2"
+              >
+                Support Request Category Name
+              </Label>
+              <Input
+                id="name"
+                placeholder="Enter support request category name"
+                {...register("name")}
+                error={!!errors.name}
+                hint={errors.name?.message}
+                className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+              />
+            </div>
 
-        <div className="space-y-4 flex-col flex w-full ">
-          <div className="">
-            <Label htmlFor="name" className="block text-sm text-[#094C81] font-medium mb-2">Support Request Category Name</Label>
-            <Input
-              id="name"
-              name="name"
-              placeholder="Enter support request category name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
-            />
+            <div className="">
+              <Label
+                htmlFor="description"
+                className="block text-sm text-[#094C81] font-medium mb-2"
+              >
+                Description
+              </Label>
+              <TextArea
+               onBlur={() => trigger("description")} // ✅ Validate only when user leaves field
+               placeholder="Enter short description (optional)"
+                value={watch("description") || ""}
+                onChange={(value) => setValue("description", value)}
+                error={!!errors.description}
+                hint={errors.description?.message}
+                className="w-full"
+              />
+            </div>
           </div>
 
-          <div className="">
-            <Label htmlFor="description" className="block text-sm text-[#094C81] font-medium mb-2">Description</Label>
-            <Textarea
-              id="description"
-              name="description"
-              placeholder="Enter short description (optional)"
-              value={formData.description}
-              onChange={handleChange}
-              className="w-full h-10 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
-            />
+          <div className="flex justify-end gap-3 mt-6">
+            <Button variant="outline" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting || isLoading}>
+              {isSubmitting ? "Creating..." : "Create"}
+            </Button>
           </div>
-        </div>
-
-        <div className="flex justify-end gap-3 mt-6">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit} disabled={isLoading}>
-            {isLoading ? "Creating..." : "Create"}
-          </Button>
-        </div>
+        </form>
       </div>
     </div>
   );
