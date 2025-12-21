@@ -27,6 +27,7 @@ import { Button } from "../../components/ui/cn/button";
 import { toast } from "sonner";
 import { formatStatus } from "../../utils/statusFormatter";
 import DetailHeader from "../../components/common/DetailHeader";
+import { useBreadcrumbTitleEffect } from "../../hooks/useBreadcrumbTitleEffect";
 
 export default function UserIssueDetail() {
   const { id } = useParams<{ id: string }>();
@@ -57,6 +58,7 @@ export default function UserIssueDetail() {
     setConfirmIssue(canConfirm(userId, issue?.status, issue));
   }, [userId, issue?.status, issue]);
 
+  useBreadcrumbTitleEffect(issue?.ticket_number, issue?.id);
   // Toggle accordion sections
   const toggleSection = (section: "escalations" | "resolutions") => {
     setExpandedSections((prev) => ({

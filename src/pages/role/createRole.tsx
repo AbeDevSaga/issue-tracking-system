@@ -38,6 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/cn/select";
+import { useBreadcrumbTitleEffect } from "../../hooks/useBreadcrumbTitleEffect";
 
 interface Permission {
   permission_id: string;
@@ -82,6 +83,16 @@ export default function CreateRole() {
     isLoading: loadingRole,
     isError: roleError,
   } = useGetRoleByIdQuery(id!, { skip: !isEditMode });
+
+  const role = roleData?.data;
+  
+  // Set dynamic breadcrumb title when in edit mode
+  // Pass the role name when available, or pass undefined (which won't clear if we're still loading)
+  // Only pass null when we're definitely not in edit mode to clear the breadcrumb
+  useBreadcrumbTitleEffect(
+    isEditMode ? (role?.name || undefined) : null, 
+    isEditMode && id ? id : undefined
+  );
 
   const [createRole, { isLoading: isCreating }] = useCreateRoleMutation();
   const [updateRole, { isLoading: isUpdating }] = useUpdateRoleMutation();
@@ -419,7 +430,7 @@ export default function CreateRole() {
                         id="role_type"
                         value={roleType}
                         onValueChange={(value) => setRoleType(value)}
-                        className="w-full border px-4 py-3 border-gray-300 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+                        className="w-[full] border px-4 py-3 border-gray-300 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
                       >
                         <SelectTrigger className="h-11">
                           <SelectValue

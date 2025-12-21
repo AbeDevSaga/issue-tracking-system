@@ -19,6 +19,7 @@ import { useState } from "react";
 import { CreateChildInternalNodeModal } from "../../components/modals/CreateChildInternalNodeModal";
 import InternalNodeUsersList from "../../components/tables/lists/InternalNodeUsersList";
 import InternalNodeUsersListConfig from "../../components/tables/lists/InternalNodeUsersListConfig";
+import { useBreadcrumbTitleEffect } from "../../hooks/useBreadcrumbTitleEffect";
 
 const IssueConfigurationDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -29,6 +30,8 @@ const IssueConfigurationDetail = () => {
     isError,
   } = useGetInternalNodeByIdQuery(id!);
 
+  // Set dynamic breadcrumb title
+  useBreadcrumbTitleEffect(issueFlow?.name, id);
   const formatDateShort = (dateString?: string) => {
     if (!dateString) return "N/A";
     try {

@@ -212,9 +212,13 @@ const ResourceGroup: React.FC<{
             className="p-1 hover:bg-gray-200 rounded"
           >
             {group.isExpanded ? (
-              <ChevronDown className="h-5 w-5 text-[#094C81] hover:text-[#073954] cursor-pointer" />
+              <ChevronDown 
+              onClick={() => onToggleExpand(group.resource)}
+              className="h-5 w-5  text-[#094C81] hover:text-[#073954] cursor-pointer" />
             ) : (
-              <ChevronRight className="h-5 w-5 text-[#094C81] hover:text-[#073954] cursor-pointer" />
+              <ChevronRight
+              onClick={() => onToggleExpand(group.resource)}
+              className="h-5 w-5 text-[#094C81] hover:text-[#073954] cursor-pointer" />
             )}
           </button>
           <div className="p-2 text-[#094C81] bg-white rounded-lg shadow-sm">

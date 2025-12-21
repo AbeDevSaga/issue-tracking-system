@@ -55,6 +55,7 @@ import { useGetRolesQuery } from "../../redux/services/roleApi";
 import { useGetProjectMetricsQuery } from "../../redux/services/projectMetricApi";
 import Switch from "../../components/form/switch/Switch";
 import { FaProjectDiagram } from "react-icons/fa";
+import { useBreadcrumbTitleEffect } from "../../hooks/useBreadcrumbTitleEffect";
 
 // Type for wrapped API response
 interface UserApiResponse {
@@ -148,10 +149,17 @@ const UserDetail = () => {
   const allRoles = rolesResponse?.data || [];
   const metrics: ProjectMetric[] = metricsData || [];
   const { data: userTypes = [] } = useGetUserTypesQuery({});
-const selectedUserType = userTypes?.data?.find(
-  (type: any) => type.user_type_id === editForm.user_type_id
-);
-const isExternalUser = selectedUserType?.name === "external_user";
+  const selectedUserType = userTypes?.data?.find(
+    (type: any) => type.user_type_id === editForm.user_type_id
+  );
+  const isExternalUser = selectedUserType?.name === "external_user";
+  
+  // Extract user data for breadcrumb - extract early to avoid redeclaration
+  const userDataForBreadcrumb = user ? ((user as unknown as UserApiResponse).data || user) as ExtendedUser : null;
+  
+  // Set dynamic breadcrumb title - must be called at top level before any early returns
+  useBreadcrumbTitleEffect(userDataForBreadcrumb?.full_name, userDataForBreadcrumb?.user_id);
+  
   const handleDelete = async () => {
     try {
       await deleteUser(id!).unwrap();
@@ -392,7 +400,8 @@ const isExternalUser = selectedUserType?.name === "external_user";
   }
 
   // Handle wrapped response if API returns { success, message, data }
-  const userData = ((user as unknown as UserApiResponse).data ||
+  // Use the already extracted userDataForBreadcrumb if available, otherwise extract it
+  const userData = userDataForBreadcrumb || ((user as unknown as UserApiResponse).data ||
     user) as ExtendedUser;
 
   // Extract roles and metrics from the response

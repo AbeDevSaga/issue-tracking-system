@@ -16,6 +16,11 @@ export const breadcrumbConfig: Record<string, BreadcrumbItem[]> = {
     { title: "Users", path: "/users" },
     { title: "User Details", path: "" },
   ],
+  "/users/:id/profile": [
+    { title: "Users", path: "/users" },
+    { title: "User Details", path: "/users/:id" },
+    { title: "Profile", path: "" },
+  ],
   "/role": [
     { title: "Users", path: "/users" },
     { title: "Roles", path: "/role" },
@@ -149,10 +154,12 @@ export const breadcrumbConfig: Record<string, BreadcrumbItem[]> = {
     { title: "Structure Details", path: "" },
   ],
 
-  "/profile": [{ title: "Profile", path: "/profile" }],
   "/organization_profile": [
     { title: "Organization Profile", path: "/organization_profile" },
   ],
 
   "/issue_flow/:id": [{ title: "Issue Flow", path: "" }],
+  "/profile": [
+    { title: "Profile", path: "/profile" },
+  ],
 };

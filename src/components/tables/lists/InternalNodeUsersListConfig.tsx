@@ -176,6 +176,8 @@ export default function InternalNodeUsersListConfig({
       filters={filterFields}
       filterColumnsPerRow={1}
       // actions={actions}
+      title="Assigned Users"
+      description="List of all assigned users"
     >
       <DataTable
         columns={columns}

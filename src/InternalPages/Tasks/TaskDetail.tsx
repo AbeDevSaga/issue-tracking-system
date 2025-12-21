@@ -44,6 +44,7 @@ import { useGetUserInternalNodesByProjectQuery } from "../../redux/services/inte
 import { toast } from "sonner";
 import { formatStatus } from "../../utils/statusFormatter";
 import DetailHeader from "../../components/common/DetailHeader";
+import { useBreadcrumbTitleEffect } from "../../hooks/useBreadcrumbTitleEffect";
 export default function InternalTaskDetail() {
   const { id } = useParams<{ id: string }>();
   const { data: issue, isLoading, isError } = useGetIssueByIdQuery(id!);
@@ -306,6 +307,7 @@ export default function InternalTaskDetail() {
       onClick: () => assignIssue && handleActions("assign"),
     },
   ];
+  useBreadcrumbTitleEffect(issue?.ticket_number, issue?.ticket_number);
 
   if (isLoading) return <div>Loading...</div>;
   if (isError || !issue)

@@ -24,6 +24,7 @@ import DeleteModal from "../../components/common/DeleteModal";
 import ProjectUserList from "../../components/tables/lists/projectUserList";
 import { ActionButton } from "../../types/layout";
 import HierarchyNodeList from "../../components/tables/lists/hierarchyNodeList";
+import { useBreadcrumbTitleEffect } from "../../hooks/useBreadcrumbTitleEffect";
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
@@ -80,6 +81,7 @@ export default function ProjectDetail() {
       return dateString;
     }
   };
+  useBreadcrumbTitleEffect(project?.name || undefined, id);
 
   if (isLoading) {
     return (

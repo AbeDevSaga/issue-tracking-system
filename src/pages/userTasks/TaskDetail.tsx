@@ -39,6 +39,7 @@ import ResolutionPreview from "./ResolutionPreview";
 import { toast } from "sonner";
 import { formatStatus } from "../../utils/statusFormatter";
 import DetailHeader from "../../components/common/DetailHeader";
+import { useBreadcrumbTitleEffect } from "../../hooks/useBreadcrumbTitleEffect";
 
 export default function UserTaskDetail() {
   const { id } = useParams<{ id: string }>();
@@ -89,6 +90,7 @@ export default function UserTaskDetail() {
     setMarkIssue(canMarkInProgress(userId, issue?.status, issue));
   }, [userId, issue?.status, issue]);
 
+  useBreadcrumbTitleEffect(issue?.ticket_number, issue?.id);
   // Map issue attachments to files array with proper URLs and file info
   const issueFiles =
     issue?.attachments?.map((attachment) => ({

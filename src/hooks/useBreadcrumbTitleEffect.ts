@@ -24,10 +24,12 @@ export const useBreadcrumbTitleEffect = (
       if (id) {
         setDynamicTitle(id, title);
       }
-    } else {
-      // If title is not available, clear the breadcrumb
+    } else if (title === null) {
+      // Only clear if explicitly passed as null (not undefined)
+      // undefined means "not set yet" (e.g., data still loading)
       setDynamicBreadcrumb({ title: null, id: null });
     }
+    // If title is undefined, don't clear - preserve existing breadcrumb
     
     // Cleanup: reset when component unmounts
     return () => {

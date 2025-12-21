@@ -177,6 +177,8 @@ const InternalNodeTableColumns = (deleteNode: any) => [
     <>
       <PageLayout
         filters={filterFields}
+        title="Support Request Flow List"
+        description="List of all support request flows"
         filterColumnsPerRow={1}
         toggleActions={toggleActions}
         actions={actions}
