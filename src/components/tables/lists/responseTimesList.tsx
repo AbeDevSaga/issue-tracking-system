@@ -6,6 +6,8 @@ import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
+import { ArrowLeft } from "lucide-react";
+
 import {
   IssueResponseTime,
   useGetIssueResponseTimesQuery,
@@ -13,6 +15,8 @@ import {
 } from "../../../redux/services/issueResponseTimeApi";
 import DeleteModal from "../../common/DeleteModal";
 import { ResponseTimeModal } from "../../modals/CreateResponseTimeModal";
+import { useNavigate } from "react-router";
+import Breadcrumbs from "../../common/Breadcrumbs";
 
 export default function IssueResponseTimeList() {
   const [response, setResponse] = useState<IssueResponseTime[]>([]);
@@ -20,7 +24,7 @@ export default function IssueResponseTimeList() {
     []
   );
   const [statusFilter, setStatusFilter] = useState<string>("all");
-
+  const navigate = useNavigate();
   const [isModalOpen, setModalOpen] = useState(false);
   const [editingResponseTime, setEditingResponseTime] = useState<
     IssueResponseTime | undefined
@@ -155,6 +159,20 @@ export default function IssueResponseTimeList() {
 
   return (
     <>
+      <div className="mb-4 space-y-2">
+        <Breadcrumbs />
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="w-fit flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+      </div>
+
       <PageLayout
         filters={filterFields}
         title=" Response Time Management"

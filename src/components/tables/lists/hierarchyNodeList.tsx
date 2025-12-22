@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Plus, Eye, Edit, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { ArrowLeft } from "lucide-react";
 
 import {
   useDeleteHierarchyNodeMutation,
@@ -212,15 +213,18 @@ export default function HierarchyNodeList({
             currentIndex={pageDetail.pageIndex}
           />
         ) : (
-          <HierarchyD3Tree inistitute_id={inistitute_id} data={filteredNodes} isLoading={isLoading} />
+          <HierarchyD3Tree
+            inistitute_id={inistitute_id}
+            data={filteredNodes}
+            isLoading={isLoading}
+          />
         )}
-          {/* <HierarchyD3Tree
+        {/* <HierarchyD3Tree
             data={filteredNodes}
             isLoading={isLoading}
             // pass institute for AssignUserModal
             inistitute_id={inistitute_id}
           /> */}
-
       </PageLayout>
 
       <CreateHierarchyNodeModal

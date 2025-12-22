@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Plus, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
 import { useGetInstitutesQuery } from "../../../redux/services/instituteApi";
 import { Button } from "../../ui/cn/button";
@@ -11,7 +12,8 @@ import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
 import { CreateInstituteModal } from "../../modals/CreateInstituteModal";
 import { useGlobalSearch } from "../../../context/GlobalSearchContext";
-
+import Breadcrumbs from "../../common/Breadcrumbs";
+import { useNavigate } from "react-router";
 // --- Table columns ---
 const InstituteTableColumns = [
   {
@@ -66,6 +68,7 @@ export default function InstituteList() {
   const [filteredResponse, setFilteredResponse] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isModalOpen, setModalOpen] = useState(false);
+  const navigate = useNavigate();
   const [pageDetail, setPageDetail] = useState({
     pageIndex: 0,
     pageCount: 1,
@@ -144,6 +147,20 @@ export default function InstituteList() {
 
   return (
     <>
+      <div className="mb-4 space-y-2">
+        <Breadcrumbs />
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="w-fit flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+      </div>
+
       <PageLayout
         filters={filterFields}
         title="Institute Management"

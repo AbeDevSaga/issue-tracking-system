@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Plus, Eye } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
 import { useGetIssuesByUserIdQuery } from "../../../redux/services/issueApi";
 import { Button } from "../../ui/cn/button";
@@ -12,6 +13,7 @@ import { ActionButton, FilterField } from "../../../types/layout";
 import { useGetCurrentUserQuery } from "../../../redux/services/authApi";
 import { formatStatus } from "../../../utils/statusFormatter";
 import { useGlobalSearch } from "../../../context/GlobalSearchContext";
+import Breadcrumbs from "../../common/Breadcrumbs";
 
 // --- Table columns ---
 const IssueTableColumns = [
@@ -188,20 +190,36 @@ export default function IssueList() {
   }
 
   return (
-    <PageLayout
-      title="My Requests"
-      filters={filterFields}
-      filterColumnsPerRow={1}
-      actions={actions}
-    >
-      <DataTable
-        columns={IssueTableColumns}
-        data={filteredResponse}
-        handlePagination={handlePagination}
-        tablePageSize={pageDetail.pageSize}
-        totalPageCount={pageDetail.pageCount}
-        currentIndex={pageDetail.pageIndex}
-      />
-    </PageLayout>
+    <>
+      <div className="mb-4 space-y-2">
+        <Breadcrumbs />
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="w-fit flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+      </div>
+
+      <PageLayout
+        title="My Requests"
+        filters={filterFields}
+        filterColumnsPerRow={1}
+        actions={actions}
+      >
+        <DataTable
+          columns={IssueTableColumns}
+          data={filteredResponse}
+          handlePagination={handlePagination}
+          tablePageSize={pageDetail.pageSize}
+          totalPageCount={pageDetail.pageCount}
+          currentIndex={pageDetail.pageIndex}
+        />
+      </PageLayout>
+    </>
   );
 }

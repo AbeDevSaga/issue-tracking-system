@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";

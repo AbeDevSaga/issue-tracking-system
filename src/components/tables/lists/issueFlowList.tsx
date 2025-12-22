@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Eye } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import {
   useDeleteInternalNodeMutation,
   useGetInternalNodesQuery,
 } from "../../../redux/services/internalNodeApi";
+import { ArrowLeft } from "lucide-react";
 
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
@@ -17,6 +18,7 @@ import { ActionButton, FilterField } from "../../../types/layout";
 import { CreateInternalNodeModal } from "../../modals/CreateInternalNodeModal";
 import HierarchyD3TreeInstitute from "./HierarchyD3TreeInstitute";
 import { useGlobalSearch } from "../../../context/GlobalSearchContext";
+import Breadcrumbs from "../../common/Breadcrumbs";
 
 interface IssueFlowListProps {
   toggleActions?: ActionButton[];
@@ -41,7 +43,7 @@ export default function IssueFlowList({
     pageCount: 1,
     pageSize: 10,
   });
-
+  const navigate = useNavigate();
   const { pathname } = useLocation();
 
   const InternalNodeTableColumns = [
@@ -171,6 +173,20 @@ export default function IssueFlowList({
 
   return (
     <>
+      <div className="mb-4 space-y-2">
+        <Breadcrumbs />
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="w-fit flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+      </div>
+
       <PageLayout
         filters={filterFields}
         title="Support Request Flow Management"

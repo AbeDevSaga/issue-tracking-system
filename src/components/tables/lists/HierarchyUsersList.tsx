@@ -7,6 +7,7 @@ import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
+import { ArrowLeft } from "lucide-react";
 
 import { useRemoveUserFromProjectMutation } from "../../../redux/services/projectApi";
 import AssignUserModal from "../../modals/AssignUserToProjectModal";

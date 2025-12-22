@@ -1,30 +1,30 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, useCallback, JSX } from "react";
+import React, { useEffect, useState, useMemo, JSX } from "react";
 import {
   Shield,
-  Activity,
-  RefreshCw,
-  Settings,
-  ChevronDown,
-  ChevronRight,
   Users,
   Folder,
   BarChart3,
+  Settings,
+  ChevronDown,
+  ChevronRight,
+  RefreshCw,
 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
+import { AnimatePresence, motion } from "framer-motion";
+import { MdToggleOff, MdToggleOn } from "react-icons/md";
+import { useGlobalSearch } from "../../../context/GlobalSearchContext";
+import Breadcrumbs from "../../common/Breadcrumbs";
+import { useNavigate } from "react-router";
 import {
   useGetPermissionsQuery,
   useTogglePermissionMutation,
 } from "../../../redux/services/permissionApi";
-import { AnimatePresence, motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "../../ui/cn/card";
-import { MdToggleOff, MdToggleOn } from "react-icons/md";
-import { useGlobalSearch } from "../../../context/GlobalSearchContext";
 
 /* ================= TYPES ================= */
-
 interface Permission {
   permission_id: string;
   resource: string;
@@ -32,55 +32,44 @@ interface Permission {
   is_active: boolean;
 }
 
-interface PermissionStats {
-  total: number;
-  active: number;
-  inactive: number;
-}
-
 interface ResourceGroup {
   resource: string;
   icon: JSX.Element;
   permissions: Permission[];
-  isExpanded: boolean;
   activeCount: number;
   totalCount: number;
 }
 
-/* ================= RESOURCE GROUP ================= */
-
+/* ================= RESOURCE GROUP COMPONENT ================= */
 const ResourceGroup: React.FC<{
   group: ResourceGroup;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
   onToggle: (id: string) => Promise<void>;
   isToggling: boolean;
-  onToggleExpand: (resource: string) => void;
-}> = ({ group, onToggle, isToggling, onToggleExpand }) => {
+}> = ({ group, isExpanded, onToggleExpand, onToggle, isToggling }) => {
   return (
-    <div className="border border-gray-200 rounded-lg">
+    <div className="flex flex-col border border-gray-200 rounded-lg overflow-hidden">
       {/* HEADER */}
-      <div
-        onClick={() => onToggleExpand(group.resource)}
-        className="flex cursor-pointer items-center justify-between p-4 bg-gray-50 hover:bg-[#094C81]/10 transition"
-      >
+      <div className="flex items-center justify-between p-4 bg-gray-50 transition hover:bg-[#094C81]/10">
         <div className="flex items-center gap-3">
-          {/* ICON BUTTON */}
+          {/* ONLY CHEVRON TOGGLE */}
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation(); // ✅ IMPORTANT
-              onToggleExpand(group.resource);
-            }}
+            onClick={onToggleExpand}
             className="p-1 hover:bg-gray-200 rounded"
           >
-            {group.isExpanded ? (
+            {isExpanded ? (
               <ChevronDown className="h-5 w-5 text-[#094C81]" />
             ) : (
               <ChevronRight className="h-5 w-5 text-[#094C81]" />
             )}
           </button>
 
+          {/* Resource Icon */}
           <div className="p-2 bg-white rounded shadow">{group.icon}</div>
 
+          {/* Resource Info */}
           <div>
             <h3 className="font-semibold capitalize text-[#094C81]">
               {group.resource}
@@ -94,7 +83,7 @@ const ResourceGroup: React.FC<{
 
       {/* BODY */}
       <AnimatePresence>
-        {group.isExpanded && (
+        {isExpanded && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -111,7 +100,6 @@ const ResourceGroup: React.FC<{
                   <span className="capitalize text-sm">
                     {permission.action.replace("_", " ")}
                   </span>
-
                   <button
                     onClick={() => onToggle(permission.permission_id)}
                     disabled={isToggling}
@@ -133,12 +121,13 @@ const ResourceGroup: React.FC<{
 };
 
 /* ================= MAIN COMPONENT ================= */
-
 export default function PermissionList() {
   const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [expandedResource, setExpandedResource] = useState<string | null>(null);
-
-  const { search } = useGlobalSearch(); // ✅ GLOBAL SEARCH
+  const [expandedResources, setExpandedResources] = useState<
+    Record<string, boolean>
+  >({});
+  const navigate = useNavigate();
+  const { search } = useGlobalSearch();
   const { data, isLoading, isError, refetch } = useGetPermissionsQuery();
   const [togglePermission, { isLoading: isToggling }] =
     useTogglePermissionMutation();
@@ -151,18 +140,17 @@ export default function PermissionList() {
     system: <Settings className="h-4 w-4" />,
   };
 
+  // Load permissions
   useEffect(() => {
     if (data?.data) {
       setPermissions(
-        data.data.map((p: any) => ({
-          ...p,
-          is_active: !!p.is_active,
-        }))
+        data.data.map((p: any) => ({ ...p, is_active: !!p.is_active }))
       );
     }
   }, [data]);
 
-  const resourceGroups = useMemo(() => {
+  // Group permissions by resource
+  const resourceGroups: ResourceGroup[] = useMemo(() => {
     const grouped = permissions.reduce((acc, p) => {
       acc[p.resource] = acc[p.resource] || [];
       acc[p.resource].push(p);
@@ -175,17 +163,17 @@ export default function PermissionList() {
       permissions: perms,
       activeCount: perms.filter((p) => p.is_active).length,
       totalCount: perms.length,
-      isExpanded: expandedResource === resource,
     }));
-  }, [permissions, expandedResource]);
+  }, [permissions]);
 
-  /* ✅ GLOBAL SEARCH FILTER */
+  // Apply global search
   const filteredResourceGroups = useMemo(() => {
     if (!search) return resourceGroups;
 
     const q = search.toLowerCase();
+    const newExpandedResources: Record<string, boolean> = {};
 
-    return resourceGroups
+    const filtered = resourceGroups
       .map((g) => {
         const matched = g.permissions.filter(
           (p) =>
@@ -194,15 +182,26 @@ export default function PermissionList() {
         );
 
         if (matched.length > 0 || g.resource.toLowerCase().includes(q)) {
-          return { ...g, permissions: matched, isExpanded: true };
+          // auto-expand matched resources
+          newExpandedResources[g.resource] = true;
+          return { ...g, permissions: matched };
         }
         return null;
       })
-      .filter(Boolean) as typeof resourceGroups;
+      .filter(Boolean) as ResourceGroup[];
+
+    // update expanded state for search matches
+    setExpandedResources((prev) => ({ ...prev, ...newExpandedResources }));
+
+    return filtered;
   }, [resourceGroups, search]);
 
+  // Toggle expand for a single resource
   const toggleExpand = (resource: string) => {
-    setExpandedResource((prev) => (prev === resource ? null : resource));
+    setExpandedResources((prev) => ({
+      ...prev,
+      [resource]: !prev[resource],
+    }));
   };
 
   if (isLoading) return <PageLayout>Loading...</PageLayout>;
@@ -214,14 +213,25 @@ export default function PermissionList() {
     );
 
   return (
-    <PageLayout>
-      {/* ===== PAGE HEADER ===== */}
-      <div className="mb-6">
-        <div className="flex items-center gap-3">
+    <>
+      <div className="mb-4 space-y-2">
+        <Breadcrumbs />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="w-fit flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+      </div>
+
+      <PageLayout>
+        <div className="mb-6 flex items-center gap-3">
           <div className="p-2 rounded-lg bg-[#094C81]/10">
             <Shield className="h-6 w-6 text-[#094C81]" />
           </div>
-
           <div>
             <h1 className="text-xl font-semibold text-gray-900">
               Permission List
@@ -231,20 +241,20 @@ export default function PermissionList() {
             </p>
           </div>
         </div>
-      </div>
 
-      {/* ===== CONTENT ===== */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filteredResourceGroups.map((group) => (
-          <ResourceGroup
-            key={group.resource}
-            group={group}
-            onToggle={async (id) => togglePermission(id).unwrap()}
-            isToggling={isToggling}
-            onToggleExpand={toggleExpand}
-          />
-        ))}
-      </div>
-    </PageLayout>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-min">
+          {filteredResourceGroups.map((group) => (
+            <ResourceGroup
+              key={group.resource}
+              group={group}
+              isExpanded={!!expandedResources[group.resource]}
+              onToggleExpand={() => toggleExpand(group.resource)}
+              onToggle={async (id) => togglePermission(id).unwrap()}
+              isToggling={isToggling}
+            />
+          ))}
+        </div>
+      </PageLayout>
+    </>
   );
 }

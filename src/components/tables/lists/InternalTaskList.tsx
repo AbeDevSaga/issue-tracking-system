@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { Plus, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
 import { useGetCurrentUserQuery } from "../../../redux/services/authApi";
 import { Button } from "../../ui/cn/button";
@@ -13,7 +14,8 @@ import { FilterField } from "../../../types/layout";
 import { useIssuesQuery } from "../../../hooks/useIssueQuery";
 import { formatStatus } from "../../../utils/statusFormatter";
 import { useGlobalSearch } from "../../../context/GlobalSearchContext";
-
+import Breadcrumbs from "../../common/Breadcrumbs";
+import { useNavigate } from "react-router";
 const TaskTableColumns = [
   {
     accessorKey: "project.id",
@@ -92,7 +94,7 @@ const TaskTableColumns = [
 
 export default function InternalTaskList() {
   const { search } = useGlobalSearch();
-
+  const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [pageDetail, setPageDetail] = useState({
     pageIndex: 0,
@@ -205,35 +207,51 @@ export default function InternalTaskList() {
   }
 
   return (
-    <PageLayout
-      filters={filterFields}
-      title="My Task List"
-      filterColumnsPerRow={1}
-      actions={[
-        <div key="pageSize" className="flex items-center space-x-2">
-          <span className="text-gray-600 text-sm">Rows per page:</span>
-          <select
-            value={pageDetail.pageSize}
-            onChange={handlePageSizeChange}
-            className="border rounded px-2 py-1 text-sm"
-          >
-            {[5, 10, 20, 50].map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
-        </div>,
-      ]}
-    >
-      <DataTable
-        columns={TaskTableColumns}
-        data={filteredIssues}
-        handlePagination={handlePagination}
-        tablePageSize={pageDetail.pageSize}
-        totalPageCount={pageDetail.pageCount}
-        currentIndex={pageDetail.pageIndex}
-      />
-    </PageLayout>
+    <>
+      <div className="mb-4 space-y-2">
+        <Breadcrumbs />
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="w-fit flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+      </div>
+
+      <PageLayout
+        filters={filterFields}
+        title="My Task List"
+        filterColumnsPerRow={1}
+        actions={[
+          <div key="pageSize" className="flex items-center space-x-2">
+            <span className="text-gray-600 text-sm">Rows per page:</span>
+            <select
+              value={pageDetail.pageSize}
+              onChange={handlePageSizeChange}
+              className="border rounded px-2 py-1 text-sm"
+            >
+              {[5, 10, 20, 50].map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+          </div>,
+        ]}
+      >
+        <DataTable
+          columns={TaskTableColumns}
+          data={filteredIssues}
+          handlePagination={handlePagination}
+          tablePageSize={pageDetail.pageSize}
+          totalPageCount={pageDetail.pageCount}
+          currentIndex={pageDetail.pageIndex}
+        />
+      </PageLayout>
+    </>
   );
 }

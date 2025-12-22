@@ -7,16 +7,20 @@ import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
 import DeleteModal from "../../common/DeleteModal";
+import { ArrowLeft } from "lucide-react";
+
 import {
   useDeleteProjectMetricMutation,
   useGetProjectMetricsQuery,
 } from "../../../redux/services/projectMetricApi";
 import { CreateProjectMetricModal } from "../../modals/CreateProjectMetricModal";
 import { useGlobalSearch } from "../../../context/GlobalSearchContext";
+import { useNavigate } from "react-router";
+import Breadcrumbs from "../../common/Breadcrumbs";
 
 export default function ProjectMetricsList() {
   const { search } = useGlobalSearch();
-
+  const navigate = useNavigate();
   const [response, setResponse] = useState<any[]>([]);
   const [filteredResponse, setFilteredResponse] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -138,6 +142,20 @@ export default function ProjectMetricsList() {
 
   return (
     <>
+      <div className="mb-4 space-y-2">
+        <Breadcrumbs />
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="w-fit flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+      </div>
+
       <PageLayout filters={[]} filterColumnsPerRow={1} actions={actions}>
         <DataTable
           columns={metricColumns}

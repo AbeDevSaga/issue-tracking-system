@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Plus, Eye, Edit, Trash2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { ArrowLeft } from "lucide-react";
 
 import {
   useGetRolesQuery,
@@ -15,6 +16,8 @@ import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
 import DetailHeader from "../../common/DetailHeader";
 import { useGlobalSearch } from "../../../context/GlobalSearchContext";
+import Breadcrumbs from "../../common/Breadcrumbs";
+
 const RoleTableColumns = (
   handleDelete: (id: string) => void,
   handleEdit: (role: any) => void
@@ -188,6 +191,19 @@ export default function RoleList() {
   return (
     <>
       {/* <DetailHeader className="mb-5 mt-2" breadcrumbs={[{ title: "Roles", link: "" }]} /> */}
+      <div className="mb-4 space-y-2">
+        <Breadcrumbs />
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="w-fit flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+      </div>
 
       <PageLayout
         filters={filterFields}

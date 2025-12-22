@@ -14,7 +14,9 @@ import { ActionButton, FilterField } from "../../../types/layout";
 import { CreateProjectModal } from "../../modals/CreateProjectModal";
 import { isPermittedActionButton } from "../../../utils/guards/isPermittedActionButton";
 import { useGlobalSearch } from "../../../context/GlobalSearchContext";
-
+import { ArrowLeft } from "lucide-react";
+import Breadcrumbs from "../../common/Breadcrumbs";
+import { useNavigate } from "react-router";
 interface ProjectListProps {
   userType: string;
   insistitute_id: string;
@@ -34,7 +36,7 @@ export default function ProjectList({
     pageCount: 1,
     pageSize: 10,
   });
-
+  const navigate = useNavigate();
   const { data, isLoading, isError } =
     useGetProjectsByInstituteIdQuery(insistitute_id);
 
@@ -166,7 +168,20 @@ export default function ProjectList({
 
   return (
     <>
+      <div className="mb-4 space-y-2">
+        <Breadcrumbs />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="w-fit flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+      </div>
       <PageLayout
+        title="Project Management"
         filters={filterFields}
         filterColumnsPerRow={1}
         actions={permittedActions}

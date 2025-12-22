@@ -54,7 +54,10 @@ export default function Login() {
       const response = await login(payload);
 
       if (response.user.is_first_logged_in) {
-        navigate("/change_password", { replace: true });
+        navigate("/change_password", {
+          replace: true,
+          state: { firstTime: true },
+        });
         return;
       }
 

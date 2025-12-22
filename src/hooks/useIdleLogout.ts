@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-const IDLE_TIMEOUT = 1 * 60 * 1000; // 2 minutes
+const IDLE_TIMEOUT = 5 * 60 * 1000; // 2 minutes
 
 export const useIdleLogout = (isActive: boolean | null) => {
   const timerRef = useRef<number | null>(null);

@@ -1,4 +1,5 @@
 "use client";
+import { useNavigate } from "react-router-dom";
 
 import React, { useEffect, useState } from "react";
 import { Plus, Edit, Trash2 } from "lucide-react";
@@ -6,12 +7,15 @@ import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { CreateCategoryModal } from "../../modals/CreateCategoryModal";
+import { ArrowLeft } from "lucide-react";
+
 import {
   useGetIssueCategoriesQuery,
   useDeleteIssueCategoryMutation,
 } from "../../../redux/services/issueCategoryApi";
 import { useGlobalSearch } from "../../../context/GlobalSearchContext";
 import { toast } from "sonner";
+import Breadcrumbs from "../../common/Breadcrumbs";
 
 export default function IssueCategoryList() {
   const [response, setResponse] = useState<any[]>([]);
@@ -23,21 +27,29 @@ export default function IssueCategoryList() {
     pageCount: 1,
     pageSize: 10,
   });
-
+  const navigate = useNavigate();
   const { search } = useGlobalSearch();
   const { data, isLoading, isError, refetch } = useGetIssueCategoriesQuery();
   const [deleteCategory] = useDeleteIssueCategoryMutation();
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const handleEdit = (category: any) => {
     setEditingCategory(category);
     setModalOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    deleteCategory(id)
-      .unwrap()
-      .then(() => toast.success("Category deleted successfully"))
-      .catch(() => toast.error("Failed to delete category"));
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+
+    try {
+      await deleteCategory(deleteTarget.category_id).unwrap();
+      toast.success("Category deleted successfully");
+      setIsDeleteOpen(false);
+      setDeleteTarget(null);
+    } catch {
+      toast.error("Failed to delete category");
+    }
   };
 
   // ---------------- FILTER + SEARCH ----------------
@@ -100,7 +112,10 @@ export default function IssueCategoryList() {
               variant="outline"
               size="sm"
               className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-              onClick={() => handleDelete(category.category_id)}
+              onClick={() => {
+                setDeleteTarget(category);
+                setIsDeleteOpen(true);
+              }}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -121,6 +136,20 @@ export default function IssueCategoryList() {
 
   return (
     <>
+      <div className="mb-4 space-y-2">
+        <Breadcrumbs />
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="w-fit flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+      </div>
+
       <PageLayout
         title="Support Categories"
         filters={[]} // Add filters if needed
@@ -153,6 +182,39 @@ export default function IssueCategoryList() {
         onClose={() => setModalOpen(false)}
         editingCategory={editingCategory}
       />
+      {isDeleteOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Delete Category
+            </h2>
+
+            <p className="text-sm text-warning-600 mt-2">
+              Are you sure you want to delete{" "}
+              <span className="font-medium text-gray-900">
+                {deleteTarget?.name}
+              </span>
+              ? This action cannot be undone.
+            </p>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsDeleteOpen(false);
+                  setDeleteTarget(null);
+                }}
+              >
+                Cancel
+              </Button>
+
+              <Button variant="destructive" onClick={handleDelete}>
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { AiOutlineLock, AiOutlineArrowLeft } from "react-icons/ai";
+import { AiOutlineLock } from "react-icons/ai";
+import { useAuth } from "../../contexts/AuthContext";
 
 // Component to display password rules
 const PasswordRule = ({ text, valid }: { text: string; valid: boolean }) => (
@@ -17,15 +18,15 @@ const PasswordRule = ({ text, valid }: { text: string; valid: boolean }) => (
 
 export default function ChangePasswordPage() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const email = (location.state as any)?.email || "";
+  const { user, setUser } = useAuth(); // get user & updater
+  const isFirstTime = user?.is_first_logged_in ?? false;
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Password rules state
+  // Password rules
   const [passwordRules, setPasswordRules] = useState({
     length: false,
     uppercase: false,
@@ -46,19 +47,35 @@ export default function ChangePasswordPage() {
     });
   }, [newPassword]);
 
+  // Prevent navigation if first-time login
+  useEffect(() => {
+    if (!isFirstTime) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+
+    const handlePopState = () => {
+      // Force stay on change password
+      navigate("/change_password", { replace: true });
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [isFirstTime, navigate]);
+
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!currentPassword) {
-      toast.error("Current password is required");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-
+    if (!currentPassword) return toast.error("Current password is required");
+    if (newPassword !== confirmPassword)
+      return toast.error("Passwords do not match");
     if (
       !passwordRules.length ||
       !passwordRules.uppercase ||
@@ -66,20 +83,20 @@ export default function ChangePasswordPage() {
       !passwordRules.number ||
       !passwordRules.special
     ) {
-      toast.error("Password does not meet requirements");
-      return;
+      return toast.error("Password does not meet requirements");
     }
 
     setLoading(true);
     try {
-      const API_BASE_URL =process.env.VITE_API_URL||'http://196.188.240.103:4038';
+      const API_BASE_URL =
+        process.env.VITE_API_URL || "http://196.188.240.103:4038";
       const token = localStorage.getItem("authToken");
 
       const res = await fetch(`${API_BASE_URL}/api/users/change-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // send JWT
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ currentPassword, newPassword }),
       });
@@ -87,7 +104,12 @@ export default function ChangePasswordPage() {
       const data = await res.json();
       if (data.success) {
         toast.success("Password changed successfully!");
-        setTimeout(() => navigate("/dashboard"), 1500);
+
+        // Update user state to mark first login as done
+        setUser({ ...user, is_first_logged_in: false });
+
+        // Redirect to dashboard
+        navigate("/dashboard", { replace: true });
       } else {
         toast.error(data.message || "Failed to change password");
       }
@@ -101,14 +123,6 @@ export default function ChangePasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50/30 px-4 py-8">
-      <Link
-        to="/login"
-        className="fixed top-6 left-6 flex items-center gap-2 text-slate-600 hover:text-slate-800 transition-colors duration-200 group"
-      >
-        <AiOutlineArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-200" />
-        <span className="font-medium">Back to Login</span>
-      </Link>
-
       <div className="max-w-md w-full space-y-8">
         <div className="text-center space-y-4">
           <div className="flex justify-center">

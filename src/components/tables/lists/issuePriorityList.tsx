@@ -1,5 +1,5 @@
 "use client";
-
+import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState, useMemo } from "react";
 import { Plus, Edit, Trash2, Eye } from "lucide-react";
 import { Button } from "../../ui/cn/button";
@@ -8,6 +8,9 @@ import { DataTable } from "../../common/CommonTable";
 import { CreatePriorityModal } from "../../modals/CreatePriorityModal";
 import DeleteModal from "../../common/DeleteModal";
 import { useGlobalSearch } from "../../../context/GlobalSearchContext";
+import Breadcrumbs from "../../common/Breadcrumbs";
+import { ArrowLeft } from "lucide-react";
+
 import {
   useGetIssuePrioritiesQuery,
   useDeleteIssuePriorityMutation,
@@ -30,7 +33,7 @@ export default function IssuePriorityList() {
     pageCount: 1,
     pageSize: 10,
   });
-
+  const navigate = useNavigate();
   const [deletePriority, { isLoading: isDeleteLoading }] =
     useDeleteIssuePriorityMutation();
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -60,10 +63,12 @@ export default function IssuePriorityList() {
     {
       accessorKey: "response_time",
       header: "Response Time",
-      cell: ({ row }: any) => (
-        <div>{row.getValue("response_time") || "N/A"}</div>
-      ),
+      cell: ({ row }: any) => {
+        const rt = row.original.responseTime;
+        return rt ? `${rt.duration} ${rt.unit}` : "N/A";
+      },
     },
+
     {
       id: "actions",
       header: "Actions",
@@ -71,9 +76,9 @@ export default function IssuePriorityList() {
         const priority = row.original;
         return (
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+            {/* <Button variant="outline" size="sm" className="h-8 w-8 p-0">
               <Eye className="h-4 w-4" />
-            </Button>
+            </Button> */}
             <Button
               variant="outline"
               size="sm"
@@ -164,6 +169,20 @@ export default function IssuePriorityList() {
 
   return (
     <>
+      <div className="mb-4 space-y-2">
+        <Breadcrumbs />
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="w-fit flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+      </div>
+
       <PageLayout
         title="Priority Management"
         filters={[

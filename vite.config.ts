@@ -22,13 +22,13 @@ export default defineConfig({
   },
   server: {
     host: "0.0.0.0",
-    port: 4037,
+    port: 5173,
     fs: {
       strict: false,
     },
   },
   preview: {
     host: "0.0.0.0",
-    port: 4037,
+    port: 5173,
   },
 });

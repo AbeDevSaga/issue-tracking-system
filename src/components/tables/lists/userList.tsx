@@ -1,9 +1,11 @@
 "use client";
+import { useNavigate } from "react-router-dom";
 
 import React, { useState, useEffect } from "react";
 import { Plus, Eye, Trash2, Edit } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { ArrowLeft } from "lucide-react";
 
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
@@ -20,6 +22,7 @@ import {
 import { useAuth } from "../../../contexts/AuthContext";
 import { getUserPositionId } from "../../../utils/helper/userPosition";
 import { useGlobalSearch } from "../../../context/GlobalSearchContext";
+import Breadcrumbs from "../../common/Breadcrumbs";
 
 interface UserListProps {
   user_type?: string;
@@ -45,7 +48,7 @@ export default function UserList({
   const [statusFilter, setStatusFilter] = useState("all");
   const [isModalOpen, setModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-
+  const navigate = useNavigate();
   const [pageDetail, setPageDetail] = useState({
     pageIndex: 0,
     pageSize: 10,
@@ -195,6 +198,20 @@ export default function UserList({
 
   return (
     <>
+      <div className="mb-4 space-y-2">
+        <Breadcrumbs />
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="w-fit flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+      </div>
+
       <PageLayout
         filters={filterFields}
         filterColumnsPerRow={1}
