@@ -27,7 +27,6 @@ import { useGetCurrentUserQuery } from "../../redux/services/authApi";
 import { getHeirarchyStructure } from "../../utils/hierarchUtils";
 
 import {
-  canConfirm,
   canEscalate,
   canMarkInProgress,
   canResolve,

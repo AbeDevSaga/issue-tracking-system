@@ -170,15 +170,15 @@ const InternalNodeTableColumns = (deleteNode: any) => [
 
   const handlePagination = (index: number, size: number) => {
     setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
-  };
 
-  console.log(filteredNodes.length > 0 ? true : false,filteredNodes,"this is the filtered nodes");
+  };
+  console.log(pathname,"this is the pathname",filteredNodes,"this is the filtered nodes");
   return (
     <>
       <PageLayout
         filters={filterFields}
-        title="Support Request Flow List"
-        description="List of all support request flows"
+        title={pathname.startsWith("/issue_configuration") ? "Support Request Flow List" : ""}
+        description={pathname.startsWith("/issue_configuration") ? "List of all support request flows" : ""}
         filterColumnsPerRow={1}
         toggleActions={toggleActions}
         actions={actions}
