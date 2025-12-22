@@ -98,8 +98,15 @@ export default function ProjectDetail() {
   };
   const formatDateShort = (dateString?: string) => {
     if (!dateString) return "N/A";
+
     try {
-      return format(new Date(dateString), "MMM dd, yyyy");
+      // Split date manually to avoid timezone shift
+      const [year, month, day] = dateString.split("-").map(Number);
+
+      // Create local date (NO UTC conversion)
+      const localDate = new Date(year, month - 1, day);
+
+      return format(localDate, "MMM dd, yyyy");
     } catch {
       return dateString;
     }
@@ -107,6 +114,7 @@ export default function ProjectDetail() {
 
   const formatDateWithTime = (dateString?: string) => {
     if (!dateString) return "N/A";
+
     try {
       return format(new Date(dateString), "MMM dd, yyyy 'at' h:mm a");
     } catch {
