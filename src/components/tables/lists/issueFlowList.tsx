@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Plus, Eye } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Plus, Eye, ArrowLeft } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 
 import {
   useDeleteInternalNodeMutation,
   useGetInternalNodesQuery,
 } from "../../../redux/services/internalNodeApi";
-import { ArrowLeft } from "lucide-react";
 
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
@@ -17,8 +15,10 @@ import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
 import { CreateInternalNodeModal } from "../../modals/CreateInternalNodeModal";
 import HierarchyD3TreeInstitute from "./HierarchyD3TreeInstitute";
-import { useGlobalSearch } from "../../../context/GlobalSearchContext";
 import Breadcrumbs from "../../common/Breadcrumbs";
+
+import { useGlobalSearch } from "../../../context/GlobalSearchContext";
+import { useTablePagination } from "../../../hooks/useTablePagination";
 
 interface IssueFlowListProps {
   toggleActions?: ActionButton[];
@@ -29,48 +29,67 @@ export default function IssueFlowList({
   toggleActions,
   isAssignUsersToStructure,
 }: IssueFlowListProps) {
+  /* ===================== HOOKS ===================== */
   const { data, isLoading, isError } = useGetInternalNodesQuery();
   const [deleteNode] = useDeleteInternalNodeMutation();
   const { search } = useGlobalSearch();
 
-  const [nodes, setNodes] = useState<any[]>([]);
-  const [filteredNodes, setFilteredNodes] = useState<any[]>([]);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [isModalOpen, setModalOpen] = useState(false);
-  const [toggleView, setToggleView] = useState<"table" | "tree">("table");
-  const [pageDetail, setPageDetail] = useState({
-    pageIndex: 0,
-    pageCount: 1,
-    pageSize: 10,
-  });
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
+  /* ===================== STATE ===================== */
+  const [nodes, setNodes] = useState<any[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [toggleView, setToggleView] = useState<"table" | "tree">("table");
+
+  /* ===================== LOAD DATA ===================== */
+  useEffect(() => {
+    if (!isLoading && !isError && data) {
+      setNodes(Array.isArray(data) ? data : []);
+    }
+  }, [data, isLoading, isError]);
+
+  /* ===================== SAFE DATA ===================== */
+  const safeNodes = useMemo(() => (Array.isArray(nodes) ? nodes : []), [nodes]);
+
+  /* ===================== PAGINATION + SEARCH + FILTER ===================== */
+  const {
+    data: paginatedNodes,
+    pageDetail,
+    handlePagination,
+    resetPage,
+  } = useTablePagination({
+    data: safeNodes,
+    search,
+    statusFilter,
+    statusAccessor: (node) => (node.is_active ? "ACTIVE" : "INACTIVE"),
+    searchFields: [(n) => n.name, (n) => n.parent?.name],
+  });
+
+  /* ===================== TABLE COLUMNS ===================== */
   const InternalNodeTableColumns = [
     {
-      id: "serial",
       header: "#",
-      cell: ({ row }: any) => <div>{row.index + 1}</div>,
+      cell: ({ row }: any) => row.index + 1,
     },
     {
       accessorKey: "name",
       header: "Support Request Flow Name",
       cell: ({ row }: any) => (
-        <div className="font-medium text-blue-600">{row.getValue("name")}</div>
+        <span className="font-medium text-blue-600">
+          {row.getValue("name")}
+        </span>
       ),
     },
     {
-      accessorKey: "parent",
       header: "Parent Request Flow",
-      cell: ({ row }: any) => (
-        <div>{row.original.parent?.name || "No Parent"}</div>
-      ),
+      cell: ({ row }: any) => row.original.parent?.name || "No Parent",
     },
     {
-      accessorKey: "is_active",
       header: "Status",
       cell: ({ row }: any) => {
-        const isActive = row.getValue("is_active");
+        const isActive = row.original.is_active;
         return (
           <span
             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -85,31 +104,29 @@ export default function IssueFlowList({
       },
     },
     {
-      id: "actions",
       header: "Actions",
       cell: ({ row }: any) => {
         const node = row.original;
         const toggle = !pathname.startsWith("/inistitutes/project");
 
         return (
-          <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-              <Link
-                to={
-                  toggle
-                    ? `/issue_configuration/${node.internal_node_id}`
-                    : `/issue_flow/${node.internal_node_id}`
-                }
-              >
-                <Eye className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
+          <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
+            <Link
+              to={
+                toggle
+                  ? `/issue_configuration/${node.internal_node_id}`
+                  : `/issue_flow/${node.internal_node_id}`
+              }
+            >
+              <Eye className="h-4 w-4" />
+            </Link>
+          </Button>
         );
       },
     },
   ];
 
+  /* ===================== ACTIONS ===================== */
   const actions: ActionButton[] = [
     {
       label: "Add",
@@ -120,6 +137,7 @@ export default function IssueFlowList({
     },
   ];
 
+  /* ===================== FILTERS ===================== */
   const filterFields: FilterField[] = [
     {
       key: "status",
@@ -130,52 +148,37 @@ export default function IssueFlowList({
         { label: "Inactive", value: "INACTIVE" },
       ],
       value: statusFilter,
-      onChange: (value: string | string[]) => {
+      onChange: (value) => {
         setStatusFilter(Array.isArray(value) ? value[0] : value);
-        setPageDetail((prev) => ({ ...prev, pageIndex: 0 }));
+        resetPage(); // 🔑 same behavior as TaskList
       },
     },
   ];
 
-  useEffect(() => {
-    if (!isError && !isLoading && data) {
-      setNodes(data || []);
-      setFilteredNodes(data || []);
-    }
-  }, [data, isError, isLoading]);
+  /* ===================== STATES ===================== */
+  if (isLoading) {
+    return (
+      <PageLayout>
+        <div className="flex justify-center items-center h-64">
+          Loading request flows...
+        </div>
+      </PageLayout>
+    );
+  }
 
-  // ✅ Apply global search + status filter
-  useEffect(() => {
-    const lowerSearch = search.toLowerCase();
+  if (isError) {
+    return (
+      <PageLayout>
+        <div className="text-red-600 p-4">Error loading request flows</div>
+      </PageLayout>
+    );
+  }
 
-    const filtered = nodes.filter((node) => {
-      const statusMatch =
-        !statusFilter ||
-        statusFilter === "all" ||
-        (statusFilter === "ACTIVE" && node.is_active) ||
-        (statusFilter === "INACTIVE" && !node.is_active);
-
-      const searchMatch =
-        !search ||
-        node.name?.toLowerCase().includes(lowerSearch) ||
-        node.parent?.name?.toLowerCase().includes(lowerSearch);
-
-      return statusMatch && searchMatch;
-    });
-
-    setFilteredNodes(filtered);
-    setPageDetail((prev) => ({ ...prev, pageIndex: 0 }));
-  }, [nodes, statusFilter, search]);
-
-  const handlePagination = (index: number, size: number) => {
-    setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
-  };
-
+  /* ===================== UI ===================== */
   return (
     <>
       <div className="mb-4 space-y-2">
         <Breadcrumbs />
-
         <Button
           variant="outline"
           size="sm"
@@ -188,19 +191,19 @@ export default function IssueFlowList({
       </div>
 
       <PageLayout
-        filters={filterFields}
         title="Support Request Flow Management"
+        filters={filterFields}
         filterColumnsPerRow={1}
         toggleActions={toggleActions}
         actions={actions}
         showtoggle
         toggle={toggleView}
-        onToggle={(value: string) => setToggleView(value)}
+        onToggle={(value: string) => setToggleView(value as "table" | "tree")}
       >
         {toggleView === "table" ? (
           <DataTable
             columns={InternalNodeTableColumns}
-            data={filteredNodes}
+            data={paginatedNodes}
             handlePagination={handlePagination}
             tablePageSize={pageDetail.pageSize}
             totalPageCount={pageDetail.pageCount}
@@ -209,7 +212,7 @@ export default function IssueFlowList({
         ) : (
           <HierarchyD3TreeInstitute
             isAssignUsersToStructure={isAssignUsersToStructure}
-            data={filteredNodes}
+            data={paginatedNodes}
             isLoading={isLoading}
           />
         )}

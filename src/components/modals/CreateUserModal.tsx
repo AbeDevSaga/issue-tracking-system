@@ -289,7 +289,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                     setPhoneNumber(value);
                   }
                 }}
-                placeholder="+2519xxxxxxx"
+                placeholder="+2519/091012345"
                 className="w-full h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
               />
             </div>
