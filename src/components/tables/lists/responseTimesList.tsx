@@ -1,109 +1,99 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Plus, Edit, Trash2, ArrowLeft } from "lucide-react";
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
-import { ArrowLeft } from "lucide-react";
 
 import {
   IssueResponseTime,
   useGetIssueResponseTimesQuery,
   useDeleteIssueResponseTimeMutation,
 } from "../../../redux/services/issueResponseTimeApi";
+
+import { useTablePagination } from "../../../hooks/useTablePagination";
 import DeleteModal from "../../common/DeleteModal";
 import { ResponseTimeModal } from "../../modals/CreateResponseTimeModal";
 import { useNavigate } from "react-router";
 import Breadcrumbs from "../../common/Breadcrumbs";
 
 export default function IssueResponseTimeList() {
-  const [response, setResponse] = useState<IssueResponseTime[]>([]);
-  const [filteredResponse, setFilteredResponse] = useState<IssueResponseTime[]>(
-    []
-  );
-  const [statusFilter, setStatusFilter] = useState<string>("all");
   const navigate = useNavigate();
-  const [isModalOpen, setModalOpen] = useState(false);
-  const [editingResponseTime, setEditingResponseTime] = useState<
-    IssueResponseTime | undefined
-  >(undefined);
 
-  const [pageDetail, setPageDetail] = useState({
-    pageIndex: 0,
-    pageCount: 1,
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [search, setSearch] = useState<string>(""); // optional global search
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [editingResponseTime, setEditingResponseTime] =
+    useState<IssueResponseTime>();
+  const [responseTimes, setResponseTimes] = useState<IssueResponseTime[]>([]);
+
+  const [deleteResponseTimeId, setDeleteResponseTimeId] = useState("");
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+
+  /* ---------- API ---------- */
+  const { data, isLoading, isError } = useGetIssueResponseTimesQuery();
+  const [deleteResponseTime, { isLoading: isDeleteLoading }] =
+    useDeleteIssueResponseTimeMutation();
+
+  /* ---------- FETCH DATA ---------- */
+  useEffect(() => {
+    if (!isLoading && !isError && data) {
+      setResponseTimes(data?.data || []);
+    }
+  }, [data, isLoading, isError]);
+
+  /* ---------- SAFE DATA ---------- */
+  const safeResponseTimes = useMemo(
+    () => (Array.isArray(responseTimes) ? responseTimes : []),
+    [responseTimes]
+  );
+
+  /* ---------- PAGINATION + FILTER ---------- */
+  const {
+    data: paginatedResponseTimes,
+    pageDetail,
+    handlePagination,
+    resetPage,
+  } = useTablePagination({
+    data: safeResponseTimes,
+    search,
+    statusFilter,
+    statusAccessor: (r) => (r.is_active ? "ACTIVE" : "INACTIVE"),
+    searchFields: [
+      (r) => String(r.duration ?? ""),
+      (r) => String(r.unit ?? ""),
+    ],
     pageSize: 10,
   });
 
-  const [deleteResponseTime, { isLoading: isDeleteLoading }] =
-    useDeleteIssueResponseTimeMutation();
-  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [deleteResponseTimeId, setDeleteResponseTimeId] = useState<string>("");
-
-  const { data, isLoading, isError } = useGetIssueResponseTimesQuery();
-
-  // Populate table data
-  useEffect(() => {
-    if (!isError && !isLoading && data) {
-      setResponse(data?.data || []);
-      setFilteredResponse(data?.data || []);
-    }
-  }, [data, isError, isLoading]);
-
-  // Apply status filter
-  useEffect(() => {
-    const filtered = response.filter((item) => {
-      if (!statusFilter || statusFilter === "all") return true;
-      if (statusFilter === "ACTIVE") return item.is_active;
-      if (statusFilter === "INACTIVE") return !item.is_active;
-      return true;
-    });
-    setFilteredResponse(filtered);
-  }, [response, statusFilter]);
-
-  const handlePagination = (index: number, size: number) => {
-    setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
-  };
-
-  // Table columns
+  /* ---------- TABLE COLUMNS ---------- */
   const ResponseTimeTableColumns = [
-    {
-      accessorKey: "project.id",
-      header: "#",
-      minSize: 50,
-      cell: ({ row }: any) => <div>{row.index + 1}</div>,
-    },
+    { header: "#", cell: ({ row }: any) => row.index + 1 },
     {
       accessorKey: "duration",
       header: "Duration",
-      minSize: 50,
-      cell: ({ row }: any) => <div>{row.getValue("duration")}</div>,
+      cell: ({ row }: any) => row.getValue("duration"),
     },
     {
       accessorKey: "unit",
       header: "Unit",
-      minSize: 50,
-      cell: ({ row }: any) => <div>{row.getValue("unit")}</div>,
+      cell: ({ row }: any) => row.getValue("unit"),
     },
     {
-      id: "actions",
       header: "Actions",
-      minSize: 100,
       cell: ({ row }: any) => {
         const item: IssueResponseTime = row.original;
         return (
           <div className="flex items-center space-x-2">
-            {/* <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-              <Eye className="h-4 w-4" />
-            </Button> */}
             <Button
               variant="outline"
               size="sm"
               className="h-8 w-8 p-0"
               onClick={() => {
-                setEditingResponseTime(item); // set item to edit
-                setModalOpen(true); // open modal
+                setEditingResponseTime(item);
+                setModalOpen(true);
               }}
             >
               <Edit className="h-4 w-4" />
@@ -111,10 +101,10 @@ export default function IssueResponseTimeList() {
             <Button
               variant="outline"
               size="sm"
-              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+              className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
               onClick={() => {
-                setDeleteModalOpen(true);
                 setDeleteResponseTimeId(item.response_time_id);
+                setDeleteModalOpen(true);
               }}
             >
               <Trash2 className="h-4 w-4" />
@@ -125,21 +115,19 @@ export default function IssueResponseTimeList() {
     },
   ];
 
-  // Page actions
+  /* ---------- ACTIONS ---------- */
   const actions: ActionButton[] = [
     {
       label: "Create",
       icon: <Plus className="h-4 w-4" />,
-      variant: "default",
-      size: "default",
       onClick: () => {
-        setEditingResponseTime(undefined); // ensure modal is in create mode
+        setEditingResponseTime(undefined);
         setModalOpen(true);
       },
     },
   ];
 
-  // Filters
+  /* ---------- FILTERS ---------- */
   const filterFields: FilterField[] = [
     {
       key: "status",
@@ -150,18 +138,26 @@ export default function IssueResponseTimeList() {
         { label: "Inactive", value: "INACTIVE" },
       ],
       value: statusFilter,
-      onChange: (value: string | string[]) => {
+      onChange: (value) => {
         setStatusFilter(Array.isArray(value) ? value[0] : value);
-        setPageDetail({ ...pageDetail, pageIndex: 0 });
+        resetPage();
       },
     },
   ];
+
+  if (isLoading)
+    return <PageLayout title="Response Time Management">Loading...</PageLayout>;
+  if (isError)
+    return (
+      <PageLayout title="Response Time Management">
+        Failed to load data.
+      </PageLayout>
+    );
 
   return (
     <>
       <div className="mb-4 space-y-2">
         <Breadcrumbs />
-
         <Button
           variant="outline"
           size="sm"
@@ -174,14 +170,14 @@ export default function IssueResponseTimeList() {
       </div>
 
       <PageLayout
+        title="Response Time Management"
         filters={filterFields}
-        title=" Response Time Management"
         filterColumnsPerRow={1}
         actions={actions}
       >
         <DataTable
           columns={ResponseTimeTableColumns}
-          data={filteredResponse}
+          data={paginatedResponseTimes}
           handlePagination={handlePagination}
           tablePageSize={pageDetail.pageSize}
           totalPageCount={pageDetail.pageCount}
@@ -189,23 +185,23 @@ export default function IssueResponseTimeList() {
         />
       </PageLayout>
 
-      {/* Modal for create/edit */}
+      {/* Create / Edit Modal */}
       <ResponseTimeModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
         existingResponseTime={editingResponseTime}
       />
 
-      {/* Delete confirmation */}
+      {/* Delete Confirmation */}
       <DeleteModal
+        open={isDeleteModalOpen}
         message="Are you sure you want to delete this response time?"
+        isLoading={isDeleteLoading}
         onCancel={() => setDeleteModalOpen(false)}
         onDelete={() => {
           deleteResponseTime(deleteResponseTimeId).unwrap();
           setDeleteModalOpen(false);
         }}
-        open={isDeleteModalOpen}
-        isLoading={isDeleteLoading || isLoading}
       />
     </>
   );

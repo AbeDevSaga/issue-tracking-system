@@ -1,49 +1,47 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Plus, Eye, Edit, Trash2 } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Plus, Eye, Trash2, ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
 
 import {
   useGetRolesQuery,
   useDeleteRoleMutation,
 } from "../../../redux/services/roleApi";
+
+import { useGlobalSearch } from "../../../context/GlobalSearchContext";
+import { useTablePagination } from "../../../hooks/useTablePagination";
+
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
-import DetailHeader from "../../common/DetailHeader";
-import { useGlobalSearch } from "../../../context/GlobalSearchContext";
 import Breadcrumbs from "../../common/Breadcrumbs";
 
-const RoleTableColumns = (
-  handleDelete: (id: string) => void,
-  handleEdit: (role: any) => void
-) => [
+/* ===================== TABLE COLUMNS ===================== */
+
+const RoleTableColumns = (handleDelete: (id: string) => void) => [
   {
-    id: "serial",
     header: "#",
-    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+    cell: ({ row }: any) => row.index + 1,
   },
   {
     accessorKey: "name",
     header: "Role Name",
     cell: ({ row }: any) => (
-      <div className="font-medium text-blue-600">{row.getValue("name")}</div>
+      <span className="font-medium text-blue-600">{row.getValue("name")}</span>
     ),
   },
   {
     accessorKey: "description",
     header: "Description",
-    cell: ({ row }: any) => <div>{row.getValue("description") || "N/A"}</div>,
+    cell: ({ row }: any) => row.getValue("description") || "N/A",
   },
   {
-    accessorKey: "is_active",
     header: "Status",
     cell: ({ row }: any) => {
-      const isActive = row.getValue("is_active");
+      const isActive = row.original.is_active;
       return (
         <span
           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -56,34 +54,21 @@ const RoleTableColumns = (
     },
   },
   {
-    id: "actions",
     header: "Actions",
     cell: ({ row }: any) => {
       const role = row.original;
       return (
         <div className="flex items-center space-x-2">
-          {/* View */}
           <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
             <Link to={`/role/${role.role_id}`}>
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
 
-          {/* Edit */}
-          {/* <Button
-            variant="outline"
-            size="sm"
-            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-            onClick={() => handleEdit(role)}
-          >
-            <Edit className="h-4 w-4" />
-          </Button> */}
-
-          {/* Delete */}
           <Button
             variant="outline"
             size="sm"
-            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
             onClick={() => handleDelete(role.role_id)}
           >
             <Trash2 className="h-4 w-4" />
@@ -94,22 +79,43 @@ const RoleTableColumns = (
   },
 ];
 
+/* ===================== COMPONENT ===================== */
+
 export default function RoleList() {
-  const [response, setResponse] = useState<any[]>([]);
-  const [filteredResponse, setFilteredResponse] = useState<any[]>([]);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const navigate = useNavigate();
   const { search } = useGlobalSearch();
 
-  const navigate = useNavigate();
-  const [pageDetail, setPageDetail] = useState({
-    pageIndex: 0,
-    pageCount: 1,
-    pageSize: 10,
-  });
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [roles, setRoles] = useState<any[]>([]);
 
+  /* ---------- FETCH DATA ---------- */
   const { data, isLoading, isError } = useGetRolesQuery(undefined);
   const [deleteRole] = useDeleteRoleMutation();
 
+  useEffect(() => {
+    if (!isLoading && !isError && data) {
+      setRoles(Array.isArray(data) ? data : data?.data || []);
+    }
+  }, [data, isLoading, isError]);
+
+  /* ---------- SAFE DATA ---------- */
+  const safeRoles = useMemo(() => (Array.isArray(roles) ? roles : []), [roles]);
+
+  /* ---------- PAGINATION + SEARCH + FILTER ---------- */
+  const {
+    data: paginatedRoles,
+    pageDetail,
+    handlePagination,
+    resetPage,
+  } = useTablePagination({
+    data: safeRoles,
+    search,
+    statusFilter,
+    statusAccessor: (r) => (r.is_active ? "ACTIVE" : "INACTIVE"),
+    searchFields: [(r) => r.name, (r) => r.description],
+  });
+
+  /* ---------- DELETE ---------- */
   const handleDelete = async (id: string) => {
     try {
       await deleteRole(id).unwrap();
@@ -119,18 +125,16 @@ export default function RoleList() {
     }
   };
 
+  /* ---------- ACTIONS ---------- */
   const actions: ActionButton[] = [
     {
       label: "Create Role",
       icon: <Plus className="h-4 w-4" />,
-      variant: "default",
-      size: "default",
-      onClick: () => {
-        navigate("/role/create");
-      },
+      onClick: () => navigate("/role/create"),
     },
   ];
 
+  /* ---------- FILTERS ---------- */
   const filterFields: FilterField[] = [
     {
       key: "status",
@@ -141,59 +145,29 @@ export default function RoleList() {
         { label: "Inactive", value: "INACTIVE" },
       ],
       value: statusFilter,
-      onChange: (value: string | string[]) => {
+      onChange: (value) => {
         setStatusFilter(Array.isArray(value) ? value[0] : value);
-        setPageDetail({ ...pageDetail, pageIndex: 0 });
+        resetPage(); // 🔑 consistent behavior
       },
     },
   ];
 
-  useEffect(() => {
-    if (!isError && !isLoading && data) {
-      const roles = Array.isArray(data) ? data : data?.data || [];
-      setResponse(roles);
-      setFilteredResponse(roles);
-    }
-  }, [data, isError, isLoading]);
+  /* ---------- STATES ---------- */
+  if (isLoading) {
+    return <PageLayout title="Role Management">Loading roles...</PageLayout>;
+  }
 
-  useEffect(() => {
-    const lowerSearch = search.toLowerCase();
+  if (isError) {
+    return (
+      <PageLayout title="Role Management">Error loading roles.</PageLayout>
+    );
+  }
 
-    const filtered = response.filter((role) => {
-      // ✅ Status filter
-      const statusMatch =
-        !statusFilter ||
-        statusFilter === "all" ||
-        (statusFilter === "ACTIVE" && role.is_active) ||
-        (statusFilter === "INACTIVE" && !role.is_active);
-
-      // ✅ Global search across fields
-      const searchMatch =
-        !search ||
-        role.name?.toLowerCase().includes(lowerSearch) ||
-        role.description?.toLowerCase().includes(lowerSearch);
-
-      return statusMatch && searchMatch;
-    });
-
-    setFilteredResponse(filtered);
-    setPageDetail((prev) => ({ ...prev, pageIndex: 0 }));
-  }, [response, statusFilter, search]);
-
-  const handlePagination = (index: number, size: number) => {
-    setPageDetail({
-      ...pageDetail,
-      pageIndex: index,
-      pageSize: size,
-    });
-  };
-
+  /* ---------- UI ---------- */
   return (
     <>
-      {/* <DetailHeader className="mb-5 mt-2" breadcrumbs={[{ title: "Roles", link: "" }]} /> */}
       <div className="mb-4 space-y-2">
         <Breadcrumbs />
-
         <Button
           variant="outline"
           size="sm"
@@ -206,14 +180,14 @@ export default function RoleList() {
       </div>
 
       <PageLayout
-        filters={filterFields}
         title="Role Management"
+        filters={filterFields}
         filterColumnsPerRow={1}
         actions={actions}
       >
         <DataTable
           columns={RoleTableColumns(handleDelete)}
-          data={filteredResponse}
+          data={paginatedRoles}
           handlePagination={handlePagination}
           tablePageSize={pageDetail.pageSize}
           totalPageCount={pageDetail.pageCount}

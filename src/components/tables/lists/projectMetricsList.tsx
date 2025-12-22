@@ -1,46 +1,43 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
-import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Plus, Edit, Trash2, ArrowLeft } from "lucide-react";
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
-import { ActionButton, FilterField } from "../../../types/layout";
-import DeleteModal from "../../common/DeleteModal";
-import { ArrowLeft } from "lucide-react";
-
-import {
-  useDeleteProjectMetricMutation,
-  useGetProjectMetricsQuery,
-} from "../../../redux/services/projectMetricApi";
 import { CreateProjectMetricModal } from "../../modals/CreateProjectMetricModal";
+import DeleteModal from "../../common/DeleteModal";
+import Breadcrumbs from "../../common/Breadcrumbs";
 import { useGlobalSearch } from "../../../context/GlobalSearchContext";
 import { useNavigate } from "react-router";
-import Breadcrumbs from "../../common/Breadcrumbs";
+
+import {
+  useGetProjectMetricsQuery,
+  useDeleteProjectMetricMutation,
+} from "../../../redux/services/projectMetricApi";
+
+import { useTablePagination } from "../../../hooks/useTablePagination";
 
 export default function ProjectMetricsList() {
-  const { search } = useGlobalSearch();
   const navigate = useNavigate();
-  const [response, setResponse] = useState<any[]>([]);
-  const [filteredResponse, setFilteredResponse] = useState<any[]>([]);
+  const { search } = useGlobalSearch();
+
+  const [metrics, setMetrics] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isModalOpen, setModalOpen] = useState(false);
   const [editingMetric, setEditingMetric] = useState<any>(undefined);
-  const [pageDetail, setPageDetail] = useState({
-    pageIndex: 0,
-    pageCount: 1,
-    pageSize: 10,
-  });
-  const [deleteMetric, { isLoading: isDeleteLoading }] =
-    useDeleteProjectMetricMutation();
-  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+
   const [deleteMetricId, setDeleteMetricId] = useState<string>("");
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
 
   const { data, isLoading, isError } = useGetProjectMetricsQuery({});
+  const [deleteMetric, { isLoading: isDeleteLoading }] =
+    useDeleteProjectMetricMutation();
 
+  /* ---------- FETCH DATA ---------- */
   useEffect(() => {
-    if (!isError && !isLoading && data) {
-      setResponse(
+    if (!isLoading && !isError && data) {
+      setMetrics(
         data.map((m: any) => ({
           ...m,
           projects: m.projects || [],
@@ -48,37 +45,35 @@ export default function ProjectMetricsList() {
         }))
       );
     }
-  }, [data, isError, isLoading]);
+  }, [data, isLoading, isError]);
 
-  // Filter + Global search
-  const filteredMetrics = useMemo(() => {
-    return response.filter((item) => {
-      if (statusFilter === "ACTIVE" && !item.is_active) return false;
-      if (statusFilter === "INACTIVE" && item.is_active) return false;
-      if (!search) return true;
-      const q = search.toLowerCase();
-      return (
-        item.name?.toLowerCase().includes(q) ||
-        item.description?.toLowerCase().includes(q)
-      );
-    });
-  }, [response, statusFilter, search]);
+  /* ---------- SAFE DATA ---------- */
+  const safeMetrics = useMemo(
+    () => (Array.isArray(metrics) ? metrics : []),
+    [metrics]
+  );
 
-  useEffect(() => {
-    setFilteredResponse(filteredMetrics);
-    setPageDetail((prev) => ({ ...prev, pageIndex: 0 }));
-  }, [filteredMetrics]);
+  /* ---------- PAGINATION + FILTER + SEARCH ---------- */
+  const {
+    data: paginatedMetrics,
+    pageDetail,
+    handlePagination,
+    resetPage,
+  } = useTablePagination({
+    data: safeMetrics,
+    search,
+    statusFilter,
+    statusAccessor: (m) => (m.is_active ? "ACTIVE" : "INACTIVE"),
+    searchFields: [(m) => m.name ?? "", (m) => m.description ?? ""],
+    pageSize: 10,
+  });
 
-  const handlePagination = (index: number, size: number) => {
-    setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
-  };
-
-  // --- Table columns ---
+  /* ---------- TABLE COLUMNS ---------- */
   const metricColumns = [
     {
-      accessorKey: "project.id",
       header: "#",
-      cell: ({ row }: any) => <div>{row.index + 1}</div>,
+      cell: ({ row }: any) =>
+        row.index + 1 + pageDetail.pageIndex * pageDetail.pageSize,
     },
     {
       accessorKey: "name",
@@ -93,7 +88,6 @@ export default function ProjectMetricsList() {
       cell: ({ row }: any) => <div>{row.getValue("description") || "N/A"}</div>,
     },
     {
-      id: "actions",
       header: "Actions",
       cell: ({ row }: any) => {
         const metric = row.original;
@@ -127,10 +121,11 @@ export default function ProjectMetricsList() {
     },
   ];
 
-  const actions: ActionButton[] = [
+  /* ---------- ACTIONS ---------- */
+  const actions = [
     {
       label: "Create",
-      icon: <Plus />,
+      icon: <Plus className="h-4 w-4" />,
       variant: "default",
       size: "default",
       onClick: () => {
@@ -140,11 +135,17 @@ export default function ProjectMetricsList() {
     },
   ];
 
+  if (isLoading)
+    return <PageLayout title="Project Metrics">Loading...</PageLayout>;
+  if (isError)
+    return (
+      <PageLayout title="Project Metrics">Error loading metrics.</PageLayout>
+    );
+
   return (
     <>
       <div className="mb-4 space-y-2">
         <Breadcrumbs />
-
         <Button
           variant="outline"
           size="sm"
@@ -159,7 +160,7 @@ export default function ProjectMetricsList() {
       <PageLayout filters={[]} filterColumnsPerRow={1} actions={actions}>
         <DataTable
           columns={metricColumns}
-          data={filteredResponse}
+          data={paginatedMetrics}
           handlePagination={handlePagination}
           tablePageSize={pageDetail.pageSize}
           totalPageCount={pageDetail.pageCount}

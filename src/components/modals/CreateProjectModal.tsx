@@ -12,6 +12,7 @@ import { Textarea } from "../ui/cn/textarea";
 // Import react-datepicker styles
 import "react-datepicker/dist/react-datepicker.css";
 import { useGetProjectMetricsQuery } from "../../redux/services/projectMetricApi";
+import { de } from "zod/v4/locales";
 
 interface CreateProjectModalProps {
   instituteId: string;
@@ -86,6 +87,10 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   const handleSubmit = async () => {
     if (!name) {
       toast.error("Please provide a project name");
+      return;
+    }
+    if (description && description.length < 10) {
+      toast.error("Description must be at least 10 characters");
       return;
     }
 
@@ -249,15 +254,28 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                   rows={3}
                   value={description}
                   onChange={(e) => {
-                    // Allow only letters and spaces
                     const value = e.target.value;
-                    if (/^[A-Za-z\s]*$/.test(value)) {
-                      setDescription(value);
-                    }
+                    // limit to 200 chars
+                    if (value.length <= 200) setDescription(value);
                   }}
-                  placeholder="Project description"
+                  placeholder="Project description (10-200 characters)"
                   className="w-full min-h-[40px] max-w-[350px] border border-gray-300 px-4 py-2 rounded-md focus:ring-2 focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
                 />
+                <p
+                  className={`text-sm mt-1 ${
+                    description.length < 10 ? "text-red-600" : "text-gray-500"
+                  }`}
+                >
+                  {description.length < 10
+                    ? `Minimum 10 characters required (${
+                        10 - description.length
+                      } more to reach min)`
+                    : description.length < 200
+                    ? `${description.length} / 200 characters (You can type ${
+                        200 - description.length
+                      } more)`
+                    : "Maximum 200 characters reached"}
+                </p>
               </div>
             </div>
 

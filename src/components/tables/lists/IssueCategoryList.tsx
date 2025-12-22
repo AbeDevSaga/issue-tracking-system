@@ -1,85 +1,69 @@
 "use client";
-import { useNavigate } from "react-router-dom";
 
-import React, { useEffect, useState } from "react";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { Plus, Edit, Trash2, ArrowLeft } from "lucide-react";
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { CreateCategoryModal } from "../../modals/CreateCategoryModal";
-import { ArrowLeft } from "lucide-react";
+import { useGlobalSearch } from "../../../context/GlobalSearchContext";
+import { toast } from "sonner";
+import Breadcrumbs from "../../common/Breadcrumbs";
 
 import {
   useGetIssueCategoriesQuery,
   useDeleteIssueCategoryMutation,
 } from "../../../redux/services/issueCategoryApi";
-import { useGlobalSearch } from "../../../context/GlobalSearchContext";
-import { toast } from "sonner";
-import Breadcrumbs from "../../common/Breadcrumbs";
+
+import { useTablePagination } from "../../../hooks/useTablePagination";
 
 export default function IssueCategoryList() {
-  const [response, setResponse] = useState<any[]>([]);
-  const [filteredResponse, setFilteredResponse] = useState<any[]>([]);
-  const [isModalOpen, setModalOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<any>(undefined);
-  const [pageDetail, setPageDetail] = useState({
-    pageIndex: 0,
-    pageCount: 1,
-    pageSize: 10,
-  });
   const navigate = useNavigate();
   const { search } = useGlobalSearch();
+
+  const [categories, setCategories] = useState<any[]>([]);
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<any>(undefined);
+
+  const [deleteCategoryId, setDeleteCategoryId] = useState<string>("");
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+
   const { data, isLoading, isError, refetch } = useGetIssueCategoriesQuery();
   const [deleteCategory] = useDeleteIssueCategoryMutation();
-  const [deleteTarget, setDeleteTarget] = useState<any>(null);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
-  const handleEdit = (category: any) => {
-    setEditingCategory(category);
-    setModalOpen(true);
-  };
-
-  const handleDelete = async () => {
-    if (!deleteTarget) return;
-
-    try {
-      await deleteCategory(deleteTarget.category_id).unwrap();
-      toast.success("Category deleted successfully");
-      setIsDeleteOpen(false);
-      setDeleteTarget(null);
-    } catch {
-      toast.error("Failed to delete category");
-    }
-  };
-
-  // ---------------- FILTER + SEARCH ----------------
+  /* ---------- FETCH DATA ---------- */
   useEffect(() => {
-    if (!isError && !isLoading && data) {
-      setResponse(data);
+    if (!isLoading && !isError && data) {
+      setCategories(data);
     }
-  }, [data, isError, isLoading]);
+  }, [data, isLoading, isError]);
 
-  useEffect(() => {
-    const filtered = response.filter((item) => {
-      const matchesSearch = search
-        ? item.name.toLowerCase().includes(search.toLowerCase()) ||
-          item.description?.toLowerCase().includes(search.toLowerCase())
-        : true;
-      return matchesSearch;
-    });
-    setFilteredResponse(filtered);
-  }, [response, search]);
+  /* ---------- SAFE DATA ---------- */
+  const safeCategories = useMemo(
+    () => (Array.isArray(categories) ? categories : []),
+    [categories]
+  );
 
-  const handlePagination = (index: number, size: number) => {
-    setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
-  };
+  /* ---------- PAGINATION + SEARCH ---------- */
+  const {
+    data: paginatedCategories,
+    pageDetail,
+    handlePagination,
+    resetPage,
+  } = useTablePagination({
+    data: safeCategories,
+    search,
+    searchFields: [(c) => c.name ?? "", (c) => c.description ?? ""],
+    pageSize: 10,
+  });
 
-  // ---------------- TABLE COLUMNS ----------------
+  /* ---------- TABLE COLUMNS ---------- */
   const CategoryTableColumns = [
     {
-      id: "serial",
       header: "#",
-      cell: ({ row }: any) => <div>{row.index + 1}</div>,
+      cell: ({ row }: any) =>
+        row.index + 1 + pageDetail.pageIndex * pageDetail.pageSize,
     },
     {
       accessorKey: "name",
@@ -94,7 +78,6 @@ export default function IssueCategoryList() {
       cell: ({ row }: any) => <div>{row.getValue("description") || "N/A"}</div>,
     },
     {
-      id: "actions",
       header: "Actions",
       cell: ({ row }: any) => {
         const category = row.original;
@@ -104,23 +87,41 @@ export default function IssueCategoryList() {
               variant="outline"
               size="sm"
               className="h-8 w-8 p-0"
-              onClick={() => handleEdit(category)}
+              onClick={() => {
+                setEditingCategory(category);
+                setModalOpen(true);
+              }}
             >
               <Edit className="h-4 w-4" />
             </Button>
+
             <Button
               variant="outline"
               size="sm"
               className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
               onClick={() => {
-                setDeleteTarget(category);
-                setIsDeleteOpen(true);
+                setDeleteCategoryId(category.category_id);
+                setDeleteModalOpen(true);
               }}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         );
+      },
+    },
+  ];
+
+  /* ---------- ACTIONS ---------- */
+  const actions = [
+    {
+      label: "Create",
+      icon: <Plus className="h-4 w-4" />,
+      variant: "default",
+      size: "default",
+      onClick: () => {
+        setEditingCategory(undefined);
+        setModalOpen(true);
       },
     },
   ];
@@ -138,7 +139,6 @@ export default function IssueCategoryList() {
     <>
       <div className="mb-4 space-y-2">
         <Breadcrumbs />
-
         <Button
           variant="outline"
           size="sm"
@@ -152,24 +152,13 @@ export default function IssueCategoryList() {
 
       <PageLayout
         title="Support Categories"
-        filters={[]} // Add filters if needed
+        filters={[]} // add filters if needed
         filterColumnsPerRow={1}
-        actions={[
-          {
-            label: "Create",
-            icon: <Plus />,
-            variant: "default",
-            size: "default",
-            onClick: () => {
-              setEditingCategory(undefined);
-              setModalOpen(true);
-            },
-          },
-        ]}
+        actions={actions}
       >
         <DataTable
           columns={CategoryTableColumns}
-          data={filteredResponse}
+          data={paginatedCategories}
           handlePagination={handlePagination}
           tablePageSize={pageDetail.pageSize}
           totalPageCount={pageDetail.pageCount}
@@ -177,22 +166,27 @@ export default function IssueCategoryList() {
         />
       </PageLayout>
 
+      {/* Create / Edit Modal */}
       <CreateCategoryModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
         editingCategory={editingCategory}
       />
-      {isDeleteOpen && (
+
+      {/* Delete Modal */}
+      {isDeleteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
             <h2 className="text-lg font-semibold text-gray-900">
               Delete Category
             </h2>
-
             <p className="text-sm text-warning-600 mt-2">
               Are you sure you want to delete{" "}
               <span className="font-medium text-gray-900">
-                {deleteTarget?.name}
+                {
+                  categories.find((c) => c.category_id === deleteCategoryId)
+                    ?.name
+                }
               </span>
               ? This action cannot be undone.
             </p>
@@ -200,15 +194,22 @@ export default function IssueCategoryList() {
             <div className="mt-6 flex justify-end gap-3">
               <Button
                 variant="outline"
-                onClick={() => {
-                  setIsDeleteOpen(false);
-                  setDeleteTarget(null);
-                }}
+                onClick={() => setDeleteModalOpen(false)}
               >
                 Cancel
               </Button>
-
-              <Button variant="destructive" onClick={handleDelete}>
+              <Button
+                variant="destructive"
+                onClick={async () => {
+                  try {
+                    await deleteCategory(deleteCategoryId).unwrap();
+                    toast.success("Category deleted successfully");
+                    setDeleteModalOpen(false);
+                  } catch {
+                    toast.error("Failed to delete category");
+                  }
+                }}
+              >
                 Delete
               </Button>
             </div>

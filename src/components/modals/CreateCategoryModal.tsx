@@ -65,6 +65,10 @@ export const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
       toast.error("Category name is required");
       return;
     }
+    if (formData.description && formData.description.length < 10) {
+      toast.error("Description must be at least 10 characters");
+      return;
+    }
 
     try {
       if (editingCategory) {
@@ -122,10 +126,34 @@ export const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
             <Textarea
               id="description"
               name="description"
-              placeholder="Enter short description (optional)"
+              placeholder="Enter short description (optional, 10-200 characters)"
               value={formData.description}
-              onChange={handleChange}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value.length <= 200) {
+                  setFormData((prev) => ({ ...prev, description: value }));
+                }
+              }}
             />
+            <p
+              className={`text-sm mt-1 ${
+                formData.description.length < 10
+                  ? "text-red-600"
+                  : "text-gray-500"
+              }`}
+            >
+              {formData.description.length < 10
+                ? `Minimum 10 characters required (${
+                    10 - formData.description.length
+                  } more to reach min)`
+                : formData.description.length < 200
+                ? `${
+                    formData.description.length
+                  } / 200 characters (You can type ${
+                    200 - formData.description.length
+                  } more)`
+                : "Maximum 200 characters reached"}
+            </p>
           </div>
         </div>
 

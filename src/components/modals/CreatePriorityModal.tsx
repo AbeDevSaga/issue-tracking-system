@@ -69,6 +69,9 @@ export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
 
     if (!name.trim()) return toast.error("Priority name is required");
     if (!responseTime) return toast.error("Please select a response time");
+    if (description && description.length < 10) {
+      return toast.error("Description must be at least 10 characters");
+    }
 
     try {
       if (editingPriority) {
@@ -170,10 +173,31 @@ export const CreatePriorityModal: React.FC<CreatePriorityModalProps> = ({
 
               <Label htmlFor="priority-description">Description</Label>
               <Textarea
+                id="priority-description"
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Enter description (optional)"
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value.length <= 200) setDescription(value); // max 200
+                }}
+                placeholder="Enter description (optional, 10-200 characters)"
               />
+
+              {/* Character counter */}
+              <p
+                className={`text-sm mt-1 ${
+                  description.length < 10 ? "text-red-600" : "text-gray-500"
+                }`}
+              >
+                {description.length < 10
+                  ? `Minimum 10 characters required (${
+                      10 - description.length
+                    } more to reach min)`
+                  : description.length < 200
+                  ? `${description.length} / 200 characters (You can type ${
+                      200 - description.length
+                    } more)`
+                  : `Maximum 200 characters reached`}
+              </p>
 
               <div className="flex items-center gap-2 mt-2">
                 <input
