@@ -6,7 +6,7 @@ import { Plus, Eye, Trash2, Edit } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
-
+import { CheckCircle } from "lucide-react";
 import { Button } from "../../ui/cn/button";
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
@@ -16,6 +16,7 @@ import { CreateUserModal } from "../../modals/CreateUserModal";
 import {
   useGetUsersQuery,
   useDeleteUserMutation,
+  useToggleUserStatusMutation,
   User,
 } from "../../../redux/services/userApi";
 
@@ -54,6 +55,7 @@ export default function UserList({
     pageSize: 10,
     pageCount: 1,
   });
+  const [toggleUserStatus] = useToggleUserStatusMutation();
 
   const { data, isLoading } = useGetUsersQuery({
     institute_id: user?.institute?.institute_id || inistitute_id,
@@ -92,6 +94,22 @@ export default function UserList({
       toast.success("User deleted successfully");
     } catch (err) {
       toast.error("Failed to delete user");
+    }
+  };
+  const handleToggleStatus = async (user: User) => {
+    try {
+      await toggleUserStatus({
+        id: user.user_id,
+        is_active: !user.is_active,
+      }).unwrap();
+
+      toast.success(
+        user.is_active
+          ? "User deactivated successfully"
+          : "User activated successfully"
+      );
+    } catch (error) {
+      toast.error("Failed to update user status");
     }
   };
 
@@ -140,28 +158,33 @@ export default function UserList({
 
         return (
           <div className="flex gap-2">
+            {/* View */}
             <Button size="sm" variant="outline" asChild>
               <Link to={`/users/${u.user_id}`}>
                 <Eye className="h-4 w-4" />
               </Link>
             </Button>
 
-            {/* <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setEditingUser(u)}
-            >
-              <Edit className="h-4 w-4" />
-            </Button> */}
-
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-red-600"
-              onClick={() => handleDelete(u.user_id)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            {/* Activate / Deactivate */}
+            {u.is_active ? (
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-red-600"
+                onClick={() => handleToggleStatus(u)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-green-600"
+                onClick={() => handleToggleStatus(u)}
+              >
+                <CheckCircle className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         );
       },
