@@ -9,13 +9,16 @@ import { useResolveIssueMutation } from "../../redux/services/issueResolutionApi
 interface ResolutionPreviewProps {
   issue_id: string;
   resolved_by: string;
+  onSuccess?: () => void;
   onClose?: () => void;
 }
 
 export default function ResolutionPreview({
   issue_id,
   resolved_by,
+
   onClose,
+  onSuccess,
 }: ResolutionPreviewProps) {
   const [reason, setReason] = useState("");
   const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
@@ -36,6 +39,10 @@ export default function ResolutionPreview({
       }).unwrap();
 
       toast.success("Issue resolved successfully!");
+      if (onSuccess) {
+        onSuccess();
+      }
+
       onClose?.();
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to resolve issue.");
@@ -52,11 +59,12 @@ export default function ResolutionPreview({
     >
       <div className="p-6 border-b border-[#D5E3EC] bg-gradient-to-r from-[#1E516A] to-[#2C6B8A]">
         <h2 className="text-xl font-bold text-white">Resolve Request</h2>
-        <p className="text-white text-sm mt-1">Upload files related to the resolution</p>
+        <p className="text-white text-sm mt-1">
+          Upload files related to the resolution
+        </p>
       </div>
       <div className="flex flex-col px-4 gap-3">
-
-      <h4 className="font-semibold text-[#1E516A] mt-4">Summary</h4>
+        <h4 className="font-semibold text-[#1E516A] mt-4">Summary</h4>
         <textarea
           className="w-full border border-[#BFD7EA] rounded-lg p-3 text-sm h-32 focus:outline-none focus:ring-2 focus:ring-[#1E516A]"
           placeholder="Explain how this issue was resolved"
@@ -64,7 +72,7 @@ export default function ResolutionPreview({
           onChange={(e) => setReason(e.target.value)}
         />
         <FileUploadField
-        className="flex flex-col gap-1 font-bold"
+          className="flex flex-col gap-1 font-bold"
           id="resolution_attachments"
           label="Upload files"
           value={attachmentIds}
@@ -74,9 +82,8 @@ export default function ResolutionPreview({
           labelClass="text-sm  text-[#1E516A] "
         />
 
-
         <div className="w-full flex justify-end gap-3 mt-3">
-        <button
+          <button
             onClick={onClose}
             disabled={isLoading}
             className="px-5 py-2 rounded-md bg-gray-200 border text-gray-700 font-semibold disabled:opacity-50"
@@ -90,7 +97,6 @@ export default function ResolutionPreview({
           >
             {isLoading ? "Submitting..." : "Confirm"}
           </button>
-         
         </div>
       </div>
     </motion.div>

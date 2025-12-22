@@ -12,6 +12,7 @@ interface EscalationPreviewProps {
   to_tier: string | null;
   escalated_by: string;
   onClose?: () => void;
+  onSuccess?: () => void;
 }
 
 export default function EscalationPreview({
@@ -20,6 +21,7 @@ export default function EscalationPreview({
   to_tier,
   escalated_by,
   onClose,
+  onSuccess,
 }: EscalationPreviewProps) {
   const [reason, setReason] = useState("");
   const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
@@ -42,7 +44,9 @@ export default function EscalationPreview({
       }).unwrap();
 
       toast.success("Issue escalated successfully!");
-
+      if (onSuccess) {
+        onSuccess();
+      }
       onClose?.();
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to escalate issue.");
@@ -59,9 +63,11 @@ export default function EscalationPreview({
     >
       <div className="p-6 border-b border-[#D5E3EC] bg-gradient-to-r from-[#1E516A] to-[#2C6B8A]">
         <h2 className="text-xl font-bold text-white">Escalate Request</h2>
-          <p className="text-white text-sm mt-1">Upload files related to the escalation</p>
-        </div>
-        <div className="flex flex-col px-4 gap-3">
+        <p className="text-white text-sm mt-1">
+          Upload files related to the escalation
+        </p>
+      </div>
+      <div className="flex flex-col px-4 gap-3">
         <h4 className="font-semibold text-[#1E516A] mt-4">Escalation Reason</h4>
         <textarea
           className="w-full border border-[#BFD7EA] rounded-lg p-3 text-sm h-32 focus:outline-none focus:ring-2 focus:ring-[#1E516A]"

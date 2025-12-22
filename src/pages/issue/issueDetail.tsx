@@ -210,7 +210,7 @@ export default function UserIssueDetail() {
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2"
             disabled={isLoading}
           >
-            {isLoading ? "Reopening..." : "Reopen Issue"}
+            {isLoading ? "Re Raising..." : "Reraise Issue"}
           </Button>
         </DialogTrigger>
 
@@ -844,7 +844,7 @@ export default function UserIssueDetail() {
               )}
 
               {/* Reopen button for closed/resolved issues */}
-              {(issue.status === "closed") && (
+              {issue.status === "closed" && (
                 <div className="mt-4 flex gap-4">
                   <ReopenIssueButton issueId={issue.issue_id} />
                 </div>

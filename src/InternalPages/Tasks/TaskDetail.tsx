@@ -77,6 +77,7 @@ export default function InternalTaskDetail() {
   const {
     data: userProjectNode,
     isLoading: isLoadingNode,
+    refetch: refetchIssue,
     isError: nodeError,
   } = useGetUserInternalNodesByProjectQuery(project_id, {
     skip: !project_id,
@@ -313,10 +314,12 @@ export default function InternalTaskDetail() {
 
   return (
     <>
-      <DetailHeader breadcrumbs={[
-        { title: "Task List", link: "" },
-        { title: "Task Detail", link: "" },
-      ]} />
+      <DetailHeader
+        breadcrumbs={[
+          { title: "Task List", link: "" },
+          { title: "Task Detail", link: "" },
+        ]}
+      />
       <PageMeta
         title={"Task Detail"}
         description={"Review task details and take appropriate action"}
@@ -1095,6 +1098,7 @@ export default function InternalTaskDetail() {
                 issue_id={id || ""}
                 resolved_by={userId}
                 onClose={() => setSelectedAction("")}
+                onSuccess={refetchIssue}
               />
             )}
             {selectedAction === "assign" && (
@@ -1103,6 +1107,7 @@ export default function InternalTaskDetail() {
                 project_id={project_id || ""}
                 internal_node_id={internal_node_id}
                 onClose={() => setSelectedAction("")}
+                onSuccess={refetchIssue}
                 assigned_by={userId}
               />
             )}{" "}

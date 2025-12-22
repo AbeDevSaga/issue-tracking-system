@@ -42,7 +42,12 @@ import DetailHeader from "../../components/common/DetailHeader";
 
 export default function UserTaskDetail() {
   const { id } = useParams<{ id: string }>();
-  const { data: issue, isLoading, isError } = useGetIssueByIdQuery(id!);
+  const {
+    data: issue,
+    isLoading,
+    refetch: refetchIssue,
+    isError,
+  } = useGetIssueByIdQuery(id!);
   const { t } = useTranslation();
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [modalImageIndex, setModalImageIndex] = useState<number | null>(null);
@@ -157,7 +162,9 @@ export default function UserTaskDetail() {
     if (!id) return;
     try {
       const res = await acceptIssue({ issue_id: id }).unwrap();
+
       toast.success(res.message || "Status updated to In Progress!");
+      refetchIssue();
     } catch (error: any) {
       toast.error(error?.data?.message || "Error updating status.");
       console.error(error);
@@ -275,10 +282,12 @@ export default function UserTaskDetail() {
 
   return (
     <>
-    <DetailHeader breadcrumbs={[
-        { title: "Task List", link: "" },
-        { title: "Task Detail", link: "" },
-      ]} />
+      <DetailHeader
+        breadcrumbs={[
+          { title: "Task List", link: "" },
+          { title: "Task Detail", link: "" },
+        ]}
+      />
       <PageMeta
         title={t("CATask.ca_task_detail")}
         description={t("CATask.ca_task_detail", {
@@ -326,38 +335,28 @@ export default function UserTaskDetail() {
                 </div>
               </div>
 
-              <div
-                className="border border-[#BFD7EA] rounded-lg p-6 mb-6"
-              >
+              <div className="border border-[#BFD7EA] rounded-lg p-6 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
                   <div>
-                    <p className="font-semibold text-[#1E516A] ">
-                      System
-                    </p>
+                    <p className="font-semibold text-[#1E516A] ">System</p>
                     <p className="text-gray-700 text-sm">
                       {issue.project?.name || "N/A"}
                     </p>
                   </div>
                   <div>
-                    <p className="font-semibold text-[#1E516A] ">
-                      Category
-                    </p>
+                    <p className="font-semibold text-[#1E516A] ">Category</p>
                     <p className="text-gray-700 text-sm">
                       {issue.category?.name || "N/A"}
                     </p>
                   </div>
                   <div>
-                    <p className="font-semibold text-[#1E516A] ">
-                      Reported By
-                    </p>
+                    <p className="font-semibold text-[#1E516A] ">Reported By</p>
                     <p className="text-gray-700 text-sm">
                       {issue.reporter?.full_name || "N/A"}
                     </p>
                   </div>
                   <div>
-                    <p className="font-semibold text-[#1E516A] ">
-                      Reported On
-                    </p>
+                    <p className="font-semibold text-[#1E516A] ">Reported On</p>
                     <p className="text-gray-700 text-sm">
                       {formatDate(issue.issue_occured_time)}
                     </p>
@@ -384,10 +383,10 @@ export default function UserTaskDetail() {
                       Description
                     </p>
                     <p className="text-gray-700 text-wrap whitespace-pre-line">
-                    {issue.description ||
-                      issue.title ||
-                      "No description provided"}
-                      </p>
+                      {issue.description ||
+                        issue.title ||
+                        "No description provided"}
+                    </p>
                   </div>
 
                   <div className="bg-slate-50 border border-[#BFD7EA] rounded-md p-3 text-gray-700">
@@ -395,7 +394,7 @@ export default function UserTaskDetail() {
                       Action Taken
                     </p>
                     <p className="text-gray-700 text-wrap whitespace-pre-line">
-                    {issue.action_taken || "No action taken yet"}
+                      {issue.action_taken || "No action taken yet"}
                     </p>
                   </div>
                 </div>
@@ -709,7 +708,8 @@ export default function UserTaskDetail() {
                                           {formatDate(resolution.resolved_at)}
                                         </span>
                                         <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                          {formatStatus(resolution.status) || "resolved"}
+                                          {formatStatus(resolution.status) ||
+                                            "resolved"}
                                         </span>
                                       </div>
                                     </div>
@@ -983,13 +983,13 @@ export default function UserTaskDetail() {
               </div>
             </div>
           )}
-
           <AnimatePresence>
             {selectedAction === "resolve" && (
               <ResolutionPreview
                 issue_id={id || ""}
                 resolved_by={userId}
                 onClose={() => setSelectedAction("")}
+                onSuccess={refetchIssue} // Pass refetch function here
               />
             )}
             {selectedAction === "escalate" && (
@@ -999,6 +999,7 @@ export default function UserTaskDetail() {
                 to_tier={hierarchyStructure?.parent_id || ""}
                 onClose={() => setSelectedAction("")}
                 escalated_by={userId}
+                onSuccess={refetchIssue} // Make sure EscalationPreview also has this prop
               />
             )}{" "}
             {openTimeline && (
