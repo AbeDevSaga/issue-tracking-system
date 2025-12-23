@@ -66,6 +66,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
   const [position, setPosition] = useState("");
   const [instituteId, setInstituteId] = useState<string>("");
   const [selectAll, setSelectAll] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const [roleSearch, setRoleSearch] = useState("");
   const fullNameRegex = /^[A-Za-z\s]*$/;
@@ -206,9 +207,9 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
   const showMetricsSelect =
     logged_user_type === "internal_user" && user_type === "internal_user";
 
-  function setOpen(arg0: (prev: any) => boolean): void {
-    throw new Error("Function not implemented.");
-  }
+  // function setOpen(arg0: (prev: any) => boolean): void {
+  //   throw new Error("Function not implemented.");
+  // }
 
   return (
     <div
@@ -282,15 +283,26 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
               </Label>
               <Input
                 value={phoneNumber}
+                onFocus={() => {
+                  if (!phoneNumber) {
+                    setPhoneNumber("+251");
+                  }
+                }}
                 onChange={(e) => {
-                  const value = e.target.value;
+                  let value = e.target.value;
 
-                  if (phoneRegex.test(value)) {
+                  // Always keep +251
+                  if (!value.startsWith("+251")) {
+                    value = "+251" + value.replace(/^\+?251?/, "");
+                  }
+
+                  // Allow only digits after +251
+                  if (/^\+251\d*$/.test(value)) {
                     setPhoneNumber(value);
                   }
                 }}
-                placeholder="+2519/091012345"
-                className="w-full h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81] focus:border-transparent transition-all duration-200 outline-none"
+                placeholder="+2519XXXXXXXX"
+                className="w-full h-12 border border-gray-300 px-4 py-3 rounded-md focus:ring focus:ring-[#094C81]"
               />
             </div>
             <div className="space-y-2">
@@ -307,15 +319,16 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
             </div>
 
             {/* ROLE MULTI SELECT */}
-            <div className="w-full space-y-2 relative">
+            <div className="w-full space-y-2">
               <Label className="text-sm font-medium text-[#094C81]">
                 Role <span className="text-red-500">*</span>
               </Label>
 
               {/* Selector box */}
-              <div
-                className="border rounded h-12 px-4 flex items-center justify-between cursor-pointer select-none"
+              <button
+                type="button"
                 onClick={() => setOpen((prev) => !prev)}
+                className="w-full border rounded h-12 px-4 flex items-center justify-between text-left focus:ring-2 focus:ring-[#094C81]"
               >
                 <span className="text-sm text-[#094C81] truncate">
                   {selectedRoles.length === 0
@@ -325,21 +338,25 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                         .join(", ")}
                 </span>
                 <span className="text-[#094C81]">{open ? "▲" : "▼"}</span>
-              </div>
+              </button>
 
-              {/* Dropdown */}
-              {open && (
-                <div className="absolute z-50 mt-1 w-full max-h-34 overflow-y-auto bg-white border rounded shadow-lg">
-                  {/* Search input */}
-                  <input
-                    type="text"
-                    placeholder="Search roles..."
-                    className="w-full px-3 py-2 border-b border-gray-200 text-sm focus:outline-none"
-                    value={roleSearch}
-                    onChange={(e) => setRoleSearch(e.target.value)}
-                  />
+              {/* Dropdown PANEL (pushes content down) */}
+              <div
+                className={`border rounded-md transition-all duration-300 overflow-hidden ${
+                  open ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
+                }`}
+              >
+                {/* Search */}
+                <input
+                  type="text"
+                  placeholder="Search roles..."
+                  className="w-full px-3 py-2 border-b text-sm focus:outline-none"
+                  value={roleSearch}
+                  onChange={(e) => setRoleSearch(e.target.value)}
+                />
 
-                  {/* Role options */}
+                {/* Roles list */}
+                <div className="max-h-48 overflow-y-auto">
                   {roles
                     .filter((r) =>
                       r.name.toLowerCase().includes(roleSearch.toLowerCase())
@@ -349,9 +366,6 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                       return (
                         <div
                           key={r.role_id}
-                          className={`flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-[#094C81]/10 ${
-                            isSelected ? "bg-[#094C81]/10" : ""
-                          }`}
                           onClick={() =>
                             setSelectedRoles((prev) =>
                               prev.includes(r.role_id)
@@ -359,6 +373,9 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                                 : [...prev, r.role_id]
                             )
                           }
+                          className={`flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-[#094C81]/10 ${
+                            isSelected ? "bg-[#094C81]/10" : ""
+                          }`}
                         >
                           <span className="text-[#094C81] truncate">
                             {r.name}
@@ -370,7 +387,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                       );
                     })}
                 </div>
-              )}
+              </div>
             </div>
           </div>
 
