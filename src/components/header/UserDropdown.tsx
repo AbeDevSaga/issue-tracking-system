@@ -8,12 +8,12 @@ import { User, User2Icon, UserRound } from "lucide-react";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const { user,  logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const toggleDropdown = () => setIsOpen(!isOpen);
   const closeDropdown = () => setIsOpen(false);
 
-  if (!user) return  <UserRound className="h-8 w-8 text-[#094C81]" />;
+  if (!user) return <UserRound className="h-8 w-8 text-[#094C81]" />;
 
   const userRole = user.roles?.[0]?.role?.name || "N/A";
 
@@ -26,7 +26,7 @@ export default function UserDropdown() {
         <span className="overflow-hidden rounded-full h-11 w-11 flex items-center justify-center border-2 border-gray-200 dark:border-gray-700">
           {user.profile_image ? (
             <img
-              src={user.profile_image }
+              src={user.profile_image}
               alt="User"
               className="h-full w-full object-cover"
             />
@@ -65,9 +65,9 @@ export default function UserDropdown() {
           </li>
           <li>
             <DropdownItem
-              onItemClick={() => {
-                logout();
+              onItemClick={async () => {
                 closeDropdown();
+                await logout();
                 navigate("/login");
               }}
               tag="button"
@@ -81,4 +81,3 @@ export default function UserDropdown() {
     </div>
   );
 }
-

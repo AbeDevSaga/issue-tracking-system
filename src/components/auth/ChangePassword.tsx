@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { AiOutlineLock } from "react-icons/ai";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+
 import { useAuth } from "../../contexts/AuthContext";
 
 // Component to display password rules
@@ -18,13 +20,18 @@ const PasswordRule = ({ text, valid }: { text: string; valid: boolean }) => (
 
 export default function ChangePasswordPage() {
   const navigate = useNavigate();
-  const { user, setUser } = useAuth(); // get user & updater
+  const { user } = useAuth();
   const isFirstTime = user?.is_first_logged_in ?? false;
+  const [allowRedirect, setAllowRedirect] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   // Password rules
   const [passwordRules, setPasswordRules] = useState({
@@ -35,7 +42,6 @@ export default function ChangePasswordPage() {
     special: false,
   });
 
-  // Live password validation
   useEffect(() => {
     const p = newPassword;
     setPasswordRules({
@@ -47,18 +53,18 @@ export default function ChangePasswordPage() {
     });
   }, [newPassword]);
 
-  // Prevent navigation if first-time login
   useEffect(() => {
     if (!isFirstTime) return;
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = "";
+      if (!allowRedirect) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
     };
 
     const handlePopState = () => {
-      // Force stay on change password
-      navigate("/change_password", { replace: true });
+      if (!allowRedirect) navigate("/change_password", { replace: true });
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
@@ -68,7 +74,7 @@ export default function ChangePasswordPage() {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [isFirstTime, navigate]);
+  }, [isFirstTime, navigate, allowRedirect]);
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,10 +95,11 @@ export default function ChangePasswordPage() {
     setLoading(true);
     try {
       const API_BASE_URL =
-        process.env.VITE_API_URL || "http://196.188.240.103:4038";
+        import.meta.env.VITE_API_PUBLIC_BASE_URL || "http://localhost:4000";
+
       const token = localStorage.getItem("authToken");
 
-      const res = await fetch(`${API_BASE_URL}/api/users/change-password`, {
+      const res = await fetch(`${API_BASE_URL}/users/change-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -103,13 +110,10 @@ export default function ChangePasswordPage() {
 
       const data = await res.json();
       if (data.success) {
-        toast.success("Password changed successfully!");
-
-        // Update user state to mark first login as done
-        setUser({ ...user, is_first_logged_in: false });
-
-        // Redirect to dashboard
-        navigate("/dashboard", { replace: true });
+        toast.success("Password changed successfully. Please login again.");
+        setAllowRedirect(true);
+        localStorage.clear();
+        setTimeout(() => (window.location.href = "/login"), 800);
       } else {
         toast.error(data.message || "Failed to change password");
       }
@@ -120,6 +124,37 @@ export default function ChangePasswordPage() {
       setLoading(false);
     }
   };
+
+  const renderPasswordInput = (
+    value: string,
+    setValue: React.Dispatch<React.SetStateAction<string>>,
+    show: boolean,
+    setShow: React.Dispatch<React.SetStateAction<boolean>>,
+    placeholder: string
+  ) => (
+    <div className="relative">
+      <input
+        type={show ? "text" : "password"}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder={placeholder}
+        required
+        disabled={loading}
+        className="block w-full pl-3 pr-10 py-3.5 border border-slate-300 rounded-xl placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200 bg-white/50 text-slate-900 text-sm"
+      />
+      <button
+        type="button"
+        onClick={() => setShow(!show)}
+        className="absolute top-1/2 -translate-y-1/2 right-3 text-slate-500 hover:text-slate-700"
+      >
+        {show ? (
+          <AiOutlineEyeInvisible className="w-5 h-5" />
+        ) : (
+          <AiOutlineEye className="w-5 h-5" />
+        )}
+      </button>
+    </div>
+  );
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50/30 px-4 py-8">
@@ -147,15 +182,13 @@ export default function ChangePasswordPage() {
               <label className="block text-2xl font-medium text-slate-700">
                 Current Password
               </label>
-              <input
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="Enter current password"
-                required
-                disabled={loading}
-                className="block w-full pl-3 pr-4 py-3.5 border border-slate-300 rounded-xl placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200 bg-white/50 text-slate-900 text-sm"
-              />
+              {renderPasswordInput(
+                currentPassword,
+                setCurrentPassword,
+                showCurrent,
+                setShowCurrent,
+                "Enter current password"
+              )}
             </div>
 
             {/* New Password */}
@@ -163,15 +196,13 @@ export default function ChangePasswordPage() {
               <label className="block text-2xl font-medium text-slate-700">
                 New Password
               </label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Enter new password"
-                required
-                disabled={loading}
-                className="block w-full pl-3 pr-4 py-3.5 border border-slate-300 rounded-xl placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200 bg-white/50 text-slate-900 text-sm"
-              />
+              {renderPasswordInput(
+                newPassword,
+                setNewPassword,
+                showNew,
+                setShowNew,
+                "Enter new password"
+              )}
               <div className="mt-3 space-y-1">
                 <PasswordRule
                   text="At least 6 characters"
@@ -201,15 +232,13 @@ export default function ChangePasswordPage() {
               <label className="block text-2xl font-medium text-slate-700">
                 Confirm Password
               </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm new password"
-                required
-                disabled={loading}
-                className="block w-full pl-3 pr-4 py-3.5 border border-slate-300 rounded-xl placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200 bg-white/50 text-slate-900 text-sm"
-              />
+              {renderPasswordInput(
+                confirmPassword,
+                setConfirmPassword,
+                showConfirm,
+                setShowConfirm,
+                "Confirm new password"
+              )}
             </div>
 
             <button

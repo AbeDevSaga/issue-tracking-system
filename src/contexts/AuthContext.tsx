@@ -90,7 +90,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     setToken(null);
     localStorage.removeItem("authToken");
     localStorage.removeItem("user");
-    window.location.replace("/login");
+    // window.location.replace("/login");
   };
 
   const value: AuthContextType = {
