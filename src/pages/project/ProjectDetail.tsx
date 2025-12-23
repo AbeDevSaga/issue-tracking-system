@@ -4,6 +4,7 @@ import {
   useDeleteProjectMutation,
   useGetProjectByIdQuery,
 } from "../../redux/services/projectApi";
+import { useGetProjectMetricsQuery } from "../../redux/services/projectMetricApi";
 import DetailHeader from "../../components/common/DetailHeader";
 import { ArrowRight, Edit, Trash2, Users } from "lucide-react";
 import PageMeta from "../../components/common/PageMeta";
@@ -45,16 +46,52 @@ export default function ProjectDetail() {
     name: "",
     description: "",
     is_active: true,
+    maintenance_start: "",
+    maintenance_end: "",
+    project_metrics_ids: [] as string[],
   });
+  // Add project metrics query
+  const { data: metricsData, isLoading: loadingMetrics } =
+    useGetProjectMetricsQuery({});
+  const metrics = metricsData || [];
+
+  // Update the useEffect to populate all fields
   useEffect(() => {
     if (project) {
       setFormData({
         name: project.name || "",
         description: project.description || "",
         is_active: project.is_active ?? true,
+        maintenance_start: project.maintenances?.[0]?.start_date || "",
+        maintenance_end: project.maintenances?.[0]?.end_date || "",
+        project_metrics_ids:
+          project.project_metrics?.map((pm: any) => pm.project_metric_id) || [],
       });
     }
   }, [project]);
+
+  // Add helper functions
+  const toggleMetric = (metricId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      project_metrics_ids: prev.project_metrics_ids.includes(metricId)
+        ? prev.project_metrics_ids.filter((id) => id !== metricId)
+        : [...prev.project_metrics_ids, metricId],
+    }));
+  };
+
+  const selectAllMetrics = () => {
+    if (formData.project_metrics_ids.length === metrics.length) {
+      // Deselect all
+      setFormData((prev) => ({ ...prev, project_metrics_ids: [] }));
+    } else {
+      // Select all
+      setFormData((prev) => ({
+        ...prev,
+        project_metrics_ids: metrics.map((m: any) => m.project_metric_id),
+      }));
+    }
+  };
 
   const actions: ActionButton[] = [
     {
@@ -74,9 +111,21 @@ export default function ProjectDetail() {
   ];
   const handleUpdate = async () => {
     try {
+      const updateData = {
+        name: formData.name,
+        description: formData.description,
+        is_active: formData.is_active,
+        maintenance_start: formData.maintenance_start || undefined,
+        maintenance_end: formData.maintenance_end || undefined,
+        project_metrics_ids:
+          formData.project_metrics_ids.length > 0
+            ? formData.project_metrics_ids
+            : undefined,
+      };
+
       await updateProject({
         id: project.project_id,
-        data: formData,
+        data: updateData,
       }).unwrap();
 
       toast.success("Project updated successfully");
@@ -309,69 +358,202 @@ export default function ProjectDetail() {
           <div
             className="
         bg-white
-        w-full max-w-md
+        w-full max-w-4xl
         rounded-lg shadow-xl
         relative
         z-[10000]
+        max-h-[90vh]
+        overflow-y-auto
       "
           >
-            <div className="p-6 space-y-4">
-              <h3 className="text-lg font-semibold text-[#094C81]">
-                Edit Project
-              </h3>
-
-              <div>
-                <label className="text-sm font-medium">Name</label>
-                <input
-                  className="w-full border rounded px-3 py-2 mt-1"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium">Description</label>
-                <textarea
-                  className="w-full border rounded px-3 py-2 mt-1"
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      description: e.target.value,
-                    })
-                  }
-                />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={formData.is_active}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      is_active: e.target.checked,
-                    })
-                  }
-                />
-                <span className="text-sm">Active</span>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4">
+            <div className="p-6 space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-[#094C81]">
+                  Edit Project
+                </h3>
                 <button
                   onClick={() => setIsEditOpen(false)}
-                  className="px-4 py-2 border rounded"
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Project Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-[#094C81] mb-2">
+                      Project Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-[#094C81] focus:border-transparent outline-none"
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      placeholder="Enter project name"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-[#094C81] mb-2">
+                      Description
+                    </label>
+                    <textarea
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-[#094C81] focus:border-transparent outline-none"
+                      value={formData.description}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          description: e.target.value,
+                        })
+                      }
+                      rows={3}
+                      placeholder="Project description"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="is_active"
+                      checked={formData.is_active}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          is_active: e.target.checked,
+                        })
+                      }
+                      className="w-4 h-4 text-[#094C81] border-gray-300 rounded focus:ring-[#094C81]"
+                    />
+                    <label
+                      htmlFor="is_active"
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Active
+                    </label>
+                  </div>
+                </div>
+
+                {/* Maintenance Dates */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-[#094C81] mb-2">
+                      Maintenance Start Date
+                    </label>
+                    <input
+                      type="date"
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-[#094C81] focus:border-transparent outline-none"
+                      value={formData.maintenance_start || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          maintenance_start: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-[#094C81] mb-2">
+                      Maintenance End Date
+                    </label>
+                    <input
+                      type="date"
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-[#094C81] focus:border-transparent outline-none"
+                      value={formData.maintenance_end || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          maintenance_end: e.target.value,
+                        })
+                      }
+                      min={formData.maintenance_start || ""}
+                    />
+                  </div>
+
+                  {/* Institutes - Read only or select if needed */}
+                  {project?.institutes?.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-medium text-[#094C81] mb-2">
+                        Institutes
+                      </label>
+                      <div className="border border-gray-300 rounded-md px-3 py-2 bg-gray-50">
+                        {project.institutes.map((institute: any) => (
+                          <span
+                            key={institute.institute_id}
+                            className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-2 mb-1"
+                          >
+                            {institute.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Project Metrics/Human Resources */}
+              <div>
+                <h4 className="text-lg font-semibold text-[#094C81] mb-4">
+                  Project Human Resources
+                </h4>
+                {loadingMetrics ? (
+                  <div className="text-center py-4">Loading metrics...</div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                    {metrics.map((metric: any) => (
+                      <div
+                        key={metric.project_metric_id}
+                        className="flex items-center gap-2 p-2 border rounded hover:bg-gray-50 cursor-pointer"
+                        onClick={() => toggleMetric(metric.project_metric_id)}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={
+                            formData.project_metrics_ids?.includes(
+                              metric.project_metric_id
+                            ) || false
+                          }
+                          onChange={() =>
+                            toggleMetric(metric.project_metric_id)
+                          }
+                          className="w-4 h-4 text-[#094C81] border-gray-300 rounded focus:ring-[#094C81]"
+                        />
+                        <span className="text-sm">{metric.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="mt-2 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={selectAllMetrics}
+                    className="text-sm text-[#094C81] hover:text-[#073954] font-medium"
+                  >
+                    Select All
+                  </button>
+                  <span className="text-sm text-gray-500">
+                    | Selected: {formData.project_metrics_ids?.length || 0} of{" "}
+                    {metrics.length}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-6 border-t">
+                <button
+                  onClick={() => setIsEditOpen(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleUpdate}
                   disabled={isUpdating}
-                  className="px-4 py-2 bg-[#094C81] text-white rounded"
+                  className="px-4 py-2 bg-[#094C81] text-white rounded-md hover:bg-[#073954] transition-colors disabled:opacity-50"
                 >
-                  {isUpdating ? "Saving..." : "Save"}
+                  {isUpdating ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </div>

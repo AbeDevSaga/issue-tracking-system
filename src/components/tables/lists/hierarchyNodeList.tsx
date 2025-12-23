@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Plus, Eye, Edit, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -18,8 +18,16 @@ import { ActionButton, FilterField } from "../../../types/layout";
 import { CreateHierarchyNodeModal } from "../../modals/CreateHierarchyNodeModal";
 import HierarchyD3Tree from "./HierarchyD3Tree";
 
+// Import hooks for search and pagination
+import { useGlobalSearch } from "../../../context/GlobalSearchContext";
+import { useTablePagination } from "../../../hooks/useTablePagination";
+
 // ------------------- Table Columns -------------------
 const HierarchyNodeTableColumns = (deleteNode: any) => [
+  {
+    header: "#",
+    cell: ({ row }: any) => row.index + 1,
+  },
   {
     accessorKey: "name",
     header: "Structure Name",
@@ -32,21 +40,6 @@ const HierarchyNodeTableColumns = (deleteNode: any) => [
     header: "Description",
     cell: ({ row }: any) => <div>{row.getValue("description") || "N/A"}</div>,
   },
-  // {
-  //   accessorKey: "project",
-  //   header: "Project",
-  //   cell: ({ row }: any) => {
-  //     const project = row.original.project;
-  //     return (
-  //       <div className="font-medium text-gray-700">
-  //         {project?.name ||
-  //           project?.project_name ||
-  //           project?.project_id ||
-  //           "N/A"}
-  //       </div>
-  //     );
-  //   },
-  // },
   {
     accessorKey: "parent",
     header: "Parent Structure",
@@ -95,19 +88,6 @@ const HierarchyNodeTableColumns = (deleteNode: any) => [
               <Eye className="h-4 w-4" />
             </Link>
           </Button>
-          {/* <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-            <Link to={`/org_structure/${node.hierarchy_node_id}`}>
-              <Edit className="h-4 w-4" />
-            </Link>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-            onClick={handleDelete}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button> */}
         </div>
       );
     },
@@ -126,15 +106,13 @@ export default function HierarchyNodeList({
   inistitute_id,
   toggleActions,
 }: HierarchyNodeListProps) {
+  // Get search from context
+  const { search } = useGlobalSearch();
+
   const [nodes, setNodes] = useState<any[]>([]);
-  const [filteredNodes, setFilteredNodes] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isModalOpen, setModalOpen] = useState(false);
-  const [pageDetail, setPageDetail] = useState({
-    pageIndex: 0,
-    pageCount: 1,
-    pageSize: 10,
-  });
+  const [toggleHierarchyNode, setToggleHierarchyNode] = useState("table");
 
   const { data, isLoading, isError } = useGetHierarchyNodesByProjectIdQuery(
     project_id,
@@ -143,7 +121,7 @@ export default function HierarchyNodeList({
     }
   );
   const [deleteNode] = useDeleteHierarchyNodeMutation();
-  const [toggleHierarchyNode, setToggleHierarchyNode] = useState("table");
+
   const actions: ActionButton[] = [
     {
       label: "Add Structure",
@@ -164,38 +142,88 @@ export default function HierarchyNodeList({
         { label: "Inactive", value: "INACTIVE" },
       ],
       value: statusFilter,
-      onChange: (value: string | string[]) => {
+      onChange: (value) => {
         setStatusFilter(Array.isArray(value) ? value[0] : value);
-        setPageDetail({ ...pageDetail, pageIndex: 0 });
       },
     },
   ];
 
+  // Load data
   useEffect(() => {
     if (!isError && !isLoading && data) {
-      setNodes(data || []);
-      setFilteredNodes(data || []);
+      setNodes(Array.isArray(data) ? data : []);
     }
   }, [data, isError, isLoading]);
 
-  useEffect(() => {
-    const filtered = nodes.filter((item) => {
-      if (!statusFilter || statusFilter === "all") return true;
-      if (statusFilter === "ACTIVE") return item.is_active;
-      if (statusFilter === "INACTIVE") return !item.is_active;
-      return true;
-    });
-    setFilteredNodes(filtered);
-  }, [nodes, statusFilter]);
+  // Safe data
+  const safeNodes = useMemo(() => (Array.isArray(nodes) ? nodes : []), [nodes]);
 
-  const handlePagination = (index: number, size: number) => {
-    setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
-  };
-  console.log("filteredNodes: ", filteredNodes);
+  // Use the same pagination hook as InstituteList
+  const {
+    data: paginatedNodes,
+    pageDetail,
+    handlePagination,
+    resetPage,
+  } = useTablePagination({
+    data: safeNodes,
+    search,
+    statusFilter,
+    statusAccessor: (node) => (node.is_active ? "ACTIVE" : "INACTIVE"),
+    searchFields: [
+      (node) => node.name,
+      (node) => node.description,
+      (node) => node.parent?.name,
+    ],
+  });
+
+  // Update the filter change to reset page
+  const updatedFilterFields: FilterField[] = filterFields.map((field) => {
+    if (field.key === "status") {
+      return {
+        ...field,
+        onChange: (value) => {
+          setStatusFilter(Array.isArray(value) ? value[0] : value);
+          resetPage(); // Reset to page 1 when filter changes
+        },
+      };
+    }
+    return field;
+  });
+
+  // Apply filters and search to ALL nodes for tree view
+  const filteredNodes = useMemo(() => {
+    let result = [...safeNodes];
+
+    // Apply status filter
+    if (statusFilter !== "all") {
+      result = result.filter((node) => {
+        const status = node.is_active ? "ACTIVE" : "INACTIVE";
+        return status === statusFilter;
+      });
+    }
+
+    // Apply search filter
+    if (search) {
+      const searchLower = search.toLowerCase();
+      result = result.filter((node) => {
+        return (
+          (node.name && node.name.toLowerCase().includes(searchLower)) ||
+          (node.description &&
+            node.description.toLowerCase().includes(searchLower)) ||
+          (node.parent?.name &&
+            node.parent.name.toLowerCase().includes(searchLower))
+        );
+      });
+    }
+
+    return result;
+  }, [safeNodes, statusFilter, search]);
+
   return (
     <>
       <PageLayout
-        filters={filterFields}
+        filters={updatedFilterFields}
+        title="Request Flow Structures"
         filterColumnsPerRow={1}
         toggleActions={toggleActions}
         actions={actions}
@@ -206,7 +234,7 @@ export default function HierarchyNodeList({
         {toggleHierarchyNode === "table" ? (
           <DataTable
             columns={HierarchyNodeTableColumns(deleteNode)}
-            data={filteredNodes}
+            data={paginatedNodes}
             handlePagination={handlePagination}
             tablePageSize={pageDetail.pageSize}
             totalPageCount={pageDetail.pageCount}
@@ -219,12 +247,6 @@ export default function HierarchyNodeList({
             isLoading={isLoading}
           />
         )}
-        {/* <HierarchyD3Tree
-            data={filteredNodes}
-            isLoading={isLoading}
-            // pass institute for AssignUserModal
-            inistitute_id={inistitute_id}
-          /> */}
       </PageLayout>
 
       <CreateHierarchyNodeModal

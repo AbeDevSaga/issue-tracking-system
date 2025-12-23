@@ -1,57 +1,52 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Plus, Eye, Edit, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Eye } from "lucide-react";
 import { Link } from "react-router-dom";
-import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { Button } from "../../ui/cn/button";
 
-
-import {
-  useDeleteHierarchyNodeMutation,
-
-} from "../../../redux/services/hierarchyNodeApi";
+import { useGetUsersAssignedToProjectQuery } from "../../../redux/services/userApi";
+import { useGlobalSearch } from "../../../context/GlobalSearchContext";
+import { useTablePagination } from "../../../hooks/useTablePagination";
 
 import { PageLayout } from "../../common/PageLayout";
 import { DataTable } from "../../common/CommonTable";
 import { ActionButton, FilterField } from "../../../types/layout";
-import { useGetUsersAssignedToProjectQuery } from "../../../redux/services/userApi";
 
 // ------------------- Table Columns -------------------
-const ProjectUserTableColumns = (deleteUser: any) => [
+const ProjectUserTableColumns = () => [
   {
-    id: "serial",
     header: "#",
-    cell: ({ row }: any) => <div>{row.index + 1}</div>,
+    cell: ({ row }: any) => row.index + 1,
   },
   {
     accessorKey: "user.full_name",
     header: "Full Name",
     cell: ({ row }: any) => (
-      <div className="font-medium text-blue-600">
+      <span className="font-medium text-blue-600">
         {row.original.user?.full_name || "N/A"}
-      </div>
+      </span>
     ),
   },
   {
     accessorKey: "user.email",
     header: "Email",
-    cell: ({ row }: any) => <div>{row.original.user?.email || "N/A"}</div>,
+    cell: ({ row }: any) => <span>{row.original.user?.email || "N/A"}</span>,
   },
   {
     accessorKey: "role.name",
     header: "Role",
     cell: ({ row }: any) => (
-      <div className="font-medium text-gray-700">
+      <span className="font-medium text-gray-700">
         {row.original.role?.name || "N/A"}
-      </div>
+      </span>
     ),
   },
   {
     accessorKey: "hierarchyNode.name",
     header: "Assigned Structure",
     cell: ({ row }: any) => (
-      <div>{row.original.hierarchyNode?.name || "N/A"}</div>
+      <span>{row.original.hierarchyNode?.name || "N/A"}</span>
     ),
   },
   {
@@ -70,54 +65,22 @@ const ProjectUserTableColumns = (deleteUser: any) => [
       );
     },
   },
-  //   {
-  //     id: "actions",
-  //     header: "Actions",
-  //     cell: ({ row }: any) => {
-  //       const userAssignment = row.original;
+  // {
+  //   header: "Actions",
+  //   cell: ({ row }: any) => {
+  //     const userAssignment = row.original;
 
-  //       const handleDelete = async () => {
-  //         if (
-  //           confirm(
-  //             `Remove user "${userAssignment.user?.full_name}" from project?`
-  //           )
-  //         ) {
-  //           try {
-  //             // You'll need to implement this mutation or use an existing one
-  //             await deleteUser(userAssignment.project_user_role_id).unwrap();
-  //             toast.success("User removed from project successfully");
-  //           } catch (err: any) {
-  //             toast.error(
-  //               err?.data?.message || "Error removing user from project"
-  //             );
-  //           }
-  //         }
-  //       };
-
-  //       return (
-  //         <div className="flex items-center space-x-2">
-  //           <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-  //             <Link to={`/users/${userAssignment.user_id}`}>
-  //               <Eye className="h-4 w-4" />
-  //             </Link>
-  //           </Button>
-  //           {/* <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
-  //             <Link to={`/users/${userAssignment.user_id}/edit`}>
-  //               <Edit className="h-4 w-4" />
-  //             </Link>
-  //           </Button>
-  //           <Button
-  //             variant="outline"
-  //             size="sm"
-  //             className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-  //             onClick={handleDelete}
-  //           >
-  //             <Trash2 className="h-4 w-4" />
-  //           </Button> */}
-  //         </div>
-  //       );
-  //     },
+  //     return (
+  //       <div className="flex items-center space-x-2">
+  //         <Button variant="outline" size="sm" className="h-8 w-8 p-0" asChild>
+  //           <Link to={`/users/${userAssignment.user_id}`}>
+  //             <Eye className="h-4 w-4" />
+  //           </Link>
+  //         </Button>
+  //       </div>
+  //     );
   //   },
+  // },
 ];
 
 interface ProjectUserListProps {
@@ -131,14 +94,10 @@ export default function ProjectUserList({
   toggleActions,
 }: ProjectUserListProps) {
   const [users, setUsers] = useState<any[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [isModalOpen, setModalOpen] = useState(false);
-  const [pageDetail, setPageDetail] = useState({
-    pageIndex: 0,
-    pageCount: 1,
-    pageSize: 10,
-  });
+
+  // Get search from context
+  const { search } = useGlobalSearch();
 
   const { data, isLoading, isError } = useGetUsersAssignedToProjectQuery(
     project_id,
@@ -147,10 +106,36 @@ export default function ProjectUserList({
     }
   );
 
-  // You'll need to implement this mutation or use an existing one
-  const [deleteUserAssignment] = useDeleteHierarchyNodeMutation(); // Replace with actual user assignment deletion mutation
+  // Load data
+  useEffect(() => {
+    if (!isError && !isLoading && data) {
+      // Access the data array from the response
+      const userAssignments = data.data || [];
+      setUsers(Array.isArray(userAssignments) ? userAssignments : []);
+    }
+  }, [data, isError, isLoading]);
 
-  const [toggleView, setToggleView] = useState("table");
+  // Safe data
+  const safeUsers = useMemo(() => (Array.isArray(users) ? users : []), [users]);
+
+  // Use the same pagination hook as InstituteList
+  const {
+    data: paginatedUsers,
+    pageDetail,
+    handlePagination,
+    resetPage,
+  } = useTablePagination({
+    data: safeUsers,
+    search,
+    statusFilter,
+    statusAccessor: (user) => (user.is_active ? "ACTIVE" : "INACTIVE"),
+    searchFields: [
+      (user) => user.user?.full_name || "",
+      (user) => user.user?.email || "",
+      (user) => user.role?.name || "",
+      (user) => user.hierarchyNode?.name || "",
+    ],
+  });
 
   const filterFields: FilterField[] = [
     {
@@ -162,70 +147,48 @@ export default function ProjectUserList({
         { label: "Inactive", value: "INACTIVE" },
       ],
       value: statusFilter,
-      onChange: (value: string | string[]) => {
+      onChange: (value) => {
         setStatusFilter(Array.isArray(value) ? value[0] : value);
-        setPageDetail({ ...pageDetail, pageIndex: 0 });
+        resetPage(); // Reset to page 1 when filter changes
       },
     },
   ];
 
-  useEffect(() => {
-    if (!isError && !isLoading && data) {
-      // Access the data array from the response
-      const userAssignments = data.data || [];
-      setUsers(userAssignments);
-      setFilteredUsers(userAssignments);
+  if (isLoading) {
+    return (
+      <PageLayout>
+        <div className="flex justify-center items-center h-64">
+          Loading project users...
+        </div>
+      </PageLayout>
+    );
+  }
 
-      // Update pagination info based on response count
-      if (data.count) {
-        setPageDetail((prev) => ({
-          ...prev,
-          pageCount: Math.ceil(data.count / prev.pageSize),
-        }));
-      }
-    }
-  }, [data, isError, isLoading]);
-
-  useEffect(() => {
-    const filtered = users.filter((item) => {
-      if (!statusFilter || statusFilter === "all") return true;
-      if (statusFilter === "ACTIVE") return item.is_active;
-      if (statusFilter === "INACTIVE") return !item.is_active;
-      return true;
-    });
-    setFilteredUsers(filtered);
-  }, [users, statusFilter]);
-
-  const handlePagination = (index: number, size: number) => {
-    setPageDetail({ ...pageDetail, pageIndex: index, pageSize: size });
-  };
-
-  console.log("toggleView: ", toggleView);
+  if (isError) {
+    return (
+      <PageLayout>
+        <div className="text-red-600 p-4">Error loading project users</div>
+      </PageLayout>
+    );
+  }
 
   return (
     <>
       <PageLayout
+        title="Assigned Users"
         filters={filterFields}
         filterColumnsPerRow={1}
         toggleActions={toggleActions}
-        onToggle={(value: string) => setToggleView(value)}
+        showtoggle={false} // Hide toggle since we only have table view
       >
-        {toggleView === "table" ? (
-          <DataTable
-            columns={ProjectUserTableColumns(deleteUserAssignment)}
-            data={filteredUsers}
-            handlePagination={handlePagination}
-            tablePageSize={pageDetail.pageSize}
-            totalPageCount={pageDetail.pageCount}
-            currentIndex={pageDetail.pageIndex}
-          />
-        ) : (
-          // You might want to create a different visualization for users
-          // or keep the hierarchy tree if it makes sense for your use case
-          <div className="p-4">
-            <p>User list visualization not implemented yet</p>
-          </div>
-        )}
+        <DataTable
+          columns={ProjectUserTableColumns()}
+          data={paginatedUsers}
+          handlePagination={handlePagination}
+          tablePageSize={pageDetail.pageSize}
+          totalPageCount={pageDetail.pageCount}
+          currentIndex={pageDetail.pageIndex}
+        />
       </PageLayout>
     </>
   );
