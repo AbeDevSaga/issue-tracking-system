@@ -1,5 +1,3 @@
-"use client";
-
 import { useParams, Link } from "react-router-dom";
 import { Card, CardTitle, CardContent } from "../../components/ui/cn/card";
 import {
@@ -7,101 +5,109 @@ import {
   useGetProjectByIdQuery,
   useUpdateProjectMutation,
 } from "../../redux/services/projectApi";
-import { useGetProjectMetricsQuery } from "../../redux/services/projectMetricApi";
 import DetailHeader from "../../components/common/DetailHeader";
-import { ArrowRight, Edit, Trash2, Users, Check, CalendarIcon } from "lucide-react";
+import {
+  ArrowRight,
+  Edit,
+  Trash2,
+  Users,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import PageMeta from "../../components/common/PageMeta";
 import Badge from "../../components/ui/badge/Badge";
 import { format } from "date-fns";
 import {
   FolderIcon,
+  CalendarIcon,
   CheckCircleIcon,
   XCircleIcon,
   ArrowLeftIcon,
   BuildingOfficeIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import DeleteModal from "../../components/common/DeleteModal";
 import ProjectUserList from "../../components/tables/lists/projectUserList";
 import { ActionButton } from "../../types/layout";
 import HierarchyNodeList from "../../components/tables/lists/hierarchyNodeList";
+import IssueFlowList from "../../components/tables/lists/issueFlowList";
+import ProjectAssignedUsers from "../../components/tables/lists/projectAssignedUsers";
+import { Button } from "../../components/ui/cn/button";
+import { Input } from "../../components/ui/cn/input";
+import { Label } from "../../components/ui/cn/label";
+import { Textarea } from "../../components/ui/cn/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../components/ui/cn/select";
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
-  const { data: project, isLoading, isError, refetch } = useGetProjectByIdQuery(id!);
+  const {
+    data: project,
+    isLoading,
+    isError,
+    refetch,
+  } = useGetProjectByIdQuery(id!);
   const [deleteProject, { isLoading: deletingProjectLoading }] =
     useDeleteProjectMutation();
+  const [updateProject, { isLoading: updatingProject }] =
+    useUpdateProjectMutation();
+
   const [isOpen, setIsOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"hierarchy" | "users">("hierarchy");
-  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"issueFlow" | "users">(
+    "issueFlow"
+  );
 
-  const [updateProject, { isLoading: isUpdating }] = useUpdateProjectMutation();
-  const { data: metricsData, isLoading: loadingMetrics } = useGetProjectMetricsQuery({});
-  const metrics = metricsData || [];
+  // Search state
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  const [formData, setFormData] = useState({
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Edit form state
+  const [editForm, setEditForm] = useState({
     name: "",
     description: "",
     is_active: true,
-    maintenance_start: "",
-    maintenance_end: "",
-    project_metrics_ids: [] as string[],
   });
 
-  const [selectAllMetrics, setSelectAllMetrics] = useState(false);
+  // Save project ID to localStorage on every load/update
+  useEffect(() => {
+    if (id) {
+      localStorage.setItem("current_project_id", id);
+    }
+  }, [id]);
 
+  // Initialize edit form when project data loads
   useEffect(() => {
     if (project) {
-      setFormData({
+      setEditForm({
         name: project.name || "",
         description: project.description || "",
         is_active: project.is_active ?? true,
-        maintenance_start: project.maintenances?.[0]?.start_date || "",
-        maintenance_end: project.maintenances?.[0]?.end_date || "",
-        project_metrics_ids: project.project_metrics?.map((pm: any) => pm.project_metric_id) || [],
       });
     }
   }, [project]);
 
-  // Update selectAll state based on current selection
-  useEffect(() => {
-    if (metrics.length > 0) {
-      setSelectAllMetrics(formData.project_metrics_ids.length === metrics.length);
-    }
-  }, [formData.project_metrics_ids, metrics]);
-
-  const toggleMetric = (metricId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      project_metrics_ids: prev.project_metrics_ids.includes(metricId)
-        ? prev.project_metrics_ids.filter(id => id !== metricId)
-        : [...prev.project_metrics_ids, metricId]
-    }));
-  };
-
-  const handleSelectAllMetrics = () => {
-    if (selectAllMetrics) {
-      // Deselect all
-      setFormData(prev => ({ ...prev, project_metrics_ids: [] }));
-      setSelectAllMetrics(false);
-    } else {
-      // Select all
-      const allMetricIds = metrics.map((metric: any) => metric.project_metric_id);
-      setFormData(prev => ({ ...prev, project_metrics_ids: allMetricIds }));
-      setSelectAllMetrics(true);
-    }
-  };
-
   const actions: ActionButton[] = [
     {
-      label: "Hierarchy",
+      label: "Issue Flow",
       icon: <FolderIcon className="h-4 w-4" />,
-      variant: activeTab === "hierarchy" ? "default" : "outline",
+      variant: activeTab === "issueFlow" ? "default" : "outline",
       size: "default",
-      onClick: () => setActiveTab("hierarchy"),
+      onClick: () => setActiveTab("issueFlow"),
     },
     {
       label: "Assigned Users",
@@ -111,37 +117,6 @@ export default function ProjectDetail() {
       onClick: () => setActiveTab("users"),
     },
   ];
-
-  const handleUpdate = async () => {
-    try {
-      if (!formData.name.trim()) {
-        toast.error("Project name is required");
-        return;
-      }
-
-      const updateData = {
-        name: formData.name,
-        description: formData.description || undefined,
-        is_active: formData.is_active,
-        maintenance_start: formData.maintenance_start || undefined,
-        maintenance_end: formData.maintenance_end || undefined,
-        project_metrics_ids: formData.project_metrics_ids.length > 0 
-          ? formData.project_metrics_ids 
-          : undefined,
-      };
-
-      await updateProject({
-        id: project.project_id,
-        data: updateData,
-      }).unwrap();
-
-      toast.success("Project updated successfully");
-      setIsEditOpen(false);
-      refetch(); // Refresh the project data
-    } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to update project");
-    }
-  };
 
   const handleDelete = async () => {
     try {
@@ -154,13 +129,21 @@ export default function ProjectDetail() {
     }
   };
 
+  const handleEdit = async () => {
+    try {
+      await updateProject({ id: id!, ...editForm }).unwrap();
+      setIsEditModalOpen(false);
+      toast.success("Project updated successfully");
+      refetch();
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to update project");
+    }
+  };
+
   const formatDateShort = (dateString?: string) => {
     if (!dateString) return "N/A";
-
     try {
-      const [year, month, day] = dateString.split("-").map(Number);
-      const localDate = new Date(year, month - 1, day);
-      return format(localDate, "MMM dd, yyyy");
+      return format(new Date(dateString), "MMM dd, yyyy");
     } catch {
       return dateString;
     }
@@ -168,12 +151,49 @@ export default function ProjectDetail() {
 
   const formatDateWithTime = (dateString?: string) => {
     if (!dateString) return "N/A";
-
     try {
       return format(new Date(dateString), "MMM dd, yyyy 'at' h:mm a");
     } catch {
       return dateString;
     }
+  };
+
+  // Search and filter functions
+  const filterItems = (items: any[]) => {
+    let filtered = [...items];
+
+    // Apply search filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (item) =>
+          item.name?.toLowerCase().includes(searchLower) ||
+          item.description?.toLowerCase().includes(searchLower) ||
+          item.email?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Apply status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((item) => {
+        if (statusFilter === "ACTIVE") return item.is_active === true;
+        if (statusFilter === "INACTIVE") return item.is_active === false;
+        return true;
+      });
+    }
+
+    return filtered;
+  };
+
+  // Pagination functions
+  const paginateItems = (items: any[]) => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return items.slice(startIndex, endIndex);
+  };
+
+  const getTotalPages = (items: any[]) => {
+    return Math.ceil(items.length / itemsPerPage);
   };
 
   if (isLoading) {
@@ -214,6 +234,7 @@ export default function ProjectDetail() {
 
   return (
     <>
+      {/* Delete Modal */}
       <DeleteModal
         message="Are you sure you want to delete this project? This action cannot be undone."
         onCancel={() => setIsOpen(false)}
@@ -221,39 +242,158 @@ export default function ProjectDetail() {
         open={isOpen}
         isLoading={deletingProjectLoading}
       />
+
+      {/* Edit Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-[600px] max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-[#094C81]">
+                Edit Project
+              </h2>
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="text-[#094C81] hover:text-gray-600 transition-colors duration-200"
+              >
+                <XMarkIcon className="w-6 h-6 cursor-pointer" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label className="block text-sm text-[#094C81] font-medium mb-2">
+                  Project Name *
+                </Label>
+                <Input
+                  value={editForm.name}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, name: e.target.value })
+                  }
+                  placeholder="Enter project name"
+                  className="w-full"
+                />
+              </div>
+
+              <div>
+                <Label className="block text-sm text-[#094C81] font-medium mb-2">
+                  Description
+                </Label>
+                <Textarea
+                  value={editForm.description}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, description: e.target.value })
+                  }
+                  placeholder="Enter project description"
+                  className="w-full"
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <Label className="block text-sm text-[#094C81] font-medium mb-2">
+                  Status
+                </Label>
+                <Select
+                  value={editForm.is_active ? "active" : "inactive"}
+                  onValueChange={(value) =>
+                    setEditForm({ ...editForm, is_active: value === "active" })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsEditModalOpen(false)}
+                  disabled={updatingProject}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleEdit}
+                  disabled={updatingProject || !editForm.name.trim()}
+                  className="bg-[#094C81] hover:bg-[#094C81]/80"
+                >
+                  {updatingProject ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <PageMeta
         title={`${project.name} - Project Details`}
         description={`View details for ${project.name}`}
       />
+
       <div className="min-h-screen bg-[#F9FBFC] p-6 pb-24">
         <div className="max-w-7xl mx-auto space-y-6">
-          <div className="flex justify-between">
+          {/* Header with Search and Filters */}
+          <div className="flex justify-between items-center">
             <DetailHeader
               breadcrumbs={[
                 { title: "Organization", link: "" },
                 { title: "Project", link: "" },
               ]}
             />
-            <div className="flex justify-center items-end gap-4">
-              <span>
-                <Edit
-                  onClick={() => setIsEditOpen(true)}
-                  className="h-5 w-5 text-[#094C81] hover:text-[#073954] cursor-pointer"
+            <div className="flex items-center gap-4">
+              {/* Search Bar */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  type="search"
+                  placeholder="Search..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1); // Reset to first page when searching
+                  }}
+                  className="pl-10 w-64"
                 />
-              </span>
-              <span>
-                <Trash2
-                  onClick={() => setIsOpen(true)}
-                  className="h-5 w-5 text-[#B91C1C] hover:text-[#991B1B] cursor-pointer text-bold"
-                />
-              </span>
+              </div>
+
+              {/* Status Filter */}
+              <Select
+                value={statusFilter}
+                onValueChange={(value) => {
+                  setStatusFilter(value);
+                  setCurrentPage(1); // Reset to first page when filtering
+                }}
+              >
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="ACTIVE">Active</SelectItem>
+                  <SelectItem value="INACTIVE">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <div className="flex gap-4">
+                <button onClick={() => setIsEditModalOpen(true)}>
+                  <Edit className="h-5 w-5 text-[#094C81] hover:text-[#073954] cursor-pointer" />
+                </button>
+                <button onClick={() => setIsOpen(true)}>
+                  <Trash2 className="h-5 w-5 text-[#B91C1C] hover:text-[#991B1B] cursor-pointer" />
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Project Info Card - Compact Design */}
+          {/* Project Info Card */}
           <Card className="bg-white rounded-lg shadow-sm border border-[#BFD7EA] overflow-hidden">
             <CardContent className="p-4">
-              {/* Header Row - Compact */}
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
                 <div className="flex items-center gap-2.5">
                   <div className="p-2 bg-[#094C81]/10 rounded-lg">
@@ -290,7 +430,6 @@ export default function ProjectDetail() {
                 </Badge>
               </div>
 
-              {/* Details - Horizontal Compact Layout */}
               <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
                 {project.institutes?.length > 0 && (
                   <div className="flex items-center gap-1.5">
@@ -303,7 +442,6 @@ export default function ProjectDetail() {
                     </span>
                   </div>
                 )}
-
                 {project && (
                   <div className="flex items-center gap-1.5">
                     <CalendarIcon className="h-3.5 w-3.5 text-[#1E516A]" />
@@ -321,7 +459,6 @@ export default function ProjectDetail() {
                 )}
               </div>
 
-              {/* Deleted At - Compact Alert */}
               {project.deleted_at && (
                 <div className="mt-3 pt-3 border-t border-red-200">
                   <div className="flex items-center gap-2 text-xs">
@@ -336,235 +473,49 @@ export default function ProjectDetail() {
             </CardContent>
           </Card>
 
-          {/* Project Hierarchy */}
-          {activeTab === "hierarchy" && (
-            <HierarchyNodeList
-              project_id={id || ""}
-              inistitute_id={project.institutes?.[0]?.institute_id}
+          {/* Pagination Controls (if needed for the content below) */}
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Showing page {currentPage} of {getTotalPages(filterItems([]))}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((prev) => prev + 1)}
+                disabled={currentPage >= getTotalPages(filterItems([]))}
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Tab Content */}
+          {activeTab === "issueFlow" && (
+            <IssueFlowList
               toggleActions={actions}
+              parent_hierarchy_node_id={project.hierarchy_node_id}
             />
           )}
 
           {activeTab === "users" && (
-            <ProjectUserList project_id={id || ""} toggleActions={actions} />
+            <ProjectAssignedUsers
+              project_id={id || ""}
+              toggleActions={actions}
+            />
           )}
         </div>
       </div>
-
-      {/* Edit Project Modal */}
-      {isEditOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 pointer-events-auto">
-          <div className="bg-white w-full max-w-4xl rounded-lg shadow-xl relative z-[10000] max-h-[90vh] overflow-y-auto">
-            <div className="p-6 space-y-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-[#094C81]">
-                  Edit Project
-                </h3>
-                <button
-                  onClick={() => setIsEditOpen(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {/* Project Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-[#094C81] mb-2">
-                      Project Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-[#094C81] focus:border-transparent outline-none"
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
-                      placeholder="Enter project name"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-[#094C81] mb-2">
-                      Description
-                    </label>
-                    <textarea
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-[#094C81] focus:border-transparent outline-none"
-                      value={formData.description}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          description: e.target.value,
-                        })
-                      }
-                      rows={3}
-                      placeholder="Project description"
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="is_active"
-                      checked={formData.is_active}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          is_active: e.target.checked,
-                        })
-                      }
-                      className="w-4 h-4 text-[#094C81] border-gray-300 rounded focus:ring-[#094C81]"
-                    />
-                    <label htmlFor="is_active" className="text-sm font-medium text-gray-700">
-                      Active
-                    </label>
-                  </div>
-                </div>
-
-                {/* Maintenance Dates */}
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-[#094C81] mb-2">
-                      Maintenance Start Date
-                    </label>
-                    <input
-                      type="date"
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-[#094C81] focus:border-transparent outline-none"
-                      value={formData.maintenance_start || ''}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          maintenance_start: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-[#094C81] mb-2">
-                      Maintenance End Date
-                    </label>
-                    <input
-                      type="date"
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-[#094C81] focus:border-transparent outline-none"
-                      value={formData.maintenance_end || ''}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          maintenance_end: e.target.value,
-                        })
-                      }
-                      min={formData.maintenance_start || ''}
-                    />
-                  </div>
-
-                  {/* Institutes - Read only */}
-                  {project?.institutes?.length > 0 && (
-                    <div>
-                      <label className="block text-sm font-medium text-[#094C81] mb-2">
-                        Institutes
-                      </label>
-                      <div className="border border-gray-300 rounded-md px-3 py-2 bg-gray-50">
-                        {project.institutes.map((institute: any) => (
-                          <span
-                            key={institute.institute_id}
-                            className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-2 mb-1"
-                          >
-                            {institute.name}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Project Metrics/Human Resources */}
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-lg font-semibold text-[#094C81]">
-                    Project Human Resources
-                  </h4>
-                  {metrics.length > 0 && (
-                    <div
-                      className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-[#094C81]/10 cursor-pointer transition-all duration-200 border border-gray-200 bg-white"
-                      onClick={handleSelectAllMetrics}
-                    >
-                      <div
-                        className={`w-4 h-4 border-2 rounded flex items-center justify-center transition-all duration-200 ${
-                          selectAllMetrics
-                            ? "bg-[#094C81] border-[#094C81] text-white"
-                            : "border-gray-300 bg-white"
-                        }`}
-                      >
-                        {selectAllMetrics ? <Check className="w-3 h-3 stroke-3" /> : null}
-                      </div>
-                      <span className="font-medium text-sm text-[#094C81]">
-                        Select All
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {loadingMetrics ? (
-                  <div className="text-center py-4">Loading human resources...</div>
-                ) : metrics.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500 text-sm bg-gray-50 rounded-md border border-gray-200">
-                    No human resources available
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-[300px] overflow-y-auto p-2">
-                    {metrics.map((metric: any) => (
-                      <div
-                        key={metric.project_metric_id}
-                        className={`flex items-center gap-2 p-2 border rounded cursor-pointer transition-all duration-200 ${
-                          formData.project_metrics_ids.includes(metric.project_metric_id)
-                            ? "bg-[#094C81]/10 border-[#094C81]"
-                            : "bg-white border-gray-200 hover:border-[#094C81]/50"
-                        }`}
-                        onClick={() => toggleMetric(metric.project_metric_id)}
-                      >
-                        <div
-                          className={`w-4 h-4 border-2 rounded flex items-center justify-center transition-all duration-200 ${
-                            formData.project_metrics_ids.includes(metric.project_metric_id)
-                              ? "bg-[#094C81] border-[#094C81] text-white"
-                              : "border-gray-300 bg-white"
-                          }`}
-                        >
-                          {formData.project_metrics_ids.includes(metric.project_metric_id) ? (
-                            <Check className="w-2.5 h-2.5 stroke-3" />
-                          ) : null}
-                        </div>
-                        <span className="text-sm">{metric.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div className="mt-2 text-sm text-gray-500">
-                  Selected: {formData.project_metrics_ids.length} of {metrics.length}
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-6 border-t">
-                <button
-                  onClick={() => setIsEditOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleUpdate}
-                  disabled={isUpdating}
-                  className="px-4 py-2 bg-[#094C81] text-white rounded-md hover:bg-[#073954] transition-colors disabled:opacity-50"
-                >
-                  {isUpdating ? "Saving..." : "Save Changes"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
